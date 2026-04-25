@@ -23,6 +23,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ConfirmDialog } from "./confirm-dialog";
 import { generateLicenseKey } from "@/lib/license-key";
 import { calculateExpiresAt, formatExpiry } from "@/lib/expiry";
+import { copyToClipboard } from "@/lib/clipboard";
 import { LICENSE_KEY_PATTERN } from "@/lib/schemas";
 import type { License, LicenseTier, LicenseStatus } from "@/lib/types";
 
@@ -156,9 +157,10 @@ export function LicenseForm({ mode, initial }: Props) {
     form.setValue("license_key", generateLicenseKey(), { shouldDirty: true });
   }
 
-  function copyKey() {
-    navigator.clipboard.writeText(form.getValues("license_key"));
-    toast.success("Key copied to clipboard");
+  async function copyKey() {
+    const ok = await copyToClipboard(form.getValues("license_key"));
+    if (ok) toast.success("License key copied to clipboard");
+    else toast.error("Could not copy. Select and copy manually.");
   }
 
   // -------------------------------------------------------------------------

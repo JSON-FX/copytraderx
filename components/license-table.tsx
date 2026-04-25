@@ -34,6 +34,7 @@ import { LivenessBadge } from "./liveness-badge";
 import { TierBadge } from "./tier-badge";
 import { ConfirmDialog } from "./confirm-dialog";
 import { formatExpiry, isExpired } from "@/lib/expiry";
+import { copyToClipboard } from "@/lib/clipboard";
 import { deriveLiveness } from "@/lib/liveness";
 import type { License, LivenessState } from "@/lib/types";
 
@@ -87,9 +88,10 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
     router.refresh();
   }
 
-  function copyKey(key: string) {
-    navigator.clipboard.writeText(key);
-    toast.success("Key copied");
+  async function copyKey(key: string) {
+    const ok = await copyToClipboard(key);
+    if (ok) toast.success("License key copied to clipboard");
+    else toast.error("Could not copy. Select and copy manually.");
   }
 
   return (
