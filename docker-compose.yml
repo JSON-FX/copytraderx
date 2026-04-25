@@ -1,0 +1,19 @@
+services:
+  copytraderx-license:
+    container_name: copytraderx-license
+    build:
+      context: .
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    environment:
+      SUPABASE_URL: https://mkfabzqlxzeidfblxzhq.supabase.co
+      SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
+    networks:
+      - lgu-network
+    expose:
+      - "3000"
+
+networks:
+  lgu-network:
+    external: true
+    name: development_lgu-network
