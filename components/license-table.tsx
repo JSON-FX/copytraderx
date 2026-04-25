@@ -220,7 +220,7 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 data-[state=open]:opacity-100"
+                            className="h-8 w-8 opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 data-[state=open]:opacity-100"
                           >
                             <MoreHorizontal className="h-4 w-4" />
                             <span className="sr-only">Open actions</span>
