@@ -30,13 +30,14 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { MoreHorizontal, Plus, Copy, FileX2 } from "lucide-react";
-import { StatusBadge } from "./status-badge";
+import { LivenessBadge } from "./liveness-badge";
 import { TierBadge } from "./tier-badge";
 import { ConfirmDialog } from "./confirm-dialog";
-import { computeDisplayStatus, formatExpiry, isExpired } from "@/lib/expiry";
-import type { License } from "@/lib/types";
+import { formatExpiry, isExpired } from "@/lib/expiry";
+import { deriveLiveness } from "@/lib/liveness";
+import type { License, LivenessState } from "@/lib/types";
 
-type Filter = "all" | "active" | "revoked" | "expired";
+type Filter = "all" | LivenessState;
 
 export function LicenseTable({ licenses }: { licenses: License[] }) {
   const router = useRouter();
@@ -46,18 +47,21 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
   const [revokeTarget, setRevokeTarget] = useState<License | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<License | null>(null);
 
+  const now = useMemo(() => new Date(), [licenses]);
+
   const rows = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return licenses.filter((l) => {
-      const display = computeDisplayStatus(l.status, l.expires_at);
-      if (filter !== "all" && display !== filter) return false;
-      if (q.length === 0) return true;
-      return (
-        l.license_key.toLowerCase().includes(q) ||
-        (l.customer_email ?? "").toLowerCase().includes(q)
-      );
-    });
-  }, [licenses, search, filter]);
+    return licenses
+      .map((l) => ({ license: l, state: deriveLiveness(l, now) }))
+      .filter(({ license, state }) => {
+        if (filter !== "all" && state !== filter) return false;
+        if (q.length === 0) return true;
+        return (
+          license.license_key.toLowerCase().includes(q) ||
+          (license.customer_email ?? "").toLowerCase().includes(q)
+        );
+      });
+  }, [licenses, search, filter, now]);
 
   async function patchLicense(id: number, body: object, msg: string) {
     const res = await fetch(`/api/licenses/${id}`, {
@@ -104,9 +108,12 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
-            <SelectItem value="active">Active</SelectItem>
-            <SelectItem value="revoked">Revoked</SelectItem>
+            <SelectItem value="online">Online</SelectItem>
+            <SelectItem value="stale">Stale</SelectItem>
+            <SelectItem value="offline">Offline</SelectItem>
+            <SelectItem value="not_activated">Not activated</SelectItem>
             <SelectItem value="expired">Expired</SelectItem>
+            <SelectItem value="revoked">Revoked</SelectItem>
           </SelectContent>
         </Select>
         <div className="flex-1" />
@@ -123,13 +130,12 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">Status</TableHead>
+              <TableHead className="w-[180px]">Status</TableHead>
               <TableHead>License Key</TableHead>
               <TableHead className="text-right">MT5 Account</TableHead>
               <TableHead>Tier</TableHead>
               <TableHead>Customer Email</TableHead>
               <TableHead>Expires</TableHead>
-              <TableHead>Last Validated</TableHead>
               {/* Actions column — narrow, no label */}
               <TableHead className="w-[52px]" />
             </TableRow>
@@ -138,7 +144,7 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={8}
+                  colSpan={7}
                   className="py-16 text-center text-muted-foreground"
                 >
                   <div className="flex flex-col items-center gap-3">
@@ -152,15 +158,26 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
                 </TableCell>
               </TableRow>
             ) : (
-              rows.map((l) => {
-                const display = computeDisplayStatus(l.status, l.expires_at);
+              rows.map(({ license: l, state }) => {
                 const isPastExpiry = isExpired(l.expires_at);
                 const isRevoked = l.status === "revoked";
+                const lastValidated = l.last_validated_at
+                  ? formatDistanceToNow(new Date(l.last_validated_at), {
+                      addSuffix: true,
+                    })
+                  : null;
                 return (
                   <TableRow key={l.id} className="group">
-                    {/* Status */}
+                    {/* Status — liveness badge + relative-time hint */}
                     <TableCell className="py-3">
-                      <StatusBadge status={display} />
+                      <div className="flex flex-col gap-0.5">
+                        <LivenessBadge state={state} />
+                        {lastValidated && (
+                          <span className="text-xs text-muted-foreground">
+                            {lastValidated}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
 
                     {/* License key — click-to-copy chip */}
@@ -202,15 +219,6 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
                       }`}
                     >
                       {formatExpiry(l.expires_at)}
-                    </TableCell>
-
-                    {/* Last validated */}
-                    <TableCell className="py-3 text-sm text-muted-foreground">
-                      {l.last_validated_at
-                        ? formatDistanceToNow(new Date(l.last_validated_at), {
-                            addSuffix: true,
-                          })
-                        : "Never"}
                     </TableCell>
 
                     {/* Row actions — appear on hover */}
