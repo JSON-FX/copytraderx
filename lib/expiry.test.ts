@@ -10,28 +10,23 @@ describe("calculateExpiresAt", () => {
 
   it("monthly: adds 1 calendar month", () => {
     const result = calculateExpiresAt("monthly", from);
-    expect(result?.toISOString()).toBe("2026-05-25T10:00:00.000Z");
+    expect(result.toISOString()).toBe("2026-05-25T10:00:00.000Z");
   });
 
   it("quarterly: adds 3 calendar months", () => {
     const result = calculateExpiresAt("quarterly", from);
-    expect(result?.toISOString()).toBe("2026-07-25T10:00:00.000Z");
+    expect(result.toISOString()).toBe("2026-07-25T10:00:00.000Z");
   });
 
   it("yearly: adds 1 calendar year", () => {
     const result = calculateExpiresAt("yearly", from);
-    expect(result?.toISOString()).toBe("2027-04-25T10:00:00.000Z");
-  });
-
-  it("lifetime: returns null", () => {
-    expect(calculateExpiresAt("lifetime", from)).toBeNull();
+    expect(result.toISOString()).toBe("2027-04-25T10:00:00.000Z");
   });
 
   it("monthly handles end-of-month rollover (Jan 31 → Feb 28)", () => {
     const jan31 = new Date("2026-01-31T00:00:00Z");
-    // date-fns addMonths clamps to the last day of the shorter month.
     const result = calculateExpiresAt("monthly", jan31);
-    expect(result?.toISOString().slice(0, 10)).toBe("2026-02-28");
+    expect(result.toISOString().slice(0, 10)).toBe("2026-02-28");
   });
 });
 
@@ -75,8 +70,8 @@ describe("computeDisplayStatus", () => {
 });
 
 describe("formatExpiry", () => {
-  it("null → 'Lifetime'", () => {
-    expect(formatExpiry(null)).toBe("Lifetime");
+  it("null → 'Not activated'", () => {
+    expect(formatExpiry(null)).toBe("Not activated");
   });
 
   it("ISO string → YYYY-MM-DD", () => {

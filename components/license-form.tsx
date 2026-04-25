@@ -38,7 +38,7 @@ const formSchema = z.object({
     .number()
     .int("Must be a whole number")
     .positive("Must be a positive integer"),
-  tier: z.enum(["monthly", "quarterly", "yearly", "lifetime"]),
+  tier: z.enum(["monthly", "quarterly", "yearly"]),
   status: z.enum(["active", "revoked", "expired"]),
   customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
   notes: z.string().optional(),
@@ -166,9 +166,11 @@ export function LicenseForm({ mode, initial }: Props) {
   // -------------------------------------------------------------------------
 
   const previewExpiry = (() => {
-    if (tier === "lifetime") return "Never expires";
+    if (mode === "create") {
+      return "Expiry will be set when the customer first activates the EA";
+    }
     const date = calculateExpiresAt(tier as LicenseTier, new Date());
-    return `Expires ${formatExpiry(date?.toISOString() ?? null)}`;
+    return `If renewed today, expires ${formatExpiry(date.toISOString())}`;
   })();
 
   const isSubmitting = form.formState.isSubmitting;
@@ -271,7 +273,6 @@ export function LicenseForm({ mode, initial }: Props) {
             <SelectItem value="monthly">Monthly</SelectItem>
             <SelectItem value="quarterly">Quarterly</SelectItem>
             <SelectItem value="yearly">Yearly</SelectItem>
-            <SelectItem value="lifetime">Lifetime</SelectItem>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">{previewExpiry}</p>

@@ -77,7 +77,7 @@ Covers `lib/schemas.ts`, `lib/license-key.ts`, `lib/expiry.ts`. UI components ar
 
 1. `http://copytraderx.local` → "+ New License"
 2. Form pre-fills a fresh `IMPX-XXXX-XXXX-XXXX-XXXX` key
-3. Type customer's MT5 account, pick tier (Monthly/Quarterly/Yearly/Lifetime), optional email + notes
+3. Type customer's MT5 account, pick tier (Monthly/Quarterly/Yearly), optional email + notes
 4. Click Create
 5. Copy the license key from the table — paste into your customer email manually
 

@@ -2,7 +2,7 @@ import { z } from "zod";
 
 export const LICENSE_KEY_PATTERN = /^IMPX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/;
 
-const tierEnum = z.enum(["monthly", "quarterly", "yearly", "lifetime"]);
+const tierEnum = z.enum(["monthly", "quarterly", "yearly"]);
 const statusEnum = z.enum(["active", "revoked", "expired"]);
 const renewableTierEnum = z.enum(["monthly", "quarterly", "yearly"]);
 

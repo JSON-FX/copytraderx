@@ -52,6 +52,15 @@ describe("createLicenseSchema", () => {
     expect(result.success).toBe(false);
   });
 
+  it("rejects lifetime tier (no longer supported)", () => {
+    const result = createLicenseSchema.safeParse({
+      license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
+      mt5_account: 12345678,
+      tier: "lifetime",
+    });
+    expect(result.success).toBe(false);
+  });
+
   it("accepts empty/missing customer_email", () => {
     const a = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",

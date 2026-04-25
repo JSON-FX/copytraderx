@@ -1,10 +1,7 @@
 import { addMonths, addYears } from "date-fns";
 import type { LicenseTier, LicenseStatus, DisplayStatus } from "./types";
 
-export function calculateExpiresAt(
-  tier: LicenseTier,
-  from: Date,
-): Date | null {
+export function calculateExpiresAt(tier: LicenseTier, from: Date): Date {
   switch (tier) {
     case "monthly":
       return addMonths(from, 1);
@@ -12,8 +9,6 @@ export function calculateExpiresAt(
       return addMonths(from, 3);
     case "yearly":
       return addYears(from, 1);
-    case "lifetime":
-      return null;
   }
 }
 
@@ -33,7 +28,7 @@ export function computeDisplayStatus(
 }
 
 export function formatExpiry(expiresAt: string | null): string {
-  if (expiresAt === null) return "Lifetime";
+  if (expiresAt === null) return "Not activated";
   // Use UTC components to avoid timezone-dependent off-by-one.
   const d = new Date(expiresAt);
   const yyyy = d.getUTCFullYear();

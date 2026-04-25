@@ -5,7 +5,6 @@ const LABELS: Record<LicenseTier, string> = {
   monthly: "Monthly",
   quarterly: "Quarterly",
   yearly: "Yearly",
-  lifetime: "Lifetime",
 };
 
 export function TierBadge({ tier }: { tier: LicenseTier | null }) {
