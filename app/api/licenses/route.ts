@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { createLicenseSchema } from "@/lib/schemas";
-import { calculateExpiresAt } from "@/lib/expiry";
 
 export async function GET() {
   const sb = getSupabaseAdmin();
@@ -36,8 +35,6 @@ export async function POST(req: Request) {
   }
 
   const input = parsed.data;
-  const now = new Date();
-  const expiresAt = calculateExpiresAt(input.tier, now);
 
   const sb = getSupabaseAdmin();
   const { data, error } = await sb
@@ -46,7 +43,11 @@ export async function POST(req: Request) {
       license_key: input.license_key,
       mt5_account: input.mt5_account,
       tier: input.tier,
-      expires_at: expiresAt ? expiresAt.toISOString() : null,
+      // expires_at + activated_at left null on purpose: the EA stamps both
+      // on first successful validation. Admin can override via
+      // /api/licenses/:id/activate.
+      expires_at: null,
+      activated_at: null,
       customer_email: input.customer_email ?? null,
       notes: input.notes ?? null,
       status: "active",
