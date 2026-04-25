@@ -74,6 +74,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
     let timer: ReturnType<typeof setInterval> | null = null;
     const start = () => {
       if (timer !== null) return;
+      refetch();
       timer = setInterval(refetch, intervalMs);
     };
     const stop = () => {
