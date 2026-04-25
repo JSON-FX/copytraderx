@@ -1,8 +1,11 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import {
+  getPollingInterval,
+  POLLING_KEY,
+} from "@/lib/settings";
 import { toast } from "sonner";
 import { formatDistanceToNow } from "date-fns";
 import {
@@ -40,10 +43,66 @@ import type { License, LivenessState } from "@/lib/types";
 
 type Filter = "all" | LivenessState;
 
-export function LicenseTable({ licenses }: { licenses: License[] }) {
-  const router = useRouter();
+export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }) {
+  const [licenses, setLicenses] = useState<License[]>(initialLicenses);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
+  const [intervalMs, setIntervalMs] = useState<number>(3000);
+
+  // Read interval from localStorage after mount (avoids SSR mismatch).
+  useEffect(() => {
+    setIntervalMs(getPollingInterval());
+  }, []);
+
+  // Replace router.refresh() — fetch the snapshot and overwrite local state.
+  // Failures are silent so a flaky network doesn't spam toasts every poll.
+  const refetch = useCallback(async () => {
+    try {
+      const res = await fetch("/api/licenses", { cache: "no-store" });
+      if (!res.ok) return;
+      const json = (await res.json()) as { licenses: License[] };
+      setLicenses(json.licenses);
+    } catch {
+      /* silent */
+    }
+  }, []);
+
+  // Polling — pauses while the tab is hidden.
+  useEffect(() => {
+    if (intervalMs <= 0) return;
+
+    let timer: ReturnType<typeof setInterval> | null = null;
+    const start = () => {
+      if (timer !== null) return;
+      timer = setInterval(refetch, intervalMs);
+    };
+    const stop = () => {
+      if (timer !== null) {
+        clearInterval(timer);
+        timer = null;
+      }
+    };
+    const onVisibility = () => {
+      if (document.hidden) stop();
+      else start();
+    };
+
+    if (!document.hidden) start();
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      stop();
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [intervalMs, refetch]);
+
+  // Pick up settings changes from another tab.
+  useEffect(() => {
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === POLLING_KEY) setIntervalMs(getPollingInterval());
+    };
+    window.addEventListener("storage", onStorage);
+    return () => window.removeEventListener("storage", onStorage);
+  }, []);
 
   const [revokeTarget, setRevokeTarget] = useState<License | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<License | null>(null);
@@ -75,7 +134,7 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
       return;
     }
     toast.success(msg);
-    router.refresh();
+    await refetch();
   }
 
   async function deleteLicense(id: number) {
@@ -85,7 +144,7 @@ export function LicenseTable({ licenses }: { licenses: License[] }) {
       return;
     }
     toast.success("License deleted");
-    router.refresh();
+    await refetch();
   }
 
   async function copyKey(key: string) {

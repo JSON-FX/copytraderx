@@ -30,7 +30,7 @@ export default async function LicensesPage() {
             {licenses.length} {licenses.length === 1 ? "license" : "licenses"} total
           </p>
         </div>
-        <LicenseTable licenses={licenses} />
+        <LicenseTable initialLicenses={licenses} />
       </main>
     </div>
   );
