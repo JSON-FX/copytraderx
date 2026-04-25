@@ -61,11 +61,34 @@ export async function PATCH(req: Request, ctx: RouteContext) {
   // Expand renew action into a real update payload
   let updatePayload: Record<string, unknown>;
   if ("action" in parsed.data && parsed.data.action === "renew") {
-    const expiresAt = calculateExpiresAt(parsed.data.tier, new Date());
+    // Look up the row's current activated_at — if null, this renew also
+    // counts as the activation event (admin's intent: "start the clock now").
+    const sbCheck = getSupabaseAdmin();
+    const { data: existing, error: lookupErr } = await sbCheck
+      .from("licenses")
+      .select("activated_at")
+      .eq("id", numericId)
+      .maybeSingle();
+
+    if (lookupErr) {
+      return NextResponse.json(
+        { error: "lookup_failed", details: lookupErr.message },
+        { status: 500 },
+      );
+    }
+    if (!existing) {
+      return NextResponse.json({ error: "not_found" }, { status: 404 });
+    }
+
+    const now = new Date();
+    const expiresAt = calculateExpiresAt(parsed.data.tier, now);
     updatePayload = {
       tier: parsed.data.tier,
-      expires_at: expiresAt ? expiresAt.toISOString() : null,
+      expires_at: expiresAt.toISOString(),
     };
+    if (existing.activated_at === null) {
+      updatePayload.activated_at = now.toISOString();
+    }
   } else {
     updatePayload = parsed.data;
   }
