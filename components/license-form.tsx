@@ -40,6 +40,7 @@ const formSchema = z.object({
     .int("Must be a whole number")
     .positive("Must be a positive integer"),
   tier: z.enum(["monthly", "quarterly", "yearly"]),
+  intended_account_type: z.enum(["demo", "live"]),
   status: z.enum(["active", "revoked", "expired"]),
   customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
   notes: z.string().optional(),
@@ -68,6 +69,7 @@ export function LicenseForm({ mode, initial }: Props) {
     license_key: initial?.license_key ?? generateLicenseKey(),
     mt5_account: initial?.mt5_account ?? (0 as unknown as number),
     tier: (initial?.tier as LicenseTier | undefined) ?? "monthly",
+    intended_account_type: (initial?.intended_account_type as "demo" | "live" | undefined) ?? "demo",
     status: (initial?.status as LicenseStatus | undefined) ?? "active",
     customer_email: initial?.customer_email ?? "",
     notes: initial?.notes ?? "",
@@ -101,12 +103,14 @@ export function LicenseForm({ mode, initial }: Props) {
             license_key: values.license_key,
             mt5_account: values.mt5_account,
             tier: values.tier,
+            intended_account_type: values.intended_account_type,
             customer_email: values.customer_email || null,
             notes: values.notes || null,
           }
         : {
             mt5_account: values.mt5_account,
             tier: values.tier,
+            intended_account_type: values.intended_account_type,
             status: values.status,
             customer_email: values.customer_email || null,
             notes: values.notes || null,
@@ -278,6 +282,30 @@ export function LicenseForm({ mode, initial }: Props) {
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">{previewExpiry}</p>
+      </div>
+
+      {/* Account Type */}
+      <div className="space-y-1.5">
+        <Label htmlFor="intended_account_type" className="text-sm font-semibold">
+          Account Type
+        </Label>
+        <Select
+          value={form.watch("intended_account_type")}
+          onValueChange={(v) =>
+            form.setValue("intended_account_type", v as "demo" | "live", { shouldDirty: true })
+          }
+        >
+          <SelectTrigger id="intended_account_type">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="demo">Demo</SelectItem>
+            <SelectItem value="live">Live</SelectItem>
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          The EA will only trade if the MT5 account type matches this setting.
+        </p>
       </div>
 
       {/* Status (edit only) */}
