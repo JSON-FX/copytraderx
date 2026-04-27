@@ -14,6 +14,8 @@ function makeLicense(overrides: Partial<License>): License {
     purchase_date: null,
     last_validated_at: null,
     broker_name: null,
+    account_type: null,
+    intended_account_type: null,
     notes: null,
     created_at: "2026-04-20T00:00:00Z",
     ...overrides,

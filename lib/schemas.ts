@@ -5,6 +5,7 @@ export const LICENSE_KEY_PATTERN = /^IMPX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}-[A
 const tierEnum = z.enum(["monthly", "quarterly", "yearly"]);
 const statusEnum = z.enum(["active", "revoked", "expired"]);
 const renewableTierEnum = z.enum(["monthly", "quarterly", "yearly"]);
+const accountTypeEnum = z.enum(["demo", "live"]);
 
 const optionalEmail = z
   .string()
@@ -34,6 +35,7 @@ export const createLicenseSchema = z
       .int()
       .positive("Must be a positive integer"),
     tier: tierEnum,
+    intended_account_type: accountTypeEnum,
     customer_email: optionalEmail,
     notes: optionalNonEmpty,
   })
@@ -45,6 +47,7 @@ export const updateLicenseSchema = z
     mt5_account: z.number().int().positive().optional(),
     status: statusEnum.optional(),
     tier: tierEnum.nullable().optional(),
+    intended_account_type: accountTypeEnum.nullable().optional(),
     expires_at: z.string().datetime().nullable().optional(),
     customer_email: optionalEmail,
     notes: optionalNonEmpty,

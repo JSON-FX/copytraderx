@@ -10,6 +10,7 @@ describe("createLicenseSchema", () => {
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 12345678,
       tier: "monthly",
+      intended_account_type: "demo",
       customer_email: "test@example.com",
       notes: "first customer",
     });
@@ -66,12 +67,14 @@ describe("createLicenseSchema", () => {
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 1,
       tier: "monthly",
+      intended_account_type: "demo",
     });
     expect(a.success).toBe(true);
     const b = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 1,
       tier: "monthly",
+      intended_account_type: "live",
       customer_email: "",
     });
     expect(b.success).toBe(true);

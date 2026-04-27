@@ -1,6 +1,8 @@
 export type LicenseStatus = "active" | "revoked" | "expired";
 export type LicenseTier = "monthly" | "quarterly" | "yearly";
 
+export type AccountType = "demo" | "live" | "contest";
+
 export interface License {
   id: number;
   license_key: string;
@@ -13,6 +15,8 @@ export interface License {
   purchase_date: string | null;
   last_validated_at: string | null;
   broker_name: string | null;
+  account_type: AccountType | null;     // "demo" | "live" | "contest" — reported by EA
+  intended_account_type: AccountType | null;
   notes: string | null;
   created_at: string;
 }
