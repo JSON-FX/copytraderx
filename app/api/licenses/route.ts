@@ -51,6 +51,7 @@ export async function POST(req: Request) {
       customer_email: input.customer_email ?? null,
       notes: input.notes ?? null,
       status: "active",
+      intended_account_type: input.intended_account_type,
     })
     .select()
     .single();
