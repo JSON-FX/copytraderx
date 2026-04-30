@@ -4,9 +4,9 @@ import { isExpired } from "./expiry";
 // One EA revalidate cycle (12h) plus 1h grace.
 export const ONLINE_WINDOW_MS = 13 * 60 * 60 * 1000;
 
-// Matches the EA's offline cache window — past this we know the EA is no
-// longer running, since even cached tokens expire.
-export const STALE_WINDOW_MS = 72 * 60 * 60 * 1000;
+// Matches the EA's offline cache window (12h) plus grace — past this we
+// know the EA is no longer running, since even cached tokens expire.
+export const STALE_WINDOW_MS = 24 * 60 * 60 * 1000;
 
 export function deriveLiveness(license: License, now: Date): LivenessState {
   if (license.status === "revoked") return "revoked";
