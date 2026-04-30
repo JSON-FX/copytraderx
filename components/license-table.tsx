@@ -256,8 +256,28 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
                     </TableCell>
 
                     {/* MT5 account */}
-                    <TableCell className="py-3 text-right tabular-nums text-sm">
-                      {l.mt5_account}
+                    <TableCell className="py-3 text-right text-sm">
+                      <div className="flex flex-col items-end gap-0.5">
+                        <div className="flex items-center gap-2 tabular-nums">
+                          {l.account_type && (
+                            <span
+                              className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-semibold uppercase leading-none ${
+                                l.account_type === "live"
+                                  ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+                                  : "bg-zinc-100 text-zinc-500 dark:bg-zinc-800 dark:text-zinc-400"
+                              }`}
+                            >
+                              {l.account_type}
+                            </span>
+                          )}
+                          {l.mt5_account}
+                        </div>
+                        {l.broker_name && (
+                          <span className="text-xs text-muted-foreground truncate max-w-[200px]">
+                            {l.broker_name}
+                          </span>
+                        )}
+                      </div>
                     </TableCell>
 
                     {/* Tier */}
