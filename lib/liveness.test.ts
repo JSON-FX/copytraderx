@@ -18,6 +18,8 @@ function makeLicense(overrides: Partial<License>): License {
     intended_account_type: null,
     notes: null,
     created_at: "2026-04-20T00:00:00Z",
+    push_interval_seconds: 10,
+    propfirm_rule_id: null,
     ...overrides,
   };
 }
