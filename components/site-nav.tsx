@@ -3,6 +3,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 export function SiteNav() {
   const pathname = usePathname();
@@ -47,6 +48,7 @@ export function SiteNav() {
           >
             Settings
           </Link>
+          <ThemeToggle />
         </nav>
       </div>
     </header>
