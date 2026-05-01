@@ -14,13 +14,18 @@ import {
   POLLING_OPTIONS,
   getPollingInterval,
   setPollingInterval,
+  JOURNAL_POLLING_OPTIONS,
+  getJournalPollingInterval,
+  setJournalPollingInterval,
 } from "@/lib/settings";
 
 export default function SettingsPage() {
   const [interval, setIntervalState] = useState<number>(3000);
+  const [journalMs, setJournalMs] = useState<number>(10000);
 
   useEffect(() => {
     setIntervalState(getPollingInterval());
+    setJournalMs(getJournalPollingInterval());
   }, []);
 
   function onChange(value: string) {
@@ -60,6 +65,28 @@ export default function SettingsPage() {
             </Select>
             <p className="text-xs text-muted-foreground">
               How often the licenses table refetches in the background.
+            </p>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium" htmlFor="journal-poll">
+              Journal polling interval
+            </label>
+            <Select value={String(journalMs)} onValueChange={(v) => {
+              const n = Number(v);
+              setJournalMs(n);
+              setJournalPollingInterval(n);
+              toast.success("Saved");
+            }}>
+              <SelectTrigger id="journal-poll"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                {JOURNAL_POLLING_OPTIONS.map((o) => (
+                  <SelectItem key={o.value} value={String(o.value)}>{o.label}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              How often the journal page polls Supabase. Capped per-license at the EA&apos;s push interval.
             </p>
           </div>
         </div>
