@@ -1,6 +1,7 @@
 "use client";
 
 import { useJournalPoll } from "@/lib/hooks/use-journal-poll";
+import { fetchJson } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JournalHeader } from "./journal-header";
 import { LiveAccountPanel } from "./live-account-panel";
@@ -31,29 +32,29 @@ export function JournalShell(props: Props) {
   const acct = license.mt5_account;
 
   const snapshot = useJournalPoll<AccountSnapshotCurrent | null>({
-    fetcher: () => fetch(`/api/journal/${acct}/snapshot`).then((r) => r.json()),
+    fetcher: () => fetchJson<AccountSnapshotCurrent | null>(`/api/journal/${acct}/snapshot`),
     initialData: props.initialSnapshot,
     pushIntervalMs,
   });
   const positions = useJournalPoll<Position[]>({
-    fetcher: () => fetch(`/api/journal/${acct}/positions`).then((r) => r.json()),
+    fetcher: () => fetchJson<Position[]>(`/api/journal/${acct}/positions`),
     initialData: props.initialPositions,
     pushIntervalMs,
   });
   const deals = useJournalPoll<Deal[]>({
-    fetcher: () => fetch(`/api/journal/${acct}/deals?days=90`).then((r) => r.json()),
+    fetcher: () => fetchJson<Deal[]>(`/api/journal/${acct}/deals?days=90`),
     initialData: props.initialDeals,
     pushIntervalMs,
     fixedIntervalMs: 30_000,
   });
   const orders = useJournalPoll<OrderRow[]>({
-    fetcher: () => fetch(`/api/journal/${acct}/orders?days=90`).then((r) => r.json()),
+    fetcher: () => fetchJson<OrderRow[]>(`/api/journal/${acct}/orders?days=90`),
     initialData: props.initialOrders,
     pushIntervalMs,
     fixedIntervalMs: 30_000,
   });
   const daily = useJournalPoll<AccountSnapshotDaily[]>({
-    fetcher: () => fetch(`/api/journal/${acct}/snapshots-daily?days=90`).then((r) => r.json()),
+    fetcher: () => fetchJson<AccountSnapshotDaily[]>(`/api/journal/${acct}/snapshots-daily?days=90`),
     initialData: props.initialDaily,
     pushIntervalMs,
     fixedIntervalMs: 5 * 60_000,
