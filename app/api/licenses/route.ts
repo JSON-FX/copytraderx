@@ -52,6 +52,8 @@ export async function POST(req: Request) {
       notes: input.notes ?? null,
       status: "active",
       intended_account_type: input.intended_account_type,
+      push_interval_seconds: input.push_interval_seconds,
+      propfirm_rule_id: input.propfirm_rule_id,
     })
     .select()
     .single();

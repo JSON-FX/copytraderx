@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -25,7 +25,7 @@ import { generateLicenseKey } from "@/lib/license-key";
 import { calculateExpiresAt, formatExpiry } from "@/lib/expiry";
 import { copyToClipboard } from "@/lib/clipboard";
 import { LICENSE_KEY_PATTERN } from "@/lib/schemas";
-import type { License, LicenseTier, LicenseStatus } from "@/lib/types";
+import type { License, LicenseTier, LicenseStatus, PropfirmRule } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Schema
@@ -44,6 +44,8 @@ const formSchema = z.object({
   status: z.enum(["active", "revoked", "expired"]),
   customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
   notes: z.string().optional(),
+  push_interval_seconds: z.number().int().min(3).max(60).default(10),
+  propfirm_rule_id: z.number().int().positive().nullable().default(null),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -64,6 +66,11 @@ interface Props {
 export function LicenseForm({ mode, initial }: Props) {
   const router = useRouter();
   const [showDelete, setShowDelete] = useState(false);
+  const [rules, setRules] = useState<PropfirmRule[]>([]);
+
+  useEffect(() => {
+    fetch("/api/propfirm-rules").then((r) => r.json()).then(setRules).catch(() => {});
+  }, []);
 
   const defaultValues: FormValues = {
     license_key: initial?.license_key ?? generateLicenseKey(),
@@ -73,6 +80,8 @@ export function LicenseForm({ mode, initial }: Props) {
     status: (initial?.status as LicenseStatus | undefined) ?? "active",
     customer_email: initial?.customer_email ?? "",
     notes: initial?.notes ?? "",
+    push_interval_seconds: initial?.push_interval_seconds ?? 10,
+    propfirm_rule_id: initial?.propfirm_rule_id ?? null,
   };
 
   const form = useForm<FormValues>({
@@ -106,6 +115,8 @@ export function LicenseForm({ mode, initial }: Props) {
             intended_account_type: values.intended_account_type,
             customer_email: values.customer_email || null,
             notes: values.notes || null,
+            push_interval_seconds: values.push_interval_seconds,
+            propfirm_rule_id: values.propfirm_rule_id,
           }
         : {
             mt5_account: values.mt5_account,
@@ -114,6 +125,8 @@ export function LicenseForm({ mode, initial }: Props) {
             status: values.status,
             customer_email: values.customer_email || null,
             notes: values.notes || null,
+            push_interval_seconds: values.push_interval_seconds,
+            propfirm_rule_id: values.propfirm_rule_id,
           };
 
     const res = await fetch(path, {
@@ -364,6 +377,53 @@ export function LicenseForm({ mode, initial }: Props) {
           placeholder="Internal notes about this license…"
           {...form.register("notes")}
         />
+      </div>
+
+      {/* EA Push Interval */}
+      <div className="space-y-1.5">
+        <Label htmlFor="push_interval_seconds" className="text-sm font-semibold">
+          EA push interval (seconds)
+        </Label>
+        <Select
+          value={String(form.watch("push_interval_seconds") ?? 10)}
+          onValueChange={(v) =>
+            form.setValue("push_interval_seconds", Number(v), { shouldDirty: true })
+          }
+        >
+          <SelectTrigger id="push_interval_seconds">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {[3, 5, 10, 30, 60].map((n) => (
+              <SelectItem key={n} value={String(n)}>{n}s</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">How often this account&apos;s EA publishes to Supabase.</p>
+      </div>
+
+      {/* Propfirm Rule */}
+      <div className="space-y-1.5">
+        <Label htmlFor="propfirm_rule_id" className="text-sm font-semibold">
+          Propfirm rule
+          <span className="ml-1.5 text-xs font-normal text-muted-foreground">optional</span>
+        </Label>
+        <Select
+          value={form.watch("propfirm_rule_id") === null ? "none" : String(form.watch("propfirm_rule_id"))}
+          onValueChange={(v) =>
+            form.setValue("propfirm_rule_id", v === "none" ? null : Number(v), { shouldDirty: true })
+          }
+        >
+          <SelectTrigger id="propfirm_rule_id">
+            <SelectValue placeholder="No challenge" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="none">No challenge</SelectItem>
+            {rules.map((r) => (
+              <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {/* Action buttons */}
