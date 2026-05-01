@@ -48,6 +48,13 @@ export function SiteNav() {
           >
             Settings
           </Link>
+          <Link
+            href="/propfirm-rules"
+            className={linkClass("/propfirm-rules")}
+            aria-current={pathname?.startsWith("/propfirm-rules") ? "page" : undefined}
+          >
+            Propfirm Rules
+          </Link>
           <ThemeToggle />
         </nav>
       </div>
