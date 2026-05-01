@@ -68,3 +68,18 @@ export const renewActionSchema = z
 export type CreateLicenseInput = z.infer<typeof createLicenseSchema>;
 export type UpdateLicenseInput = z.infer<typeof updateLicenseSchema>;
 export type RenewActionInput = z.infer<typeof renewActionSchema>;
+
+export const propfirmRuleSchema = z.object({
+  name: z.string().min(1).max(120),
+  account_size: z.number().positive(),
+  max_daily_loss: z.number().positive(),
+  daily_loss_type: z.enum(["money", "percent"]),
+  daily_loss_calc: z.enum(["balance", "equity"]),
+  max_total_loss: z.number().positive(),
+  total_loss_type: z.enum(["money", "percent"]),
+  profit_target: z.number().positive(),
+  target_type: z.enum(["money", "percent"]),
+  min_trading_days: z.number().int().nonnegative().default(0),
+  max_trading_days: z.number().int().positive().nullable(),
+});
+export type PropfirmRuleInput = z.infer<typeof propfirmRuleSchema>;
