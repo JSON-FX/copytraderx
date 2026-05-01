@@ -18,19 +18,22 @@ export async function getAccountSnapshotCurrent(
   return (data as AccountSnapshotCurrent | null) ?? null;
 }
 
+// days = 0 means "all history" (no time filter). Default is full lifetime.
 export async function getAccountSnapshotsDaily(
   mt5_account: number,
-  days = 90,
+  days = 0,
 ): Promise<AccountSnapshotDaily[]> {
   const sb = getSupabaseAdmin();
-  const fromDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
-    .toISOString().slice(0, 10);
-  const { data, error } = await sb
+  let q = sb
     .from("account_snapshots_daily")
     .select("*")
-    .eq("mt5_account", mt5_account)
-    .gte("trade_date", fromDate)
-    .order("trade_date", { ascending: true });
+    .eq("mt5_account", mt5_account);
+  if (days > 0) {
+    const fromDate = new Date(Date.now() - days * 24 * 60 * 60 * 1000)
+      .toISOString().slice(0, 10);
+    q = q.gte("trade_date", fromDate);
+  }
+  const { data, error } = await q.order("trade_date", { ascending: true });
   if (error) throw error;
   return (data ?? []) as AccountSnapshotDaily[];
 }
@@ -46,31 +49,36 @@ export async function getOpenPositions(mt5_account: number): Promise<Position[]>
   return (data ?? []) as Position[];
 }
 
+// days = 0 means "all history" (no time filter).
 export async function getDeals(
   mt5_account: number,
-  days = 90,
+  days = 0,
 ): Promise<Deal[]> {
   const sb = getSupabaseAdmin();
-  const fromIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await sb
+  let q = sb
     .from("deals")
     .select("*")
-    .eq("mt5_account", mt5_account)
-    .gte("close_time", fromIso)
-    .order("close_time", { ascending: false });
+    .eq("mt5_account", mt5_account);
+  if (days > 0) {
+    const fromIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    q = q.gte("close_time", fromIso);
+  }
+  const { data, error } = await q.order("close_time", { ascending: false });
   if (error) throw error;
   return (data ?? []) as Deal[];
 }
 
-export async function getOrders(mt5_account: number, days = 90): Promise<OrderRow[]> {
+export async function getOrders(mt5_account: number, days = 0): Promise<OrderRow[]> {
   const sb = getSupabaseAdmin();
-  const fromIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
-  const { data, error } = await sb
+  let q = sb
     .from("orders")
     .select("*")
-    .eq("mt5_account", mt5_account)
-    .gte("time_setup", fromIso)
-    .order("time_setup", { ascending: false });
+    .eq("mt5_account", mt5_account);
+  if (days > 0) {
+    const fromIso = new Date(Date.now() - days * 24 * 60 * 60 * 1000).toISOString();
+    q = q.gte("time_setup", fromIso);
+  }
+  const { data, error } = await q.order("time_setup", { ascending: false });
   if (error) throw error;
   return (data ?? []) as OrderRow[];
 }

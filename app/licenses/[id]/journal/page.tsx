@@ -28,9 +28,9 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
   const [snapshot, positions, deals, orders, daily, rule] = await Promise.all([
     getAccountSnapshotCurrent(license.mt5_account),
     getOpenPositions(license.mt5_account),
-    getDeals(license.mt5_account, 90),
-    getOrders(license.mt5_account, 90),
-    getAccountSnapshotsDaily(license.mt5_account, 90),
+    getDeals(license.mt5_account),       // all history
+    getOrders(license.mt5_account),       // all history
+    getAccountSnapshotsDaily(license.mt5_account), // all history
     license.propfirm_rule_id ? getPropfirmRule(license.propfirm_rule_id) : null,
   ]);
 

@@ -42,19 +42,19 @@ export function JournalShell(props: Props) {
     pushIntervalMs,
   });
   const deals = useJournalPoll<Deal[]>({
-    fetcher: () => fetchJson<Deal[]>(`/api/journal/${acct}/deals?days=90`),
+    fetcher: () => fetchJson<Deal[]>(`/api/journal/${acct}/deals?days=0`),
     initialData: props.initialDeals,
     pushIntervalMs,
     fixedIntervalMs: 30_000,
   });
   const orders = useJournalPoll<OrderRow[]>({
-    fetcher: () => fetchJson<OrderRow[]>(`/api/journal/${acct}/orders?days=90`),
+    fetcher: () => fetchJson<OrderRow[]>(`/api/journal/${acct}/orders?days=0`),
     initialData: props.initialOrders,
     pushIntervalMs,
     fixedIntervalMs: 30_000,
   });
   const daily = useJournalPoll<AccountSnapshotDaily[]>({
-    fetcher: () => fetchJson<AccountSnapshotDaily[]>(`/api/journal/${acct}/snapshots-daily?days=90`),
+    fetcher: () => fetchJson<AccountSnapshotDaily[]>(`/api/journal/${acct}/snapshots-daily?days=0`),
     initialData: props.initialDaily,
     pushIntervalMs,
     fixedIntervalMs: 5 * 60_000,
