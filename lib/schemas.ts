@@ -80,6 +80,6 @@ export const propfirmRuleSchema = z.object({
   profit_target: z.number().positive(),
   target_type: z.enum(["money", "percent"]),
   min_trading_days: z.number().int().nonnegative().default(0),
-  max_trading_days: z.number().int().positive().nullable(),
+  max_trading_days: z.number().int().positive().nullable().optional(),
 });
 export type PropfirmRuleInput = z.infer<typeof propfirmRuleSchema>;
