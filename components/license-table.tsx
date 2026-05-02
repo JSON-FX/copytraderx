@@ -2,7 +2,6 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import {
   getPollingInterval,
   POLLING_KEY,
@@ -45,7 +44,6 @@ import type { License, LivenessState } from "@/lib/types";
 type Filter = "all" | LivenessState;
 
 export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }) {
-  const router = useRouter();
   const [licenses, setLicenses] = useState<License[]>(initialLicenses);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -231,15 +229,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
                     })
                   : null;
                 return (
-                  <TableRow
-                    key={l.id}
-                    className="group cursor-pointer hover:bg-muted/50"
-                    onClick={(e) => {
-                      const target = e.target as HTMLElement;
-                      if (target.closest("[data-no-row-nav]")) return;
-                      router.push(`/licenses/${l.id}/journal`);
-                    }}
-                  >
+                  <TableRow key={l.id} className="group hover:bg-muted/50">
                     {/* Status — liveness badge + relative-time hint */}
                     <TableCell className="py-3">
                       <div className="flex flex-col gap-0.5">
@@ -313,8 +303,8 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
                       {formatExpiry(l.expires_at)}
                     </TableCell>
 
-                    {/* Row actions — appear on hover */}
-                    <TableCell className="py-3" data-no-row-nav>
+                    {/* Row actions */}
+                    <TableCell className="py-3">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -327,6 +317,9 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
+                          <DropdownMenuItem asChild>
+                            <Link href={`/licenses/${l.id}/journal`}>View journal</Link>
+                          </DropdownMenuItem>
                           <DropdownMenuItem asChild>
                             <Link href={`/licenses/${l.id}`}>Edit</Link>
                           </DropdownMenuItem>
