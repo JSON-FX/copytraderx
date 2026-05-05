@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 3 (.env.example updated with anon key + seed vars; local .env edit delegated to user)
-- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `77e0ca5` (this repo)
-- **Next task to execute:** Task 4
+- **Last completed:** Task 4 (SSR cookie-bound Supabase client)
+- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `e2934db` (this repo); Task 4 = (filled after commit)
+- **Next task to execute:** Task 5
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 
@@ -401,7 +401,7 @@ The existing `lib/supabase/server.ts` uses the **service role** and bypasses RLS
 **Files:**
 - Create: `lib/supabase/ssr.ts`
 
-- [ ] **Step 4.1: Write the SSR client**
+- [x] **Step 4.1: Write the SSR client**
 
 Create `lib/supabase/ssr.ts`:
 
@@ -441,7 +441,7 @@ export async function getSupabaseSSR() {
 }
 ```
 
-- [ ] **Step 4.2: Verify it type-checks**
+- [x] **Step 4.2: Verify it type-checks**
 
 Run:
 ```bash
@@ -450,7 +450,7 @@ pnpm exec tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 4.3: Commit + update plan**
+- [x] **Step 4.3: Commit + update plan**
 
 ```bash
 git add lib/supabase/ssr.ts docs/superpowers/plans/2026-05-06-roles-foundation.md
