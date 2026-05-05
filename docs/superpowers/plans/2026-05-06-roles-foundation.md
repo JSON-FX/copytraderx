@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 12 (admin layout guard)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `e5ba50f`; Task 12 = `97482d9`
-- **Next task to execute:** Task 13 (logout button in admin nav)
+- **Last completed:** Task 13 (logout button in admin nav)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `e5ba50f`; Task 12 = `97482d9`; Task 13 = (see commit)
+- **Next task to execute:** Task 14 (smoke verification + plan close-out)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -1702,7 +1702,7 @@ Now that users can be locked out of `/admin/*` by mismatched role, we need a vis
 **Files:**
 - Modify: `components/site-nav.tsx`
 
-- [ ] **Step 13.1: Read current `components/site-nav.tsx`**
+- [x] **Step 13.1: Read current `components/site-nav.tsx`**
 
 ```bash
 cat components/site-nav.tsx
@@ -1710,7 +1710,7 @@ cat components/site-nav.tsx
 
 Note its structure (links, current styling) so the new button fits.
 
-- [ ] **Step 13.2: Add a logout form**
+- [x] **Step 13.2: Add a logout form**
 
 In the right side of the nav (before or after the existing items, whichever matches the layout), add:
 
@@ -1727,7 +1727,7 @@ In the right side of the nav (before or after the existing items, whichever matc
 
 If the existing nav already has an `ml-auto` element, remove `ml-auto` from this form and place it appropriately.
 
-- [ ] **Step 13.3: Manual verification**
+- [x] **Step 13.3: Manual verification**
 
 ```bash
 pnpm dev
@@ -1738,7 +1738,7 @@ pnpm dev
 3. Land on `/login`.
 4. Refresh — still on `/login`.
 
-- [ ] **Step 13.4: Type-check + tests**
+- [x] **Step 13.4: Type-check + tests**
 
 ```bash
 pnpm exec tsc --noEmit
@@ -1747,7 +1747,7 @@ pnpm test
 
 Expected: green.
 
-- [ ] **Step 13.5: Commit + update plan**
+- [x] **Step 13.5: Commit + update plan**
 
 ```bash
 git add components/site-nav.tsx docs/superpowers/plans/2026-05-06-roles-foundation.md

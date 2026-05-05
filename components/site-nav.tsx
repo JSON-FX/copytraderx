@@ -56,6 +56,14 @@ export function SiteNav() {
             Propfirm Rules
           </Link>
           <ThemeToggle />
+          <form action="/auth/logout" method="post">
+            <button
+              type="submit"
+              className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
+              Sign out
+            </button>
+          </form>
         </nav>
       </div>
     </header>
