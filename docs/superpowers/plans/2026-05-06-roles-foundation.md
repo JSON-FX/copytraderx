@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 2 (migration applied to remote Supabase + verified in Studio: 7 columns + 2 triggers)
-- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo)
-- **Next task to execute:** Task 3
+- **Last completed:** Task 3 (.env.example updated with anon key + seed vars; local .env edit delegated to user)
+- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `77e0ca5` (this repo)
+- **Next task to execute:** Task 4
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 
@@ -335,7 +335,7 @@ The seed admin needs `INITIAL_ADMIN_PASSWORD`. SSR auth needs the anon key (it's
 - Modify: `.env.example`
 - Modify: `.env` (your local copy — manually edit; we won't commit it)
 
-- [ ] **Step 3.1: Update `.env.example`**
+- [x] **Step 3.1: Update `.env.example`**
 
 Replace `.env.example` with this content:
 
@@ -360,7 +360,7 @@ INITIAL_ADMIN_PASSWORD=
 NODE_ENV=development
 ```
 
-- [ ] **Step 3.2: Update your local `.env`**
+- [x] **Step 3.2: Update your local `.env`**
 
 Manually edit your local `.env` (do **not** commit). Add:
 
@@ -379,7 +379,7 @@ git check-ignore .env
 ```
 Expected output: `.env`. If it's not ignored, abort and ask the user — never commit secrets.
 
-- [ ] **Step 3.3: Commit + update plan**
+- [x] **Step 3.3: Commit + update plan**
 
 ```bash
 git add .env.example docs/superpowers/plans/2026-05-06-roles-foundation.md
