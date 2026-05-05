@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 5 (admin auth helpers)
-- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `e2934db` (this repo); Task 4 = `c2e2743` (this repo); Task 5 = (SHA to be filled by Task 6)
-- **Next task to execute:** Task 6
+- **Last completed:** Task 6 code (script written, dotenv added; awaiting user run)
+- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `e2934db` (this repo); Task 4 = `c2e2743` (this repo); Task 5 = `0522448` (this repo); Task 6 SHA = (leave blank; user's verification commit will fill it)
+- **Next task to execute:** Task 6 verification (user runs `pnpm seed:admin`)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 
@@ -553,7 +553,7 @@ Idempotent: if `help.copytraderx@gmail.com` already exists in `auth.users`, no-o
 **Files:**
 - Create: `scripts/seed-admin.ts`
 
-- [ ] **Step 6.1: Write the seed script**
+- [x] **Step 6.1: Write the seed script**
 
 Create `scripts/seed-admin.ts`:
 
@@ -619,7 +619,7 @@ main().catch((err) => {
 });
 ```
 
-- [ ] **Step 6.2: Add `dotenv` for the script**
+- [x] **Step 6.2: Add `dotenv` for the script**
 
 The script reads `.env` directly via `dotenv/config` (Next.js loads `.env` automatically; standalone scripts don't). Install:
 
