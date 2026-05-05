@@ -18,6 +18,10 @@ export async function createAuthUser(input: CreateAuthUserInput) {
       role: input.role,
       full_name: input.full_name,
     },
+    app_metadata: {
+      role: input.role,
+      must_change_password: true,
+    },
   });
   if (error) throw error;
   if (!data.user) throw new Error("createUser returned no user");

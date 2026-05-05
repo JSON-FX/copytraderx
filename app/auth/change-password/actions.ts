@@ -33,14 +33,10 @@ export async function changePasswordAction(
   const {
     data: { user },
   } = await sb.auth.getUser();
-  if (!user) {
-    return { ok: false, error: "Not signed in." };
-  }
+  if (!user) return { ok: false, error: "Not signed in." };
 
   const { error: updateErr } = await sb.auth.updateUser({ password: parsed.data.password });
-  if (updateErr) {
-    return { ok: false, error: updateErr.message };
-  }
+  if (updateErr) return { ok: false, error: updateErr.message };
 
   const admin = getSupabaseAdmin();
   const { data: row, error: flagErr } = await admin
@@ -49,9 +45,14 @@ export async function changePasswordAction(
     .eq("id", user.id)
     .select("role")
     .single();
-  if (flagErr || !row) {
-    return { ok: false, error: "Could not update account flag." };
-  }
+  if (flagErr || !row) return { ok: false, error: "Could not update account flag." };
+
+  await admin.auth.admin.updateUserById(user.id, {
+    app_metadata: { role: row.role, must_change_password: false },
+  });
+
+  // Force the JWT to refresh so the cleared flag is in the next request.
+  await sb.auth.refreshSession();
 
   redirect(row.role === "admin" ? "/admin/licenses" : "/dashboard");
 }

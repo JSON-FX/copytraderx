@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 10 (force-change-password page + logout)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`
-- **Next task to execute:** Task 11 (middleware + role redirects)
+- **Last completed:** Task 11 (middleware + role-based redirects)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `e5ba50f`
+- **Next task to execute:** Task 12 (admin layout guard)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -1369,7 +1369,7 @@ The fast outer layer. Reads role from JWT (`app_metadata.role`) — no DB query.
 - Modify: `lib/supabase/admin.ts` (stamp `app_metadata.must_change_password=true` on createAuthUser)
 - Modify: `app/page.tsx` (replace static redirect with role-based)
 
-- [ ] **Step 11.1: Stamp `must_change_password` into `app_metadata`**
+- [x] **Step 11.1: Stamp `must_change_password` into `app_metadata`**
 
 We need this flag in the JWT so middleware can read it without a DB query.
 
@@ -1441,7 +1441,7 @@ await sb.auth.refreshSession();
 redirect(row.role === "admin" ? "/admin/licenses" : "/dashboard");
 ```
 
-- [ ] **Step 11.2: Stamp the existing seed admin**
+- [x] **Step 11.2: Stamp the existing seed admin**
 
 Since the seed admin was created before we added the `app_metadata.must_change_password` stamp, manually patch it once:
 
@@ -1462,7 +1462,7 @@ Expected: contains `"must_change_password": true` and `"role": "admin"`.
 
 (Future seeds will get this automatically from the updated `createAuthUser`.)
 
-- [ ] **Step 11.3: Write the middleware**
+- [x] **Step 11.3: Write the middleware**
 
 Create `middleware.ts` at the repo root:
 
@@ -1551,7 +1551,7 @@ export const config = {
 };
 ```
 
-- [ ] **Step 11.4: Update `app/page.tsx` for role-based redirect**
+- [x] **Step 11.4: Update `app/page.tsx` for role-based redirect**
 
 Replace `app/page.tsx`:
 
@@ -1570,7 +1570,7 @@ export default async function HomePage() {
 }
 ```
 
-- [ ] **Step 11.5: Manual verification**
+- [x] **Step 11.5: Manual verification**
 
 ```bash
 pnpm dev
@@ -1592,7 +1592,7 @@ Test matrix (open each in a private window if you've cached cookies):
 
 If middleware breaks login flow, you can comment out the `must_change_password` redirect block while debugging — the form still works.
 
-- [ ] **Step 11.6: Type-check + tests**
+- [x] **Step 11.6: Type-check + tests**
 
 ```bash
 pnpm exec tsc --noEmit
@@ -1601,7 +1601,7 @@ pnpm test
 
 Expected: green.
 
-- [ ] **Step 11.7: Commit + update plan**
+- [x] **Step 11.7: Commit + update plan**
 
 ```bash
 git add middleware.ts app/page.tsx app/login/actions.ts app/auth/change-password/actions.ts lib/supabase/admin.ts docs/superpowers/plans/2026-05-06-roles-foundation.md
