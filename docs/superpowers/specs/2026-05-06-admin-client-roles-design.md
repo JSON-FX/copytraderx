@@ -4,6 +4,10 @@
 - **Branch:** `feat/admin-client-roles`
 - **Status:** Draft for review
 
+## Amendments
+
+- **2026-05-06 — Multi-product support added.** Originally the spec assumed Impulse-only licenses. The codebase already has multi-EA awareness on the journal side (`EaSource` enum in `lib/types.ts`), but the `licenses` table did not carry a product dimension and the license-key prefix was hardcoded `IMPX-`. This amendment introduces a `product` column on `subscriptions` and `licenses`, per-product license-key prefixes, and a product picker in the Request New License modal. See §3.5 (new) and references throughout §5–§6.
+
 ## 1. Problem
 
 CopyTraderX-License is currently a single-admin tool with no authentication. Every visitor implicitly has full control: create licenses, edit any license, see every account's journal. To deploy this beyond a single operator we need:
@@ -17,10 +21,10 @@ CopyTraderX-License is currently a single-admin tool with no authentication. Eve
 
 - Add Supabase-Auth-backed login with email + password.
 - Admin can create users, see all licenses, see all journals, manage propfirm rules, and approve/reject license requests.
-- Each new paid subscription entitles the user to **one live license + one demo license** as a bundle.
+- Each new paid subscription entitles the user to **one live license + one demo license** as a bundle, **for one specific product** (Impulse, CTX-Core, CTX-Live, CTX-Prop-Passer, or CTX-Prop-Funded).
 - User can self-serve **claim** their slot(s) by entering an MT5 account number, and can view the journal for accounts they own — and only those.
-- User can request additional license bundles; admin approves or rejects.
-- Existing license-row contract with the EA (`license_key`, `mt5_account`, `tier`, `expires_at`, `status`, `account_type`) is preserved exactly. The EA does not need to change.
+- User can request additional license bundles for any supported product; admin approves or rejects.
+- Existing license-row contract with the EA (`license_key`, `mt5_account`, `tier`, `expires_at`, `status`, `account_type`) is preserved; a new `product` column is added that the EA can read to verify it's the intended product for that license.
 - Default seed admin (`help.copytraderx@gmail.com`) is provisioned automatically at first deploy.
 
 ## 3. Non-Goals (v1)
@@ -34,6 +38,24 @@ CopyTraderX-License is currently a single-admin tool with no authentication. Eve
 - E2E tests in CI (run locally for v1).
 - Multi-org / team accounts.
 - "Forgot password" — already provided by Supabase Auth, no custom design.
+
+## 3.5 Products / EAs
+
+The system supports multiple Expert Advisors as distinct **products**. Each license is scoped to exactly one product. A single MT5 account may hold multiple licenses if and only if each license is for a different product (e.g., one Impulse license + one CTX-Live license on the same account is allowed).
+
+Canonical product codes (matches existing `EaSource` enum in `lib/types.ts`):
+
+| Code | Display name | License-key prefix |
+|---|---|---|
+| `impulse` | Impulse | `IMPX-` |
+| `ctx-core` | CTX Core | `CTXC-` |
+| `ctx-live` | CTX Live | `CTXL-` |
+| `ctx-prop-passer` | CTX Prop Passer | `CTXP-` |
+| `ctx-prop-funded` | CTX Prop Funded | `CTXF-` |
+
+Each product gets a unique 4-character license-key prefix so keys are visually self-identifying. The license-key generator takes a `product` argument (`generateLicenseKey(product)`) and returns the matching prefix. The validation regex becomes a per-product map; the EA validates that the prefix it received matches the product it ships as.
+
+Adding a new product later = a single config addition (DB enum/check value + a row in the prefix map + per-product rendering). No schema migration beyond extending the check constraint.
 
 ## 4. Architecture
 
@@ -88,12 +110,16 @@ A trigger on `auth.users` insert mirrors a row here. A second trigger keeps `aut
 
 ### 5.2 New table: `public.subscriptions`
 
-One row = one paid bundle = entitles the user to one live license + one demo license.
+One row = one paid bundle = entitles the user to one live license + one demo license **for one product**.
 
 ```sql
 create table public.subscriptions (
   id                bigserial primary key,
   user_id           uuid not null references public.users(id) on delete cascade,
+  product           text not null check (product in (
+                       'impulse', 'ctx-core', 'ctx-live',
+                       'ctx-prop-passer', 'ctx-prop-funded'
+                    )),
   tier              text not null check (tier in ('monthly', 'quarterly', 'yearly')),
   status            text not null check (status in ('pending', 'active', 'rejected', 'expired', 'revoked')),
   requested_at      timestamptz not null default now(),
@@ -107,27 +133,44 @@ create table public.subscriptions (
 
 create index idx_subscriptions_user on public.subscriptions(user_id, status);
 create index idx_subscriptions_pending on public.subscriptions(status) where status = 'pending';
+create index idx_subscriptions_user_product on public.subscriptions(user_id, product, status);
 ```
 
 A `pending` row IS the request; on approval it flips to `active` with `approved_at = now()` and `expires_at = approved_at + tier_duration`. Revoke and natural expiry also operate at the subscription level and cascade to child licenses via trigger.
+
+The `product` is chosen by the user when they request a new license (mandatory field in the Request modal, see §6.4). On renewal the product is **inherited from the source subscription** and is shown read-only in the Renew modal (see §6.6).
 
 ### 5.3 Modified table: `public.licenses`
 
 ```sql
 alter table public.licenses
   add column subscription_id bigint references public.subscriptions(id) on delete cascade,
-  add column user_id         uuid   references public.users(id);
+  add column user_id         uuid   references public.users(id),
+  add column product         text   check (product in (
+                                'impulse', 'ctx-core', 'ctx-live',
+                                'ctx-prop-passer', 'ctx-prop-funded'
+                             ));
+
+-- Drop the old single-column unique on mt5_account (one EA per account) and
+-- replace it with (mt5_account, product). One MT5 account may now hold one
+-- license per product simultaneously.
+alter table public.licenses drop constraint if exists licenses_mt5_account_key;
+create unique index idx_licenses_mt5_product on public.licenses (mt5_account, product)
+  where product is not null;
 
 create unique index idx_licenses_one_per_slot
   on public.licenses (subscription_id, intended_account_type)
   where subscription_id is not null;
 
 create index idx_licenses_user on public.licenses(user_id);
+create index idx_licenses_product on public.licenses(product);
 ```
 
-`subscription_id` and `user_id` are nullable during the migration window only. After the backfill (see §10), both flip to NOT NULL.
+`subscription_id`, `user_id`, and `product` are nullable during the migration window only. After the backfill (see §10), all three flip to NOT NULL. Every backfilled legacy row is assigned `product='impulse'` because that's what the existing system was implicitly licensing.
 
-`tier` and `expires_at` continue to live on the license row because the EA reads them directly. On license creation, both are copied from the parent subscription. The subscription is the source of truth; the trigger described in §5.5 keeps child licenses in sync when the subscription's status changes.
+`tier`, `expires_at`, and `product` live on the license row because the EA reads them directly. On license creation, `product` is copied from the parent subscription (which is bound to one product) and `tier`/`expires_at` are also copied. The subscription remains the source of truth for status; the trigger described in §5.5 keeps child licenses in sync when the subscription's status changes.
+
+The license-key prefix encodes the product: a license with `product='ctx-live'` has a key shaped `CTXL-XXXX-XXXX-XXXX-XXXX`. See §3.5 for the prefix table.
 
 ### 5.4 Quota is derived, not stored
 
@@ -169,20 +212,23 @@ Service role keeps bypassing RLS for the server-rendered current flow.
 
 ### 6.3 User dashboard and claiming a slot
 
-1. `/dashboard` lists the user's **active subscriptions**. Each subscription card shows two slots: Live and Demo. Each slot is either:
+1. `/dashboard` lists the user's **active subscriptions**. Each subscription card shows the product name (e.g. "CTX Live — Monthly"), the expiry, and two slots: Live and Demo. Each slot is either:
    - **Empty** — "Add MT5 account" button.
    - **Claimed** — MT5 number, status badge, "Open journal" link.
-2. Clicking "Add MT5 account" → modal with one field (MT5 number).
-3. Submit → server validates (positive int, not already in use), inserts a `licenses` row with `subscription_id`, `user_id`, `intended_account_type`, `tier` and `expires_at` copied from the subscription, auto-generated `license_key`, `status='active'`.
-4. The unique index `(subscription_id, intended_account_type)` prevents double-claim.
-5. "Open journal" → `/dashboard/licenses/[id]` — existing journal UI scoped to that license's MT5 account.
+2. Clicking "Add MT5 account" → modal with one field (MT5 number). The product is shown read-only at the top of the modal so the user knows which product they're claiming the slot for.
+3. Submit → server validates (positive int; not already in use **for this product**: an MT5 number can hold one license per product, so the uniqueness check is `(mt5_account, product)`), inserts a `licenses` row with `subscription_id`, `user_id`, `product` (copied from the subscription), `intended_account_type`, `tier` and `expires_at` (copied from the subscription), auto-generated `license_key` using the product's prefix, `status='active'`.
+4. The unique index `(subscription_id, intended_account_type)` prevents double-claim of a slot. The unique index `(mt5_account, product)` prevents double-issuing a license for the same product to the same MT5 account.
+5. "Open journal" → `/dashboard/licenses/[id]` — existing journal UI scoped to that license's MT5 account. (Journal data is per-MT5-account but EA-tagged via `ea_source`, so journal pages can show all activity on the account regardless of which license is being viewed; that's an existing behavior and not changed by this work.)
 
 ### 6.4 User requests a new license bundle
 
-1. On `/dashboard`, "Request New License" → modal with tier picker (monthly/quarterly/yearly) and optional notes.
-2. Submit → inserts a `subscriptions` row with `status='pending'` (no `approved_at` / `expires_at`).
-3. `lib/email.ts` sends notification email to admin: "New license request from `<user>` — tier: `<tier>`."
-4. User dashboard shows the pending request with a "Pending approval" badge and a **Cancel request** button (deletes the row while still pending; no admin action required).
+1. On `/dashboard`, "Request New License" → modal with two pickers and an optional notes field:
+   - **Product** (mandatory): dropdown of the 5 supported products (Impulse, CTX Core, CTX Live, CTX Prop Passer, CTX Prop Funded).
+   - **Tier** (mandatory): monthly / quarterly / yearly.
+   - **Notes** (optional): free-text passed to the admin (e.g. "renewing my prop firm challenge").
+2. Submit → inserts a `subscriptions` row with `status='pending'`, the chosen `product`, the chosen `tier` (no `approved_at` / `expires_at`).
+3. `lib/email.ts` sends notification email to admin: "New license request from `<user>` — product: `<product>`, tier: `<tier>`."
+4. User dashboard shows the pending request with a "Pending approval" badge that includes the product and tier, plus a **Cancel request** button (deletes the row while still pending; no admin action required).
 
 ### 6.5 Admin approves or rejects a request
 
@@ -195,7 +241,7 @@ Service role keeps bypassing RLS for the server-rendered current flow.
 
 - **Natural expiry** — a daily cron (Supabase scheduled function) flips `subscriptions.status` from `active` to `expired` when `now() > expires_at`. The trigger from §5.5 cascades to child licenses.
 - **Admin revoke** — admin clicks Revoke on an active subscription → confirmation dialog → server flips `status='revoked'`. Trigger cascades.
-- **Renewal** — when a subscription is expired, the user sees an "Expired — please renew" banner on the dashboard and a **Renew** button on that subscription card. Renew opens the same Request New License modal pre-filled with the previous tier; submit creates a **new** pending subscription. The expired one stays as immutable history. On approval, the user has a fresh active subscription with two empty slots.
+- **Renewal** — when a subscription is expired, the user sees an "Expired — please renew" banner on the dashboard and a **Renew** button on that subscription card. Renew opens the Request New License modal with the **product field locked** to the source subscription's product (rendered read-only / disabled in the UI; the server also rejects any attempt to change it) and the tier pre-filled with the previous tier (the user may change the tier). Submit creates a **new** pending subscription with the inherited product. The expired one stays as immutable history. On approval, the user has a fresh active subscription with two empty slots for that product.
 - Expired subscriptions and their licenses remain visible on the dashboard with read-only journal access.
 
 ## 7. Default Admin Seed
@@ -227,7 +273,7 @@ The seed admin is forced to change password on first login (consistent with all 
 
 ### Slot / license claiming
 
-- **MT5 already in use** — DB unique on `licenses.mt5_account` blocks; server returns "this account is already registered."
+- **MT5 already in use for this product** — DB unique on `(licenses.mt5_account, licenses.product)` blocks; server returns "this account is already registered for this product." A different product on the same MT5 account is allowed and will not trigger this error.
 - **Claiming on a non-active subscription** — server validates `subscriptions.status='active'` before insert.
 - **Concurrent claim of the same slot** — unique index `(subscription_id, intended_account_type)` makes one insert fail; client surfaces "slot already claimed."
 
@@ -291,11 +337,11 @@ Migrations live in the EA repo (`~/Documents/development/EA/JSONFX-IMPULSE/supab
 
 1. `20260506000001_create_users_table.sql` — `public.users`, mirror trigger from `auth.users`.
 2. `20260506000002_create_subscriptions_table.sql` — `public.subscriptions` + indexes.
-3. `20260506000003_alter_licenses_add_user_subscription.sql` — add nullable `subscription_id` + `user_id`, unique index, `idx_licenses_user`.
+3. `20260506000003_alter_licenses_add_user_subscription.sql` — add nullable `subscription_id`, `user_id`, and `product`. Drop the old single-column unique on `mt5_account`; create the new unique `(mt5_account, product)`. Create `idx_licenses_user`, `idx_licenses_product`, and `idx_licenses_one_per_slot`.
 4. `20260506000004_add_role_jwt_trigger.sql` — keeps `auth.users.app_metadata.role` synced with `public.users.role`.
 5. `20260506000005_subscription_expiry_trigger.sql` — cascades subscription status to child licenses.
 6. `20260506000006_rls_policies.sql` — policies per §5.6.
-7. `20260506000007_backfill_legacy_licenses.sql` — creates a synthetic legacy admin user and a synthetic legacy subscription (`tier='yearly'`, `status='active'`, far-future `expires_at`); attaches all existing license rows to it. Then sets `subscription_id` and `user_id` to NOT NULL.
+7. `20260506000007_backfill_legacy_licenses.sql` — creates a synthetic legacy admin user and a synthetic legacy subscription (`product='impulse'`, `tier='yearly'`, `status='active'`, far-future `expires_at`); attaches all existing license rows to it and stamps `product='impulse'` on every legacy license. Then sets `subscription_id`, `user_id`, and `product` to NOT NULL.
 
 After migrations, run `pnpm seed:admin` to provision `help.copytraderx@gmail.com`.
 
@@ -382,10 +428,14 @@ playwright.config.ts                            NEW
 
 ### Things explicitly NOT changing
 
-- EA-side license-row contract (`license_key`, `mt5_account`, `tier`, `expires_at`, `status`, `account_type`, `push_interval_seconds`, `propfirm_rule_id`).
-- Journal data model (`positions`, `deals`, `orders`, `account_snapshots_*`).
+- EA-side license-row column meanings (`license_key`, `mt5_account`, `tier`, `expires_at`, `status`, `account_type`, `push_interval_seconds`, `propfirm_rule_id`). A new `product` column is added but that's additive — no rename or repurpose of existing columns.
+- Journal data model (`positions`, `deals`, `orders`, `account_snapshots_*`). Note: journal rows already carry `ea_source` so the journal side of multi-product is already supported; nothing to change there.
 - Propfirm-rules CRUD.
-- License-key format and generation.
+
+### Things that DO change vs. the original draft
+
+- License-key generation: `generateLicenseKey()` becomes `generateLicenseKey(product)` and returns the per-product prefix from §3.5. The single `LICENSE_KEY_PATTERN` regex becomes a per-product map (`LICENSE_KEY_PATTERNS`), keyed by product code.
+- License-row uniqueness on `mt5_account` becomes `(mt5_account, product)`.
 
 ## 12. Open Questions
 
