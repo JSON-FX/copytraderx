@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 8 (move admin pages under /admin/*)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`
-- **Next task to execute:** Task 9 (login page + Server Action)
+- **Last completed:** Task 9 (login page + Server Action)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = (see commit after this line is written)
+- **Next task to execute:** Task 10 (force-change-password page + logout)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -967,7 +967,7 @@ Email + password form. On success: read `users.must_change_password`; if true, r
 - Create: `app/login/page.tsx`
 - Create: `app/login/actions.ts`
 
-- [ ] **Step 9.1: Write the login Server Action**
+- [x] **Step 9.1: Write the login Server Action**
 
 Create `app/login/actions.ts`:
 
@@ -1023,7 +1023,7 @@ export async function loginAction(_prev: unknown, formData: FormData): Promise<L
 
 Note: `redirect()` throws a `NEXT_REDIRECT` error that Next.js catches; do not wrap it in try/catch.
 
-- [ ] **Step 9.2: Write the login page**
+- [x] **Step 9.2: Write the login page**
 
 Create `app/login/page.tsx`:
 
@@ -1087,7 +1087,7 @@ export default function LoginPage() {
 }
 ```
 
-- [ ] **Step 9.3: Manual verification**
+- [x] **Step 9.3: Manual verification**
 
 Start dev server:
 ```bash
@@ -1102,7 +1102,7 @@ Open `http://localhost:3000/login`. Try:
 
 Stop the dev server.
 
-- [ ] **Step 9.4: Type-check + tests**
+- [x] **Step 9.4: Type-check + tests**
 
 ```bash
 pnpm exec tsc --noEmit
@@ -1111,7 +1111,7 @@ pnpm test
 
 Expected: green.
 
-- [ ] **Step 9.5: Commit + update plan**
+- [x] **Step 9.5: Commit + update plan**
 
 ```bash
 git add app/login docs/superpowers/plans/2026-05-06-roles-foundation.md
