@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 4 (SSR cookie-bound Supabase client)
-- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `e2934db` (this repo); Task 4 = `c2e2743` (this repo)
-- **Next task to execute:** Task 5
+- **Last completed:** Task 5 (admin auth helpers)
+- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `e2934db` (this repo); Task 4 = `c2e2743` (this repo); Task 5 = (SHA to be filled by Task 6)
+- **Next task to execute:** Task 6
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 
@@ -476,7 +476,7 @@ The seed-admin script and (later) the admin "create user" route need to call Sup
 **Files:**
 - Create: `lib/supabase/admin.ts`
 
-- [ ] **Step 5.1: Write the admin helper**
+- [x] **Step 5.1: Write the admin helper**
 
 Create `lib/supabase/admin.ts`:
 
@@ -522,7 +522,7 @@ export async function invalidateAuthSession(userId: string) {
 }
 ```
 
-- [ ] **Step 5.2: Verify it type-checks**
+- [x] **Step 5.2: Verify it type-checks**
 
 Run:
 ```bash
@@ -531,7 +531,7 @@ pnpm exec tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 5.3: Commit + update plan**
+- [x] **Step 5.3: Commit + update plan**
 
 ```bash
 git add lib/supabase/admin.ts docs/superpowers/plans/2026-05-06-roles-foundation.md
