@@ -1,4 +1,3 @@
-import "server-only";
 import { getSupabaseAdmin } from "./server";
 
 export type CreateAuthUserInput = {
