@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 9 (login page + Server Action)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`
-- **Next task to execute:** Task 10 (force-change-password page + logout)
+- **Last completed:** Task 10 (force-change-password page + logout)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = (see commit)
+- **Next task to execute:** Task 11 (middleware + role redirects)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -1139,7 +1139,7 @@ EOF
 - Create: `app/auth/change-password/actions.ts`
 - Create: `app/auth/logout/route.ts`
 
-- [ ] **Step 10.1: Write the change-password Server Action**
+- [x] **Step 10.1: Write the change-password Server Action**
 
 Create `app/auth/change-password/actions.ts`:
 
@@ -1203,7 +1203,7 @@ export async function changePasswordAction(
 }
 ```
 
-- [ ] **Step 10.2: Write the change-password page**
+- [x] **Step 10.2: Write the change-password page**
 
 Create `app/auth/change-password/page.tsx`:
 
@@ -1277,7 +1277,7 @@ export default function ChangePasswordPage() {
 }
 ```
 
-- [ ] **Step 10.3: Write the logout route**
+- [x] **Step 10.3: Write the logout route**
 
 Create `app/auth/logout/route.ts`:
 
@@ -1296,7 +1296,7 @@ export async function POST() {
 
 Note: `NEXT_PUBLIC_APP_URL` isn't in `.env.example` yet. Add it.
 
-- [ ] **Step 10.4: Add `NEXT_PUBLIC_APP_URL` to `.env.example` and `.env`**
+- [x] **Step 10.4: Add `NEXT_PUBLIC_APP_URL` to `.env.example` and `.env`**
 
 Append to `.env.example`:
 ```
@@ -1306,7 +1306,7 @@ NEXT_PUBLIC_APP_URL=http://localhost:3000
 
 Add the same to your local `.env`. (For Docker, set to `http://copytraderx.local`.)
 
-- [ ] **Step 10.5: Manual verification**
+- [x] **Step 10.5: Manual verification**
 
 ```bash
 pnpm dev
@@ -1325,7 +1325,7 @@ pnpm dev
 > ```
 > Then in Studio Auth → reset password.
 
-- [ ] **Step 10.6: Type-check + tests**
+- [x] **Step 10.6: Type-check + tests**
 
 ```bash
 pnpm exec tsc --noEmit
@@ -1334,7 +1334,7 @@ pnpm test
 
 Expected: green.
 
-- [ ] **Step 10.7: Commit + update plan**
+- [x] **Step 10.7: Commit + update plan**
 
 ```bash
 git add app/auth .env.example docs/superpowers/plans/2026-05-06-roles-foundation.md
