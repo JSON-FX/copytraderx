@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 6 (seed admin verified end-to-end)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit (this one)
-- **Next task to execute:** Task 7 (role helpers, TDD)
+- **Last completed:** Task 7 (role helpers, TDD)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`
+- **Next task to execute:** Task 8 (move admin pages)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -694,7 +694,7 @@ Pure-logic module: given a session, return the user's role and throw a typed err
 - Create: `lib/role.ts`
 - Create: `lib/role.test.ts`
 
-- [ ] **Step 7.1: Write the failing test**
+- [x] **Step 7.1: Write the failing test**
 
 Create `lib/role.test.ts`:
 
@@ -768,7 +768,7 @@ describe("requireUser", () => {
 });
 ```
 
-- [ ] **Step 7.2: Run the test (expected to fail)**
+- [x] **Step 7.2: Run the test (expected to fail)**
 
 ```bash
 pnpm test -- lib/role.test.ts
@@ -776,7 +776,7 @@ pnpm test -- lib/role.test.ts
 
 Expected: all tests fail with "Cannot find module './role'".
 
-- [ ] **Step 7.3: Implement `lib/role.ts`**
+- [x] **Step 7.3: Implement `lib/role.ts`**
 
 Create `lib/role.ts`:
 
@@ -824,7 +824,7 @@ export function requireUser(session: SessionLike): SessionUser {
 }
 ```
 
-- [ ] **Step 7.4: Run the test (expected to pass)**
+- [x] **Step 7.4: Run the test (expected to pass)**
 
 ```bash
 pnpm test -- lib/role.test.ts
@@ -839,7 +839,7 @@ pnpm test
 
 Expected: all green.
 
-- [ ] **Step 7.5: Commit + update plan**
+- [x] **Step 7.5: Commit + update plan**
 
 ```bash
 git add lib/role.ts lib/role.test.ts docs/superpowers/plans/2026-05-06-roles-foundation.md
