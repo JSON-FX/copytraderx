@@ -7,11 +7,13 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "test": "jest"
+    "test": "jest",
+    "seed:admin": "tsx scripts/seed-admin.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
     "@phosphor-icons/react": "^2.1.10",
+    "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.45.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
@@ -43,6 +45,7 @@
     "jest-environment-jsdom": "^29.7.0",
     "tailwindcss": "^4",
     "ts-jest": "^29.4.9",
+    "tsx": "^4.21.0",
     "typescript": "^5"
   }
 }

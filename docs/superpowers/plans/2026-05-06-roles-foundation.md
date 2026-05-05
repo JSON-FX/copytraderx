@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** _(none yet)_
-- **Last completed commit:** _(none yet)_
-- **Next task to execute:** Task 1
+- **Last completed:** Task 1
+- **Last completed commit:** 15a22c9
+- **Next task to execute:** Task 2
 - **Plan version:** 1.0
 
 ---
@@ -103,7 +103,7 @@ We are **not** touching the `subscriptions` table, RLS policies for `subscriptio
 - Modify: `package.json`
 - Modify: `pnpm-lock.yaml` (auto)
 
-- [ ] **Step 1.1: Install runtime + dev dependencies**
+- [x] **Step 1.1: Install runtime + dev dependencies**
 
 Run:
 ```bash
@@ -113,7 +113,7 @@ pnpm add -D tsx@latest
 
 Expected: `package.json` and `pnpm-lock.yaml` update; `node_modules/@supabase/ssr` exists.
 
-- [ ] **Step 1.2: Add npm scripts**
+- [x] **Step 1.2: Add npm scripts**
 
 Edit `package.json` `"scripts"` to add (preserve existing scripts):
 
@@ -123,7 +123,7 @@ Edit `package.json` `"scripts"` to add (preserve existing scripts):
 
 (Do **not** add an `e2e` script yet — that's Plan 5.)
 
-- [ ] **Step 1.3: Verify install**
+- [x] **Step 1.3: Verify install**
 
 Run:
 ```bash
@@ -133,7 +133,7 @@ pnpm test
 
 Expected: install succeeds; existing Jest suite still passes (we haven't changed any code yet).
 
-- [ ] **Step 1.4: Update plan + commit**
+- [x] **Step 1.4: Update plan + commit**
 
 Edit this file: flip Task 1 steps to `[x]`. Update **Status**:
 - Last completed: Task 1
