@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 13 (logout button in admin nav)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `e5ba50f`; Task 12 = `97482d9`; Task 13 = `8bf2de5`
-- **Next task to execute:** Task 14 (smoke verification + plan close-out)
+- **Last completed:** Plan 1 of 5 — ✅ COMPLETE
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix); Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `c3c9f12`; Task 12 = `97482d9`; Task 13 = `8bf2de5`; Docker = `faa27f4`; Task 14 = (this commit)
+- **Next task to execute:** Plan 2 — `docs/superpowers/plans/2026-05-06-roles-subscriptions-schema.md`
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -1766,7 +1766,7 @@ EOF
 
 Final manual pass to confirm everything from this plan works together, then close out the plan.
 
-- [ ] **Step 14.1: Full smoke test**
+- [x] **Step 14.1: Full smoke test**
 
 ```bash
 pnpm dev
@@ -1783,7 +1783,7 @@ End-to-end:
 
 Stop the dev server.
 
-- [ ] **Step 14.2: Confirm full Jest suite + types pass**
+- [x] **Step 14.2: Confirm full Jest suite + types pass**
 
 ```bash
 pnpm test
@@ -1792,7 +1792,7 @@ pnpm exec tsc --noEmit
 
 Expected: green.
 
-- [ ] **Step 14.3: Update Status + close out**
+- [x] **Step 14.3: Update Status + close out**
 
 Update Status block to:
 - Last completed: Task 14
