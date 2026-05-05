@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 11 (middleware + role-based redirects)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `e5ba50f`
-- **Next task to execute:** Task 12 (admin layout guard)
+- **Last completed:** Task 12 (admin layout guard)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = `3348840`; Task 9 = `081af07`; Task 10 = `858592a`; Task 11 = `e5ba50f`; Task 12 = TBD
+- **Next task to execute:** Task 13 (logout button in admin nav)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -1627,7 +1627,7 @@ Defense in depth: middleware is the fast check, but every Server Component under
 **Files:**
 - Create: `app/admin/layout.tsx`
 
-- [ ] **Step 12.1: Write the admin layout**
+- [x] **Step 12.1: Write the admin layout**
 
 Create `app/admin/layout.tsx`:
 
@@ -1648,7 +1648,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
 }
 ```
 
-- [ ] **Step 12.2: Manual verification**
+- [x] **Step 12.2: Manual verification**
 
 Even with middleware off, this layout should also block. To test in isolation:
 
@@ -1668,7 +1668,7 @@ Even with middleware off, this layout should also block. To test in isolation:
    ```
    Log out + back in.
 
-- [ ] **Step 12.3: Type-check + tests**
+- [x] **Step 12.3: Type-check + tests**
 
 ```bash
 pnpm exec tsc --noEmit
@@ -1677,7 +1677,7 @@ pnpm test
 
 Expected: green.
 
-- [ ] **Step 12.4: Commit + update plan**
+- [x] **Step 12.4: Commit + update plan**
 
 ```bash
 git add app/admin/layout.tsx docs/superpowers/plans/2026-05-06-roles-foundation.md
