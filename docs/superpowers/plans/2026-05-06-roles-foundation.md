@@ -44,11 +44,13 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 6 code (script written, dotenv added; awaiting user run)
-- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo); Task 3 = `e2934db` (this repo); Task 4 = `c2e2743` (this repo); Task 5 = `0522448` (this repo); Task 6 SHA = (leave blank; user's verification commit will fill it)
-- **Next task to execute:** Task 6 verification (user runs `pnpm seed:admin`)
+- **Last completed:** Task 6 (seed admin verified end-to-end)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit (this one)
+- **Next task to execute:** Task 7 (role helpers, TDD)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
+- **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
+- **Mid-task fix:** `lib/supabase/admin.ts` and `lib/supabase/server.ts` had `import "server-only"` — that throws when `tsx` runs the seed script. Fix shipped as `94ad5cc` removed those imports; SSR client (`lib/supabase/ssr.ts`) keeps it since it's only imported from Next.js routes.
 
 ---
 
@@ -627,7 +629,7 @@ The script reads `.env` directly via `dotenv/config` (Next.js loads `.env` autom
 pnpm add -D dotenv
 ```
 
-- [ ] **Step 6.3: Run the seed**
+- [x] **Step 6.3: Run the seed**
 
 Make sure `.env` has `INITIAL_ADMIN_PASSWORD=Nd5rh51950d!!!`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`. Then:
 
@@ -651,7 +653,7 @@ Expected output (idempotent):
 Admin help.copytraderx@gmail.com already exists (id=<uuid>). No-op.
 ```
 
-- [ ] **Step 6.4: Verify in Supabase Studio**
+- [x] **Step 6.4: Verify in Supabase Studio**
 
 In the SQL editor:
 ```sql
@@ -666,7 +668,7 @@ select id, email, raw_app_meta_data from auth.users where email = 'help.copytrad
 
 Expected: 1 row; `raw_app_meta_data` contains `{"role": "admin"}` (alongside any other Supabase-managed keys).
 
-- [ ] **Step 6.5: Commit + update plan**
+- [x] **Step 6.5: Commit + update plan**
 
 ```bash
 git add scripts/seed-admin.ts package.json pnpm-lock.yaml docs/superpowers/plans/2026-05-06-roles-foundation.md
