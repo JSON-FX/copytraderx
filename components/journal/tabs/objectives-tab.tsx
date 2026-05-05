@@ -21,7 +21,7 @@ export function ObjectivesTab({ license, rule, snapshot, daily, currency }: Prop
       <div className="rounded border border-dashed p-6 text-center text-sm">
         <p className="text-muted-foreground">No challenge rule assigned.</p>
         <Button asChild className="mt-4" size="sm" variant="outline">
-          <Link href={`/licenses/${license.id}`}>Assign rule</Link>
+          <Link href={`/admin/licenses/${license.id}`}>Assign rule</Link>
         </Button>
       </div>
     );

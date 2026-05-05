@@ -25,7 +25,7 @@ export function JournalHeader({ license, pushedAt }: Props) {
 
   return (
     <div className="border-b pb-4">
-      <Link href="/licenses" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/admin/licenses" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Licenses
       </Link>
       <div className="mt-2 flex items-baseline justify-between gap-3">

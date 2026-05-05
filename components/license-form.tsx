@@ -146,7 +146,7 @@ export function LicenseForm({ mode, initial }: Props) {
     }
 
     toast.success(mode === "create" ? "License created" : "License updated");
-    router.push("/licenses");
+    router.push("/admin/licenses");
     router.refresh();
   }
 
@@ -162,7 +162,7 @@ export function LicenseForm({ mode, initial }: Props) {
       return;
     }
     toast.success("License deleted");
-    router.push("/licenses");
+    router.push("/admin/licenses");
     router.refresh();
   }
 
@@ -431,7 +431,7 @@ export function LicenseForm({ mode, initial }: Props) {
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/licenses")}
+          onClick={() => router.push("/admin/licenses")}
           disabled={isSubmitting}
         >
           Cancel

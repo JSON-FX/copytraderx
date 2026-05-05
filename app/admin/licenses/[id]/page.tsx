@@ -54,7 +54,7 @@ export default async function EditLicensePage({
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6">
           <Link
-            href="/licenses"
+            href="/admin/licenses"
             className="text-sm text-muted-foreground hover:underline"
           >
             ← Back to licenses

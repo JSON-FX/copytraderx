@@ -33,7 +33,7 @@ export function RuleForm({ initial }: { initial?: PropfirmRule }) {
     });
     if (!res.ok) { toast.error("Failed to save rule"); return; }
     toast.success(initial ? "Rule updated" : "Rule created");
-    router.push("/propfirm-rules"); router.refresh();
+    router.push("/admin/propfirm-rules"); router.refresh();
   }
 
   async function onDelete() {
@@ -42,7 +42,7 @@ export function RuleForm({ initial }: { initial?: PropfirmRule }) {
     const res = await fetch(`/api/propfirm-rules/${initial.id}`, { method: "DELETE" });
     if (!res.ok) { toast.error("Delete failed"); return; }
     toast.success("Rule deleted");
-    router.push("/propfirm-rules"); router.refresh();
+    router.push("/admin/propfirm-rules"); router.refresh();
   }
 
   return (

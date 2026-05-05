@@ -8,7 +8,7 @@ export default function NewLicensePage() {
       <SiteNav />
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6">
-          <Link href="/licenses" className="text-sm text-muted-foreground hover:underline">
+          <Link href="/admin/licenses" className="text-sm text-muted-foreground hover:underline">
             ← Back to licenses
           </Link>
           <h1 className="mt-2 text-2xl font-semibold">New License</h1>

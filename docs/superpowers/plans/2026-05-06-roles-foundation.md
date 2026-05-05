@@ -44,9 +44,9 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 7 (role helpers, TDD)
-- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`
-- **Next task to execute:** Task 8 (move admin pages)
+- **Last completed:** Task 8 (move admin pages under /admin/*)
+- **Last completed commit:** Task 1 = `08aeda4`; Task 2 = `8e14619` (EA repo); Task 3 = `e2934db`; Task 4 = `c2e2743`; Task 5 = `0522448`; Task 6 = `a113f04` (script) + `94ad5cc` (server-only fix) + close-out commit; Task 7 = `66b61a7`; Task 8 = (SHA filled after commit)
+- **Next task to execute:** Task 9 (login page + Server Action)
 - **Plan version:** 1.0
 - **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 - **Seed admin verified:** `help.copytraderx@gmail.com` (id `1d150126-5cc3-4506-ac62-d7b58594d758`) provisioned. `auth.users.app_metadata.role=admin`; `public.users.role=admin`, `must_change_password=true`. Idempotent re-run no-ops correctly.
@@ -871,7 +871,7 @@ We are **not** moving the API routes under `/api/*` — those stay at their curr
 - Modify: `app/page.tsx` (temporarily redirect to `/admin/licenses`)
 - Modify: `components/site-nav.tsx` (update internal links)
 
-- [ ] **Step 8.1: Move the directories**
+- [x] **Step 8.1: Move the directories**
 
 ```bash
 mkdir -p app/admin
@@ -887,7 +887,7 @@ ls app/admin/
 
 Expected: `licenses propfirm-rules settings`.
 
-- [ ] **Step 8.2: Update `app/page.tsx`**
+- [x] **Step 8.2: Update `app/page.tsx`**
 
 Edit `app/page.tsx` so the redirect points to the new path (we'll replace this with a role-based redirect in Task 11):
 
@@ -899,7 +899,7 @@ export default function HomePage() {
 }
 ```
 
-- [ ] **Step 8.3: Update internal links in `components/site-nav.tsx`**
+- [x] **Step 8.3: Update internal links in `components/site-nav.tsx`**
 
 Read `components/site-nav.tsx` first to see current link paths. Replace any link to `/licenses`, `/propfirm-rules`, or `/settings` with the `/admin/...` equivalent. Same for any active-state path comparisons (`pathname === "/licenses"` → `pathname === "/admin/licenses"`, etc.).
 
@@ -914,7 +914,7 @@ grep -rn 'router\.push.*"/\(licenses\|propfirm-rules\|settings\)' app components
 grep -rn 'redirect.*"/\(licenses\|propfirm-rules\|settings\)' app components 2>&1
 ```
 
-- [ ] **Step 8.4: Manual verification**
+- [x] **Step 8.4: Manual verification**
 
 Start the dev server:
 ```bash
@@ -929,7 +929,7 @@ Click around: navigation links should not 404. The old paths (`/licenses`, etc.)
 
 Stop the dev server (`Ctrl+C`).
 
-- [ ] **Step 8.5: Run tests**
+- [x] **Step 8.5: Run tests**
 
 ```bash
 pnpm test
@@ -938,7 +938,7 @@ pnpm exec tsc --noEmit
 
 Expected: green.
 
-- [ ] **Step 8.6: Commit + update plan**
+- [x] **Step 8.6: Commit + update plan**
 
 ```bash
 git add -A
