@@ -44,10 +44,11 @@ This plan is designed to be picked up across multiple sessions. To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 1
-- **Last completed commit:** 15a22c9
-- **Next task to execute:** Task 2
+- **Last completed:** Task 2 (migration applied to remote Supabase + verified in Studio: 7 columns + 2 triggers)
+- **Last completed commit:** Task 1 = `08aeda4` (this repo); Task 2 = `8e14619` (EA repo)
+- **Next task to execute:** Task 3
 - **Plan version:** 1.0
+- **Note:** Spec amended on 2026-05-06 to add multi-product support. Plan 1 unchanged by the amendment (Plan 1 only adds users + auth, no license-row changes). Multi-product schema lands in Plan 2.
 
 ---
 
@@ -169,7 +170,7 @@ Migrations live in the **EA repo** per existing convention (see README §"Schema
 **Files:**
 - Create: `~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260506000001_create_users_table.sql`
 
-- [ ] **Step 2.1: Write the migration SQL**
+- [x] **Step 2.1: Write the migration SQL**
 
 Create the file with exactly this content:
 
@@ -259,7 +260,7 @@ comment on table public.users is
   'Application-level user records. Mirrored from auth.users via trigger. Role + must_change_password live here.';
 ```
 
-- [ ] **Step 2.2: Apply the migration**
+- [x] **Step 2.2: Apply the migration**
 
 Run:
 ```bash
@@ -269,7 +270,7 @@ supabase db push
 
 Expected: Supabase CLI reports the migration applied. If it asks for confirmation, type `y`.
 
-- [ ] **Step 2.3: Verify the table exists**
+- [x] **Step 2.3: Verify the table exists**
 
 Run from any directory:
 ```bash
@@ -293,7 +294,7 @@ select trigger_name from information_schema.triggers
 
 Expected: 2 rows.
 
-- [ ] **Step 2.4: Commit (in EA repo) + update plan**
+- [x] **Step 2.4: Commit (in EA repo) + update plan**
 
 In the EA repo:
 ```bash
