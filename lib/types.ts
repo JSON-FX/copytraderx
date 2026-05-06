@@ -1,3 +1,5 @@
+import type { Product } from "./products";
+
 export type LicenseStatus = "active" | "revoked" | "expired";
 export type LicenseTier = "monthly" | "quarterly" | "yearly";
 
@@ -7,6 +9,7 @@ export interface License {
   id: number;
   license_key: string;
   mt5_account: number;
+  product: Product;
   status: LicenseStatus;
   tier: LicenseTier | null;
   expires_at: string | null;            // ISO 8601 or null (null = not yet activated)
@@ -23,6 +26,28 @@ export interface License {
   propfirm_rule_id: number | null;      // FK to propfirm_rules
 }
 
+export type SubscriptionStatus =
+  | "pending"
+  | "active"
+  | "rejected"
+  | "expired"
+  | "revoked";
+
+export interface Subscription {
+  id: number;
+  user_id: string;
+  product: Product;
+  tier: LicenseTier;
+  status: SubscriptionStatus;
+  requested_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  expires_at: string | null;
+  rejection_reason: string | null;
+  notes: string | null;
+  created_at: string;
+}
+
 /** Derived "display" status: revoked > expired (date-based) > active. */
 export type DisplayStatus = "active" | "revoked" | "expired";
 
@@ -37,12 +62,9 @@ export type LivenessState =
 
 // ── Journal types ────────────────────────────────────────────────────────────
 
-export type EaSource =
-  | "impulse"
-  | "ctx-core"
-  | "ctx-live"
-  | "ctx-prop-passer"
-  | "ctx-prop-funded";
+// EaSource is the same set as Product. Kept as an alias so existing journal
+// types continue to compile.
+export type EaSource = Product;
 
 export type TradeSide = "buy" | "sell";
 

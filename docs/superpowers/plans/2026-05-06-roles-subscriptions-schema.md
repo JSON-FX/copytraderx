@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 7 (backfill legacy licenses)
+- **Last completed:** Task 8 (product-aware types & schemas)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 8
+- **Next task to execute:** Task 9
 - **Plan version:** 1.0
 
 ---
@@ -1034,7 +1034,7 @@ Outcome on remote: `Backfilled 4 legacy licenses (one synthetic subscription eac
 - Modify: `lib/schemas.ts` — add product to `createLicenseSchema`, add subscription schemas, replace `LICENSE_KEY_PATTERN` with per-product `LICENSE_KEY_PATTERNS`
 - Modify: `lib/schemas.test.ts`
 
-- [ ] **Step 8.1: Add `Product` to `lib/types.ts` and extend `License`**
+- [x] **Step 8.1: Add `Product` to `lib/types.ts` and extend `License`**
 
 Read `lib/types.ts` and:
 - Replace the inline `EaSource` union with `import { type Product } from "./products"; export type EaSource = Product;` (they're the same set; consolidate). Verify no consumer of `EaSource` breaks by running `pnpm exec tsc --noEmit` after the change.
@@ -1067,7 +1067,7 @@ export interface Subscription {
 }
 ```
 
-- [ ] **Step 8.2: Update `lib/schemas.ts`**
+- [x] **Step 8.2: Update `lib/schemas.ts`**
 
 Read it first. Replace `LICENSE_KEY_PATTERN` with:
 
@@ -1154,7 +1154,7 @@ export type ApproveSubscriptionInput = z.infer<typeof approveSubscriptionSchema>
 export type RejectSubscriptionInput = z.infer<typeof rejectSubscriptionSchema>;
 ```
 
-- [ ] **Step 8.3: Update `lib/schemas.test.ts`**
+- [x] **Step 8.3: Update `lib/schemas.test.ts`**
 
 Add coverage for:
 - `createLicenseSchema` rejects `license_key='IMPX-...'` when `product='ctx-live'`.
@@ -1165,7 +1165,7 @@ Add coverage for:
 
 (Add at least one positive + one negative test per new schema.)
 
-- [ ] **Step 8.4: Run the suite**
+- [x] **Step 8.4: Run the suite**
 
 ```bash
 pnpm test
@@ -1174,7 +1174,7 @@ pnpm exec tsc --noEmit
 
 Expected: green. Existing schema tests must still pass (they use `IMPX-` keys with `intended_account_type` — they'll need a `product: "impulse"` field added; update the test fixtures).
 
-- [ ] **Step 8.5: Commit + update plan**
+- [x] **Step 8.5: Commit + update plan**
 
 ```bash
 git add lib/types.ts lib/schemas.ts lib/schemas.test.ts docs/superpowers/plans/2026-05-06-roles-subscriptions-schema.md
