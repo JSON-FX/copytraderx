@@ -60,6 +60,16 @@ export function UserForm({ mode, initial }: Props) {
 
   const issueInitial = form.watch("issue_initial");
 
+  // Server may return an HTML error page on uncaught throws — JSON parse fails.
+  // Fall back to status-code messaging instead of a silent throw.
+  async function readJson(res: Response): Promise<Record<string, unknown> | null> {
+    try {
+      return (await res.json()) as Record<string, unknown>;
+    } catch {
+      return null;
+    }
+  }
+
   async function onSubmit(values: FormValues) {
     setSubmitting(true);
     try {
@@ -77,17 +87,20 @@ export function UserForm({ mode, initial }: Props) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        const data = await res.json();
+        const data = await readJson(res);
         if (!res.ok) {
           if (data?.error === "email_in_use") {
             toast.error("An account with that email already exists.");
             return;
           }
-          toast.error(data?.error ?? "Failed to create user");
+          toast.error(
+            (data?.error as string | undefined) ??
+              `Failed to create user (HTTP ${res.status})`,
+          );
           return;
         }
         toast.success(
-          data.email_sent
+          data?.email_sent
             ? "User created. Welcome email sent."
             : "User created. Welcome email failed — resend from the user page.",
         );
@@ -104,18 +117,24 @@ export function UserForm({ mode, initial }: Props) {
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
-        const data = await res.json();
+        const data = await readJson(res);
         if (!res.ok) {
           if (data?.error === "cannot_self_demote") {
             toast.error("You cannot demote yourself.");
             return;
           }
-          toast.error(data?.error ?? "Failed to update user");
+          toast.error(
+            (data?.error as string | undefined) ??
+              `Failed to update user (HTTP ${res.status})`,
+          );
           return;
         }
         toast.success("User updated.");
         router.refresh();
       }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
     }
@@ -128,16 +147,22 @@ export function UserForm({ mode, initial }: Props) {
       const res = await fetch(`/api/users/${initial.id}/resend-welcome`, {
         method: "POST",
       });
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) {
-        toast.error(data?.error ?? "Failed to resend welcome");
+        toast.error(
+          (data?.error as string | undefined) ??
+            `Failed to resend welcome (HTTP ${res.status})`,
+        );
         return;
       }
       toast.success(
-        data.email_sent
+        data?.email_sent
           ? "New temp password emailed."
           : "Temp password reset; email send failed.",
       );
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      toast.error(msg);
     } finally {
       setResending(false);
     }
@@ -148,14 +173,20 @@ export function UserForm({ mode, initial }: Props) {
     setSubmitting(true);
     try {
       const res = await fetch(`/api/users/${initial.id}`, { method: "DELETE" });
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) {
-        toast.error(data?.error ?? "Failed to delete user");
+        toast.error(
+          (data?.error as string | undefined) ??
+            `Failed to delete user (HTTP ${res.status})`,
+        );
         return;
       }
       toast.success("User deleted.");
       router.push("/admin/users");
       router.refresh();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      toast.error(msg);
     } finally {
       setSubmitting(false);
       setShowDelete(false);

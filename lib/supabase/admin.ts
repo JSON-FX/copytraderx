@@ -28,11 +28,21 @@ export async function createAuthUser(input: CreateAuthUserInput) {
   return data.user;
 }
 
+/**
+ * Looks up a user by email via public.users (which the auth.users insert
+ * trigger keeps in sync). Avoids auth.admin.listUsers, which paginates and
+ * has been observed to fail on some Supabase projects with a generic
+ * "Database error finding users".
+ */
 export async function findAuthUserByEmail(email: string) {
   const sb = getSupabaseAdmin();
-  const { data, error } = await sb.auth.admin.listUsers({ perPage: 1000 });
+  const { data, error } = await sb
+    .from("users")
+    .select("id, email")
+    .ilike("email", email)
+    .maybeSingle();
   if (error) throw error;
-  return data.users.find((u) => u.email?.toLowerCase() === email.toLowerCase()) ?? null;
+  return data ?? null;
 }
 
 export async function invalidateAuthSession(userId: string) {
