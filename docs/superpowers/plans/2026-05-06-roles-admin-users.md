@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 1 — Email module skeleton + tests
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + (this commit)
-- **Next task to execute:** Task 2 — User helper module + tests
+- **Last completed:** Task 2 — User helper module + tests
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = (this commit)
+- **Next task to execute:** Task 3 — AppUser type + Zod schemas
 - **Plan version:** 1.0
 
 ---
@@ -472,7 +472,7 @@ Pure helpers: temp-password generator, tier-label formatting (used by emails and
 - Create: `lib/users.ts`
 - Create: `lib/users.test.ts`
 
-- [ ] **Step 2.1: Write the failing test**
+- [x] **Step 2.1: Write the failing test**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/lib/users.test.ts`:
 
@@ -519,7 +519,7 @@ describe("productLabel", () => {
 });
 ```
 
-- [ ] **Step 2.2: Run the test — expect FAIL**
+- [x] **Step 2.2: Run the test — expect FAIL**
 
 Run:
 
@@ -529,7 +529,7 @@ pnpm test lib/users.test.ts
 
 Expected: FAIL with "Cannot find module './users'".
 
-- [ ] **Step 2.3: Implement `lib/users.ts`**
+- [x] **Step 2.3: Implement `lib/users.ts`**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/lib/users.ts`:
 
@@ -576,7 +576,7 @@ export function productLabel(product: Product): string {
 }
 ```
 
-- [ ] **Step 2.4: Run the tests — expect PASS**
+- [x] **Step 2.4: Run the tests — expect PASS**
 
 Run:
 
@@ -586,7 +586,7 @@ pnpm test lib/users.test.ts
 
 Expected: PASS (6 tests).
 
-- [ ] **Step 2.5: Commit**
+- [x] **Step 2.5: Commit**
 
 ```bash
 git add lib/users.ts lib/users.test.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md
