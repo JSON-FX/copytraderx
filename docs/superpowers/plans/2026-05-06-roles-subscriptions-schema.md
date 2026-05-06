@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 6 (RLS policies)
+- **Last completed:** Task 7 (backfill legacy licenses)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 7
+- **Next task to execute:** Task 8
 - **Plan version:** 1.0
 
 ---
@@ -875,7 +875,7 @@ EOF
 **Files:**
 - Create: `~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260506000007_backfill_legacy_licenses.sql`
 
-- [ ] **Step 7.1: Write the migration**
+- [x] **Step 7.1: Write the migration**
 
 This is destructive in the sense that it assigns existing license rows to a synthetic owner. Read the migration carefully before applying.
 
@@ -964,7 +964,7 @@ alter table public.licenses
   alter column subscription_id set not null;
 ```
 
-- [ ] **Step 7.2: Apply (user runs)**
+- [x] **Step 7.2: Apply (user runs)**
 
 ```bash
 cd ~/Documents/development/EA/JSONFX-IMPULSE
@@ -980,7 +980,7 @@ select count(*) from public.licenses where user_id is null;          -- expect 0
 select count(*) from public.licenses where product='impulse';        -- expect = original license count
 ```
 
-- [ ] **Step 7.3: Commit + plan update**
+- [x] **Step 7.3: Commit + plan update**
 
 EA repo:
 ```bash
@@ -1010,6 +1010,20 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
+
+---
+
+### Correction (Task 7) — applied during execution
+
+The original plan called for a single global "legacy subscription" holding all unowned licenses. This conflicts with `idx_licenses_one_per_slot` from Task 4 — the per-slot uniqueness on `(subscription_id, intended_account_type)` rejects multiple licenses with the same account type under one subscription. Real legacy data had multiple demo licenses, so the backfill failed with `duplicate key value violates unique constraint "idx_licenses_one_per_slot"` (key `(2, demo)`).
+
+Two further fixes:
+1. The original `crypt('!!disabled!!', gen_salt('bf'))` failed with `function gen_salt(unknown) does not exist` — pgcrypto isn't on the search path inside the migration's DO block. Replaced with a sentinel non-bcrypt password string `'!!disabled-no-login!!'`. Password auth against this user always fails (unusable login), which is the desired behavior for a synthetic admin.
+2. The `auth.users` insert now also sets `instance_id`, `aud`, `role`, `created_at`, `updated_at` explicitly to satisfy Supabase's column requirements.
+
+**Resolution:** mint one synthetic subscription per unowned legacy license (loop over rows). Each license gets its own (subscription_id, intended_account_type) slot, so the unique holds. The migration is idempotent: re-runs reuse the synthetic admin (matched on email) and skip any licenses already attached. An additional `delete` clause cleans up orphan subscriptions from prior failed runs.
+
+Outcome on remote: `Backfilled 4 legacy licenses (one synthetic subscription each).`
 
 ---
 
