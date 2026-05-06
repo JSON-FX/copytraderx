@@ -288,3 +288,67 @@ describe("rejectSubscriptionSchema", () => {
     expect(result.success).toBe(false);
   });
 });
+
+import { createUserSchema, updateUserSchema } from "./schemas";
+
+describe("createUserSchema", () => {
+  it("accepts a minimal valid input (email + role only)", () => {
+    const result = createUserSchema.safeParse({
+      email: "user@example.com",
+      role: "user",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an input with an initial subscription", () => {
+    const result = createUserSchema.safeParse({
+      email: "user@example.com",
+      full_name: "User Name",
+      role: "user",
+      initial_subscription: { product: "impulse", tier: "monthly" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a bad email", () => {
+    const result = createUserSchema.safeParse({
+      email: "not-an-email",
+      role: "user",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an unknown role", () => {
+    const result = createUserSchema.safeParse({
+      email: "u@example.com",
+      role: "superuser",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an initial_subscription with a bad product", () => {
+    const result = createUserSchema.safeParse({
+      email: "u@example.com",
+      role: "user",
+      initial_subscription: { product: "xyz", tier: "monthly" },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("updateUserSchema", () => {
+  it("accepts a role-only update", () => {
+    const result = updateUserSchema.safeParse({ role: "admin" });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a full_name update", () => {
+    const result = updateUserSchema.safeParse({ full_name: "Real Name" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty body", () => {
+    const result = updateUserSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+});

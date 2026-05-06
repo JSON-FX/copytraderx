@@ -170,3 +170,17 @@ export interface PropfirmRule {
 
 // "fresh" < 2× push interval, "stale" < 4× push interval, "offline" beyond.
 export type DataAgeState = "fresh" | "stale" | "offline";
+
+// ── App users ────────────────────────────────────────────────────────────────
+
+export type AppUserRole = "admin" | "user";
+
+export interface AppUser {
+  id: string;                     // matches auth.users.id
+  email: string;
+  role: AppUserRole;
+  full_name: string | null;
+  must_change_password: boolean;
+  created_at: string;
+  created_by: string | null;
+}

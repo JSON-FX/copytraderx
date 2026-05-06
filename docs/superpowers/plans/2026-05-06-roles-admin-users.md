@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 2 — User helper module + tests
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = (this commit)
-- **Next task to execute:** Task 3 — AppUser type + Zod schemas
+- **Last completed:** Task 3 — AppUser type + Zod schemas
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = (this commit)
+- **Next task to execute:** Task 4 — Extend lib/supabase/admin.ts
 - **Plan version:** 1.0
 
 ---
@@ -615,7 +615,7 @@ EOF
 - Modify: `lib/schemas.ts`
 - Modify: `lib/schemas.test.ts`
 
-- [ ] **Step 3.1: Add `AppUser` to `lib/types.ts`**
+- [x] **Step 3.1: Add `AppUser` to `lib/types.ts`**
 
 Append to `/Users/jsonse/Documents/development/copytraderx-license/lib/types.ts`:
 
@@ -635,7 +635,7 @@ export interface AppUser {
 }
 ```
 
-- [ ] **Step 3.2: Write the failing test for the new schemas**
+- [x] **Step 3.2: Write the failing test for the new schemas**
 
 Append to `/Users/jsonse/Documents/development/copytraderx-license/lib/schemas.test.ts`:
 
@@ -705,7 +705,7 @@ describe("updateUserSchema", () => {
 });
 ```
 
-- [ ] **Step 3.3: Run the test — expect FAIL**
+- [x] **Step 3.3: Run the test — expect FAIL**
 
 Run:
 
@@ -715,7 +715,7 @@ pnpm test lib/schemas.test.ts
 
 Expected: FAIL — `createUserSchema` and `updateUserSchema` not exported.
 
-- [ ] **Step 3.4: Add the schemas to `lib/schemas.ts`**
+- [x] **Step 3.4: Add the schemas to `lib/schemas.ts`**
 
 Append to `/Users/jsonse/Documents/development/copytraderx-license/lib/schemas.ts` (after the existing subscription schemas, before the `propfirmRuleSchema`):
 
@@ -759,7 +759,7 @@ export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 ```
 
-- [ ] **Step 3.5: Run the tests — expect PASS**
+- [x] **Step 3.5: Run the tests — expect PASS**
 
 Run:
 
@@ -769,7 +769,7 @@ pnpm test lib/schemas.test.ts
 
 Expected: all tests PASS (existing + 8 new).
 
-- [ ] **Step 3.6: Commit**
+- [x] **Step 3.6: Commit**
 
 ```bash
 git add lib/types.ts lib/schemas.ts lib/schemas.test.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md

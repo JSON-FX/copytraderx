@@ -152,6 +152,44 @@ export type RejectSubscriptionInput = z.infer<typeof rejectSubscriptionSchema>;
 // Re-exported for downstream filters.
 export { subscriptionStatusEnum };
 
+// ── App-user schemas (admin Users surface) ───────────────────────────────────
+
+const roleEnum = z.enum(["admin", "user"]);
+
+export const createUserSchema = z
+  .object({
+    email: z.string().email().max(254),
+    full_name: optionalNonEmpty,
+    role: roleEnum,
+    /**
+     * Optional. When present, the create endpoint also inserts a
+     * subscriptions row with status='active' for this product+tier and
+     * computes expires_at from the tier.
+     */
+    initial_subscription: z
+      .object({
+        product: productEnum,
+        tier: tierEnum,
+      })
+      .strict()
+      .optional(),
+  })
+  .strict();
+
+export const updateUserSchema = z
+  .object({
+    full_name: optionalNonEmpty,
+    role: roleEnum.optional(),
+  })
+  .strict()
+  .refine(
+    (obj) => Object.keys(obj).length > 0,
+    "Update body cannot be empty",
+  );
+
+export type CreateUserInput = z.infer<typeof createUserSchema>;
+export type UpdateUserInput = z.infer<typeof updateUserSchema>;
+
 export const propfirmRuleSchema = z.object({
   name: z.string().min(1).max(120),
   account_size: z.number().positive(),
