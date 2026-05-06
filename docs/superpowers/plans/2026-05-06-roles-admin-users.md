@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** _(none yet)_
-- **Last completed commit:** _(none yet)_
-- **Next task to execute:** Task 1 — Email module skeleton + tests
+- **Last completed:** Task 1 — Email module skeleton + tests
+- **Last completed commit:** _(filled by commit)_
+- **Next task to execute:** Task 2 — User helper module + tests
 - **Plan version:** 1.0
 
 ---
@@ -104,7 +104,7 @@ This avoids coupling `lib/email.ts` to a specific transport library and keeps de
 - Modify: `package.json` (add `nodemailer` + `@types/nodemailer`)
 - Modify: `.env.example`
 
-- [ ] **Step 1.1: Add nodemailer dependency**
+- [x] **Step 1.1: Add nodemailer dependency**
 
 Run from repo root:
 
@@ -115,7 +115,7 @@ pnpm add -D @types/nodemailer
 
 Expected: `package.json` updated; `node_modules/nodemailer` exists.
 
-- [ ] **Step 1.2: Document new env vars in `.env.example`**
+- [x] **Step 1.2: Document new env vars in `.env.example`**
 
 Append to `/Users/jsonse/Documents/development/copytraderx-license/.env.example`:
 
@@ -131,7 +131,7 @@ EMAIL_FROM="CopyTraderX <noreply@copytraderx.local>"
 EMAIL_REPLY_TO=
 ```
 
-- [ ] **Step 1.3: Write the failing test for `lib/email.ts`**
+- [x] **Step 1.3: Write the failing test for `lib/email.ts`**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/lib/email.test.ts`:
 
@@ -195,7 +195,7 @@ describe("sendWelcomeEmail", () => {
 });
 ```
 
-- [ ] **Step 1.4: Run the test — expect FAIL**
+- [x] **Step 1.4: Run the test — expect FAIL**
 
 Run:
 
@@ -205,7 +205,7 @@ pnpm test lib/email.test.ts
 
 Expected: FAIL with "Cannot find module './email'".
 
-- [ ] **Step 1.5: Implement `lib/email.ts`**
+- [x] **Step 1.5: Implement `lib/email.ts`**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/lib/email.ts`:
 
@@ -430,7 +430,7 @@ export async function sendRequestRejectedEmail(
 }
 ```
 
-- [ ] **Step 1.6: Run the tests — expect PASS**
+- [x] **Step 1.6: Run the tests — expect PASS**
 
 Run:
 
@@ -440,7 +440,7 @@ pnpm test lib/email.test.ts
 
 Expected: PASS (3 tests).
 
-- [ ] **Step 1.7: Commit**
+- [x] **Step 1.7: Commit**
 
 ```bash
 git add package.json pnpm-lock.yaml .env.example lib/email.ts lib/email.test.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md
