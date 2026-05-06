@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 5 (subscription→license cascade trigger)
+- **Last completed:** Task 6 (RLS policies)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 6
+- **Next task to execute:** Task 7
 - **Plan version:** 1.0
 
 ---
@@ -704,7 +704,7 @@ EOF
 **Files:**
 - Create: `~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260506000006_rls_policies.sql`
 
-- [ ] **Step 6.1: Write the migration**
+- [x] **Step 6.1: Write the migration**
 
 ```sql
 -- RLS policies for users, subscriptions, licenses, and journal tables.
@@ -815,7 +815,7 @@ create policy snapshots_daily_admin_all on public.account_snapshots_daily
   with check ((auth.jwt() -> 'app_metadata' ->> 'role') = 'admin');
 ```
 
-- [ ] **Step 6.2: Apply (user runs) and verify**
+- [x] **Step 6.2: Apply (user runs) and verify**
 
 ```bash
 cd ~/Documents/development/EA/JSONFX-IMPULSE
@@ -837,7 +837,7 @@ select count(*) from public.licenses;  -- should return the count, not zero.
 reset role;
 ```
 
-- [ ] **Step 6.3: Commit + plan update**
+- [x] **Step 6.3: Commit + plan update**
 
 EA repo:
 ```bash
