@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 6 — POST /api/users
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = (this commit)
-- **Next task to execute:** Task 7 — GET/PATCH/DELETE /api/users/[id]
+- **Last completed:** Task 7 — GET/PATCH/DELETE /api/users/[id]
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = (this commit)
+- **Next task to execute:** Task 8 — POST /api/users/[id]/resend-welcome
 - **Plan version:** 1.0
 
 ---
@@ -1181,7 +1181,7 @@ Read-with-subscriptions, update role/full_name, delete (cascades).
 **Files:**
 - Create: `app/api/users/[id]/route.ts`
 
-- [ ] **Step 7.1: Implement the route**
+- [x] **Step 7.1: Implement the route**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/app/api/users/[id]/route.ts`:
 
@@ -1363,7 +1363,7 @@ export async function DELETE(
 }
 ```
 
-- [ ] **Step 7.2: Verify the route compiles**
+- [x] **Step 7.2: Verify the route compiles**
 
 Run:
 
@@ -1373,7 +1373,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 7.3: Manual smoke test**
+- [x] **Step 7.3: Manual smoke test**
 
 Re-create a smoke-test user (Task 6 step 6.3) if you cleaned up. Then from devtools:
 
@@ -1406,7 +1406,7 @@ await fetch(`/api/users/${myId}`, {
 // → { error: "cannot_self_demote" }
 ```
 
-- [ ] **Step 7.4: Commit**
+- [x] **Step 7.4: Commit**
 
 ```bash
 git add app/api/users/\[id\]/route.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md
