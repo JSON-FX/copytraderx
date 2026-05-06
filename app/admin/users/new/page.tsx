@@ -16,7 +16,7 @@ export default function NewUserPage() {
           </Link>
           <h1 className="mt-2 text-2xl font-semibold">New user</h1>
           <p className="mt-1 text-sm text-muted-foreground">
-            An invite email with a password-set link is sent via Supabase on save.
+            Choose to email an invite link or generate a password to copy and hand-deliver.
           </p>
         </div>
         <UserForm mode="create" />

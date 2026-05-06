@@ -155,12 +155,19 @@ export { subscriptionStatusEnum };
 // ── App-user schemas (admin Users surface) ───────────────────────────────────
 
 const roleEnum = z.enum(["admin", "user"]);
+const inviteMethodEnum = z.enum(["invite", "manual"]);
 
 export const createUserSchema = z
   .object({
     email: z.string().email().max(254),
     full_name: optionalNonEmpty,
     role: roleEnum,
+    /**
+     * "invite" → Supabase emails an invite link (default).
+     * "manual" → admin creates the account with a generated password and the
+     * server returns it once so the admin can hand-deliver the credentials.
+     */
+    invite_method: inviteMethodEnum.default("invite"),
     /**
      * Optional. When present, the create endpoint also inserts a
      * subscriptions row with status='active' for this product+tier and

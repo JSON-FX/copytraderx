@@ -3,7 +3,12 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { extractRole } from "@/lib/role";
 import { createUserSchema } from "@/lib/schemas";
-import { inviteAuthUser, findAuthUserByEmail } from "@/lib/supabase/admin";
+import {
+  createAuthUser,
+  inviteAuthUser,
+  findAuthUserByEmail,
+} from "@/lib/supabase/admin";
+import { generateTempPassword } from "@/lib/users";
 import { calculateExpiresAt } from "@/lib/expiry";
 
 export async function GET() {
@@ -69,23 +74,41 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "email_in_use" }, { status: 409 });
   }
 
-  // Invite via Supabase: creates the auth.users row AND sends the welcome
-  // email through Supabase's configured SMTP. The user clicks the link in
-  // the email to set their password on first sign-in.
+  // Two provisioning paths:
+  //   "invite" → Supabase emails an invite link via its configured SMTP.
+  //   "manual" → admin creates the account with a generated password; the
+  //              server returns it once so the admin can hand-deliver it.
   const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/change-password`;
   let createdId: string;
+  let generatedPassword: string | null = null;
   try {
-    const created = await inviteAuthUser({
-      email: input.email,
-      role: input.role,
-      full_name: input.full_name ?? undefined,
-      redirectTo,
-    });
-    createdId = created.id;
+    if (input.invite_method === "manual") {
+      generatedPassword = generateTempPassword(14);
+      const created = await createAuthUser({
+        email: input.email,
+        password: generatedPassword,
+        role: input.role,
+        full_name: input.full_name ?? undefined,
+        email_confirm: true,
+      });
+      createdId = created.id;
+    } else {
+      const created = await inviteAuthUser({
+        email: input.email,
+        role: input.role,
+        full_name: input.full_name ?? undefined,
+        redirectTo,
+      });
+      createdId = created.id;
+    }
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "invite_failed", details: msg },
+      {
+        error:
+          input.invite_method === "manual" ? "create_failed" : "invite_failed",
+        details: msg,
+      },
       { status: 500 },
     );
   }
@@ -150,11 +173,15 @@ export async function POST(req: Request) {
     subscriptionId = sub.id;
   }
 
-  // Supabase already sent the invite email via inviteUserByEmail above.
   return NextResponse.json(
     {
       user_id: createdId,
       subscription_id: subscriptionId,
+      invite_method: input.invite_method,
+      // Returned once for manual provisioning so the admin can copy it.
+      // Not stored anywhere; the next request cannot retrieve it.
+      generated_password: generatedPassword,
+      email: input.email,
     },
     { status: 201 },
   );

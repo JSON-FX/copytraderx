@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/confirm-dialog";
+import { CredentialsCard } from "@/components/admin/credentials-card";
 import { PRODUCTS, type Product } from "@/lib/products";
 import type { AppUser, AppUserRole } from "@/lib/types";
 
@@ -28,6 +29,7 @@ const formSchema = z.object({
   email: z.string().email("Invalid email").max(254),
   full_name: z.string().optional(),
   role: z.enum(["admin", "user"]),
+  invite_method: z.enum(["invite", "manual"]).default("invite"),
   issue_initial: z.boolean().default(false),
   initial_product: z.enum(PRODUCTS.map((p) => p.code) as [Product, ...Product[]]).optional(),
   initial_tier: z.enum(["monthly", "quarterly", "yearly"]).optional(),
@@ -45,6 +47,11 @@ export function UserForm({ mode, initial }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [showDelete, setShowDelete] = useState(false);
   const [resending, setResending] = useState(false);
+  const [resettingPassword, setResettingPassword] = useState(false);
+  const [credentials, setCredentials] = useState<{
+    email: string;
+    password: string;
+  } | null>(null);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -52,6 +59,7 @@ export function UserForm({ mode, initial }: Props) {
       email: initial?.email ?? "",
       full_name: initial?.full_name ?? "",
       role: initial?.role ?? "user",
+      invite_method: "invite",
       issue_initial: false,
       initial_product: "impulse",
       initial_tier: "monthly",
@@ -59,6 +67,7 @@ export function UserForm({ mode, initial }: Props) {
   });
 
   const issueInitial = form.watch("issue_initial");
+  const inviteMethod = form.watch("invite_method");
 
   // Server may return an HTML error page on uncaught throws — JSON parse fails.
   // Fall back to status-code messaging instead of a silent throw.
@@ -78,6 +87,7 @@ export function UserForm({ mode, initial }: Props) {
           email: values.email.trim(),
           full_name: values.full_name?.trim() || undefined,
           role: values.role,
+          invite_method: values.invite_method,
           ...(values.issue_initial && values.initial_product && values.initial_tier
             ? { initial_subscription: { product: values.initial_product, tier: values.initial_tier } }
             : {}),
@@ -99,6 +109,22 @@ export function UserForm({ mode, initial }: Props) {
           );
           return;
         }
+
+        // Manual provisioning: server returned the password once. Show it
+        // in-place; admin clicks "Done" to navigate away.
+        if (
+          values.invite_method === "manual" &&
+          typeof data?.generated_password === "string" &&
+          typeof data?.email === "string"
+        ) {
+          toast.success("User created. Copy the credentials before leaving.");
+          setCredentials({
+            email: data.email,
+            password: data.generated_password,
+          });
+          return;
+        }
+
         toast.success("User invited. They will receive an email to set their password.");
         router.push("/admin/users");
         router.refresh();
@@ -160,6 +186,36 @@ export function UserForm({ mode, initial }: Props) {
     }
   }
 
+  async function onResetPassword() {
+    if (!initial) return;
+    setResettingPassword(true);
+    try {
+      const res = await fetch(`/api/users/${initial.id}/reset-password`, {
+        method: "POST",
+      });
+      const data = await readJson(res);
+      if (!res.ok) {
+        toast.error(
+          (data?.error as string | undefined) ??
+            `Failed to reset password (HTTP ${res.status})`,
+        );
+        return;
+      }
+      if (
+        typeof data?.email === "string" &&
+        typeof data?.new_password === "string"
+      ) {
+        toast.success("Password reset. Copy the new credentials.");
+        setCredentials({ email: data.email, password: data.new_password });
+      }
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Network error";
+      toast.error(msg);
+    } finally {
+      setResettingPassword(false);
+    }
+  }
+
   async function onDelete() {
     if (!initial) return;
     setSubmitting(true);
@@ -183,6 +239,26 @@ export function UserForm({ mode, initial }: Props) {
       setSubmitting(false);
       setShowDelete(false);
     }
+  }
+
+  if (credentials) {
+    return (
+      <div className="space-y-4">
+        <CredentialsCard
+          email={credentials.email}
+          password={credentials.password}
+          onDone={() => {
+            setCredentials(null);
+            if (mode === "create") {
+              router.push("/admin/users");
+              router.refresh();
+            } else {
+              router.refresh();
+            }
+          }}
+        />
+      </div>
+    );
   }
 
   return (
@@ -220,6 +296,46 @@ export function UserForm({ mode, initial }: Props) {
           </SelectContent>
         </Select>
       </div>
+
+      {mode === "create" && (
+        <div className="space-y-3 rounded-md border p-4">
+          <div className="text-sm font-medium">Provisioning</div>
+          <div className="space-y-2">
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="radio"
+                value="invite"
+                checked={inviteMethod === "invite"}
+                onChange={() => form.setValue("invite_method", "invite")}
+                className="mt-1"
+              />
+              <div>
+                <div>Send invite via email</div>
+                <div className="text-xs text-muted-foreground">
+                  Supabase emails a sign-in link. Requires SMTP configured in
+                  the Supabase project.
+                </div>
+              </div>
+            </label>
+            <label className="flex items-start gap-2 text-sm">
+              <input
+                type="radio"
+                value="manual"
+                checked={inviteMethod === "manual"}
+                onChange={() => form.setValue("invite_method", "manual")}
+                className="mt-1"
+              />
+              <div>
+                <div>Generate password for manual delivery</div>
+                <div className="text-xs text-muted-foreground">
+                  No email is sent. The password is shown once after creation
+                  so you can copy and hand-deliver it.
+                </div>
+              </div>
+            </label>
+          </div>
+        </div>
+      )}
 
       {mode === "create" && (
         <div className="space-y-3 rounded-md border p-4">
@@ -285,6 +401,17 @@ export function UserForm({ mode, initial }: Props) {
             >
               {resending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
               Resend welcome email
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onResetPassword}
+              disabled={resettingPassword}
+            >
+              {resettingPassword && (
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              )}
+              Reset password
             </Button>
             <Button
               type="button"
