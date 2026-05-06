@@ -42,6 +42,13 @@ export function SiteNav() {
             Licenses
           </Link>
           <Link
+            href="/admin/users"
+            className={linkClass("/admin/users")}
+            aria-current={pathname?.startsWith("/admin/users") ? "page" : undefined}
+          >
+            Users
+          </Link>
+          <Link
             href="/admin/settings"
             className={linkClass("/admin/settings")}
             aria-current={pathname?.startsWith("/admin/settings") ? "page" : undefined}

@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 15 — /admin/users/[id] edit page
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = e64002e; Task 12 = f423dae; Task 13 = 4300a1a; Task 14 = 761a4d1; Task 15 = (this commit)
-- **Next task to execute:** Task 16 — Add Users link to SiteNav
+- **Last completed:** Task 16 — Add Users link to SiteNav
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = e64002e; Task 12 = f423dae; Task 13 = 4300a1a; Task 14 = 761a4d1; Task 15 = 1f50a90; Task 16 = (this commit)
+- **Next task to execute:** Task 17 — Plan completion + closeout
 - **Plan version:** 1.0
 
 ---
@@ -2413,7 +2413,7 @@ EOF
 **Files:**
 - Modify: `components/site-nav.tsx`
 
-- [ ] **Step 16.1: Add the nav link**
+- [x] **Step 16.1: Add the nav link**
 
 Edit `/Users/jsonse/Documents/development/copytraderx-license/components/site-nav.tsx` and insert a new `<Link>` between the "Licenses" and "Settings" links:
 
@@ -2427,11 +2427,11 @@ Edit `/Users/jsonse/Documents/development/copytraderx-license/components/site-na
 </Link>
 ```
 
-- [ ] **Step 16.2: Verify**
+- [x] **Step 16.2: Verify**
 
 Run `pnpm dev`. The nav now shows "Licenses · Users · Settings · Propfirm Rules" in that order. Clicking "Users" reaches `/admin/users`. The active style applies on `/admin/users`, `/admin/users/new`, and `/admin/users/[id]`.
 
-- [ ] **Step 16.3: Commit**
+- [x] **Step 16.3: Commit**
 
 ```bash
 git add components/site-nav.tsx docs/superpowers/plans/2026-05-06-roles-admin-users.md
