@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 5 — GET /api/users
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = (this commit)
-- **Next task to execute:** Task 6 — POST /api/users
+- **Last completed:** Task 6 — POST /api/users
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = (this commit)
+- **Next task to execute:** Task 7 — GET/PATCH/DELETE /api/users/[id]
 - **Plan version:** 1.0
 
 ---
@@ -970,7 +970,7 @@ Creates an `auth.users` row (the trigger mirrors `public.users`), updates `publi
 **Files:**
 - Modify: `app/api/users/route.ts`
 
-- [ ] **Step 6.1: Add the POST handler**
+- [x] **Step 6.1: Add the POST handler**
 
 Append to `/Users/jsonse/Documents/development/copytraderx-license/app/api/users/route.ts`:
 
@@ -1119,7 +1119,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- [ ] **Step 6.2: Verify the route compiles**
+- [x] **Step 6.2: Verify the route compiles**
 
 Run:
 
@@ -1129,7 +1129,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 6.3: Manual smoke test (without the UI yet)**
+- [x] **Step 6.3: Manual smoke test (without the UI yet)**
 
 Sign in as admin. From devtools console:
 
@@ -1155,7 +1155,7 @@ Cleanup:
 // for now, delete it manually in the Supabase dashboard or via SQL.
 ```
 
-- [ ] **Step 6.4: Commit**
+- [x] **Step 6.4: Commit**
 
 ```bash
 git add app/api/users/route.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md
