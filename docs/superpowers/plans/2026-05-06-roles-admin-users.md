@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 11 — /admin/users list page
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = (this commit)
-- **Next task to execute:** Task 12 — UserForm component (create+edit)
+- **Last completed:** Task 12 — UserForm component (create+edit)
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = e64002e; Task 12 = (this commit)
+- **Next task to execute:** Task 13 — /admin/users/new page
 - **Plan version:** 1.0
 
 ---
@@ -1821,7 +1821,7 @@ Reusable form. In `mode="create"` it shows email, full_name, role, and an option
 **Files:**
 - Create: `components/admin/user-form.tsx`
 
-- [ ] **Step 12.1: Create the component**
+- [x] **Step 12.1: Create the component**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/components/admin/user-form.tsx`:
 
@@ -2118,7 +2118,7 @@ export function UserForm({ mode, initial }: Props) {
 }
 ```
 
-- [ ] **Step 12.2: Verify**
+- [x] **Step 12.2: Verify**
 
 Run:
 
@@ -2128,7 +2128,7 @@ pnpm tsc --noEmit
 
 Expected: no errors. If `ConfirmDialog` props differ, adjust before this step passes.
 
-- [ ] **Step 12.3: Commit**
+- [x] **Step 12.3: Commit**
 
 ```bash
 git add components/admin/user-form.tsx docs/superpowers/plans/2026-05-06-roles-admin-users.md
