@@ -28,7 +28,9 @@ describe("sendEmail (mock transport)", () => {
       throwingTransport,
     );
     expect(result.ok).toBe(false);
-    expect(result.error).toMatch(/smtp down/);
+    if (!result.ok) {
+      expect(result.error).toMatch(/smtp down/);
+    }
   });
 });
 

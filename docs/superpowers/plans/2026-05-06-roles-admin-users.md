@@ -38,7 +38,7 @@ Same protocol as Plans 1 & 2:
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
 - **Last completed:** Task 1 — Email module skeleton + tests
-- **Last completed commit:** Task 1 = 3e20def + ddde846
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + (this commit)
 - **Next task to execute:** Task 2 — User helper module + tests
 - **Plan version:** 1.0
 
