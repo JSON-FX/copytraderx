@@ -233,3 +233,8 @@ export async function sendRequestRejectedEmail(
     transport,
   );
 }
+
+/** True only if the message was actually delivered to the transport (not skipped). */
+export function wasSent(result: SendResult): boolean {
+  return result.ok && !("skipped" in result && result.skipped === true);
+}

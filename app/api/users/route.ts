@@ -5,20 +5,18 @@ import { extractRole } from "@/lib/role";
 import { createUserSchema } from "@/lib/schemas";
 import { createAuthUser, findAuthUserByEmail } from "@/lib/supabase/admin";
 import { generateTempPassword } from "@/lib/users";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomeEmail, wasSent } from "@/lib/email";
 import { calculateExpiresAt } from "@/lib/expiry";
 
-async function getRole() {
-  const sb = await getSupabaseSSR();
+export async function GET() {
+  const sbSSR = await getSupabaseSSR();
   const {
     data: { session },
-  } = await sb.auth.getSession();
-  return extractRole(session ? { user: session.user as never } : null);
-}
-
-export async function GET() {
-  const role = await getRole();
-  if (role !== "admin") {
+  } = await sbSSR.auth.getSession();
+  if (!session) {
+    return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  }
+  if (extractRole({ user: session.user as never }) !== "admin") {
     return NextResponse.json({ error: "forbidden" }, { status: 403 });
   }
 
@@ -34,7 +32,7 @@ export async function GET() {
       { status: 500 },
     );
   }
-  return NextResponse.json({ users: data });
+  return NextResponse.json({ users: data ?? [] });
 }
 
 export async function POST(req: Request) {
@@ -168,7 +166,7 @@ export async function POST(req: Request) {
     {
       user_id: createdId,
       subscription_id: subscriptionId,
-      email_sent: emailResult.ok,
+      email_sent: wasSent(emailResult),
     },
     { status: 201 },
   );

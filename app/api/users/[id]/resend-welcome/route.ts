@@ -4,7 +4,7 @@ import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { extractRole } from "@/lib/role";
 import { resetAuthUserPassword } from "@/lib/supabase/admin";
 import { generateTempPassword } from "@/lib/users";
-import { sendWelcomeEmail } from "@/lib/email";
+import { sendWelcomeEmail, wasSent } from "@/lib/email";
 
 export async function POST(
   _req: Request,
@@ -66,9 +66,12 @@ export async function POST(
     temp_password: tempPassword,
     login_url: loginUrl,
   });
+  if (!emailResult.ok) {
+    console.error("[resend-welcome] welcome email failed:", emailResult.error);
+  }
 
   return NextResponse.json({
     ok: true,
-    email_sent: emailResult.ok,
+    email_sent: wasSent(emailResult),
   });
 }

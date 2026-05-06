@@ -2479,6 +2479,7 @@ Edit the **Status** block at the top of this file:
 - **Last completed commit:** _(filled by commit)_
 - **Next task to execute:** Plan 4 (`docs/superpowers/plans/2026-05-06-roles-user-dashboard.md` — write when ready)
 - **Plan version:** 1.0
+- **Post-closeout fix:** (this commit)
 
 ## Plan complete
 
