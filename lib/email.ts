@@ -13,26 +13,37 @@ export type SendResult = { ok: true; skipped?: boolean } | { ok: false; error: s
 
 export type EmailTransport = {
   send: (msg: EmailMessage) => Promise<void>;
+  /**
+   * Optional readiness probe. When defined and returning false, the dispatcher
+   * (`sendEmail`) skips the call and returns `{ ok: true, skipped: true }` so
+   * misconfigured environments are visible to callers (rather than looking
+   * identical to a successful send). Transports that omit this method are
+   * always considered available.
+   */
+  isAvailable?: () => boolean;
 };
 
 // ── Transports ────────────────────────────────────────────────────────────────
 
 /** Real SMTP transport. Lazily instantiated so missing env vars don't crash imports. */
 export const smtpTransport: EmailTransport = {
+  isAvailable() {
+    return Boolean(
+      process.env.SMTP_HOST &&
+        process.env.SMTP_PORT &&
+        process.env.SMTP_USER &&
+        process.env.SMTP_PASS &&
+        process.env.EMAIL_FROM,
+    );
+  },
   async send(msg) {
-    const host = process.env.SMTP_HOST;
-    const port = process.env.SMTP_PORT;
-    const user = process.env.SMTP_USER;
-    const pass = process.env.SMTP_PASS;
-    const from = process.env.EMAIL_FROM;
-
-    if (!host || !port || !user || !pass || !from) {
-      // Missing config — log and skip so dev environments don't crash.
-      console.warn(
-        `[email] SMTP env vars missing; skipping send to ${msg.to} (subject: ${msg.subject})`,
-      );
-      return;
-    }
+    // Dispatcher (`sendEmail`) gates on `isAvailable()`, so we can assume env
+    // vars are present here.
+    const host = process.env.SMTP_HOST!;
+    const port = process.env.SMTP_PORT!;
+    const user = process.env.SMTP_USER!;
+    const pass = process.env.SMTP_PASS!;
+    const from = process.env.EMAIL_FROM!;
 
     const transporter = nodemailer.createTransport({
       host,
@@ -85,6 +96,12 @@ export async function sendEmail(
   msg: EmailMessage,
   transport: EmailTransport = smtpTransport,
 ): Promise<SendResult> {
+  if (transport.isAvailable && !transport.isAvailable()) {
+    console.warn(
+      `[email] SMTP env vars missing; skipping send to ${msg.to} (subject: ${msg.subject})`,
+    );
+    return { ok: true, skipped: true };
+  }
   try {
     await transport.send(msg);
     return { ok: true };

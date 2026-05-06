@@ -1,4 +1,4 @@
-import { sendEmail, sendWelcomeEmail, mockTransport } from "./email";
+import { sendEmail, sendWelcomeEmail, sendRequestSubmittedEmail, mockTransport } from "./email";
 
 describe("sendEmail (mock transport)", () => {
   beforeEach(() => mockTransport.reset());
@@ -53,5 +53,57 @@ describe("sendWelcomeEmail", () => {
     expect(sent.text).toContain("Abc12345xyz!");
     expect(sent.text).toContain("https://example.com/login");
     expect(sent.text).toContain("New User");
+  });
+
+  it("greets 'there' when full_name is null", async () => {
+    await sendWelcomeEmail(
+      {
+        to: "newuser@example.com",
+        full_name: null,
+        temp_password: "Abc12345xyz!",
+        login_url: "https://example.com/login",
+      },
+      mockTransport,
+    );
+    expect(mockTransport.sent[0].text).toContain("Hi there,");
+    expect(mockTransport.sent[0].text).not.toContain("Hi ,");
+  });
+});
+
+describe("sendRequestSubmittedEmail", () => {
+  beforeEach(() => mockTransport.reset());
+
+  it("omits the notes section when notes is null", async () => {
+    await sendRequestSubmittedEmail(
+      {
+        to: "admin@example.com",
+        user_email: "user@example.com",
+        product_label: "Impulse",
+        tier_label: "Monthly",
+        notes: null,
+      },
+      mockTransport,
+    );
+    const text = mockTransport.sent[0].text;
+    expect(text).toContain("user@example.com");
+    expect(text).toContain("Impulse");
+    expect(text).toContain("Monthly");
+    expect(text).not.toContain("Notes:");
+  });
+
+  it("includes the notes section when notes is provided", async () => {
+    await sendRequestSubmittedEmail(
+      {
+        to: "admin@example.com",
+        user_email: "user@example.com",
+        product_label: "Impulse",
+        tier_label: "Monthly",
+        notes: "renewing my prop firm challenge",
+      },
+      mockTransport,
+    );
+    const text = mockTransport.sent[0].text;
+    expect(text).toContain("Notes:");
+    expect(text).toContain("renewing my prop firm challenge");
   });
 });
