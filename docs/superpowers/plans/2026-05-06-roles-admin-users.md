@@ -37,10 +37,11 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 16 — Add Users link to SiteNav
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = e64002e; Task 12 = f423dae; Task 13 = 4300a1a; Task 14 = 761a4d1; Task 15 = 1f50a90; Task 16 = (this commit)
-- **Next task to execute:** Task 17 — Plan completion + closeout
+- **Last completed:** Task 17 — Plan 3 complete ✅
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = e64002e; Task 12 = f423dae; Task 13 = 4300a1a; Task 14 = 761a4d1; Task 15 = 1f50a90; Task 16 = 8069298; Task 17 = (this commit)
+- **Next task to execute:** Plan 4 (`docs/superpowers/plans/2026-05-06-roles-user-dashboard.md` — write when ready)
 - **Plan version:** 1.0
+- **Final verification:** `pnpm test` → 150/150 pass (15 suites). `pnpm tsc --noEmit` → clean.
 
 ---
 
@@ -2447,7 +2448,7 @@ EOF
 
 ## Task 17: Plan completion — close out
 
-- [ ] **Step 17.1: Run the full test suite**
+- [x] **Step 17.1: Run the full test suite**
 
 Run:
 
@@ -2457,7 +2458,7 @@ pnpm test
 
 Expected: all tests pass (existing + new from this plan).
 
-- [ ] **Step 17.2: Run the type-check**
+- [x] **Step 17.2: Run the type-check**
 
 Run:
 
@@ -2467,7 +2468,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 17.3: Update the Status block**
+- [x] **Step 17.3: Update the Status block**
 
 Edit the **Status** block at the top of this file:
 
@@ -2489,7 +2490,7 @@ Edit the **Status** block at the top of this file:
 - Next plan: `2026-05-06-roles-user-dashboard.md` (Plan 4 — write when ready)
 ```
 
-- [ ] **Step 17.4: Commit the closeout**
+- [x] **Step 17.4: Commit the closeout**
 
 ```bash
 git add docs/superpowers/plans/2026-05-06-roles-admin-users.md
