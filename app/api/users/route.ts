@@ -3,9 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { extractRole } from "@/lib/role";
 import { createUserSchema } from "@/lib/schemas";
-import { createAuthUser, findAuthUserByEmail } from "@/lib/supabase/admin";
-import { generateTempPassword } from "@/lib/users";
-import { sendWelcomeEmail, wasSent } from "@/lib/email";
+import { inviteAuthUser, findAuthUserByEmail } from "@/lib/supabase/admin";
 import { calculateExpiresAt } from "@/lib/expiry";
 
 export async function GET() {
@@ -71,21 +69,23 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "email_in_use" }, { status: 409 });
   }
 
-  const tempPassword = generateTempPassword();
+  // Invite via Supabase: creates the auth.users row AND sends the welcome
+  // email through Supabase's configured SMTP. The user clicks the link in
+  // the email to set their password on first sign-in.
+  const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/change-password`;
   let createdId: string;
   try {
-    const created = await createAuthUser({
+    const created = await inviteAuthUser({
       email: input.email,
-      password: tempPassword,
       role: input.role,
       full_name: input.full_name ?? undefined,
-      email_confirm: true,
+      redirectTo,
     });
     createdId = created.id;
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "create_failed", details: msg },
+      { error: "invite_failed", details: msg },
       { status: 500 },
     );
   }
@@ -150,23 +150,11 @@ export async function POST(req: Request) {
     subscriptionId = sub.id;
   }
 
-  // Send welcome email. Best-effort; log and continue on failure.
-  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/login`;
-  const emailResult = await sendWelcomeEmail({
-    to: input.email,
-    full_name: input.full_name ?? null,
-    temp_password: tempPassword,
-    login_url: loginUrl,
-  });
-  if (!emailResult.ok) {
-    console.error("[users.POST] welcome email failed:", emailResult.error);
-  }
-
+  // Supabase already sent the invite email via inviteUserByEmail above.
   return NextResponse.json(
     {
       user_id: createdId,
       subscription_id: subscriptionId,
-      email_sent: wasSent(emailResult),
     },
     { status: 201 },
   );

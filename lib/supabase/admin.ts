@@ -28,6 +28,51 @@ export async function createAuthUser(input: CreateAuthUserInput) {
   return data.user;
 }
 
+export type InviteAuthUserInput = {
+  email: string;
+  role: "admin" | "user";
+  full_name?: string;
+  redirectTo?: string;
+};
+
+/**
+ * Invites a user via Supabase Auth's built-in flow. Creates the auth.users
+ * row and sends the invite email through Supabase's configured SMTP — no
+ * temp password is generated locally. The user clicks the link in the email
+ * to set their password on first sign-in.
+ */
+export async function inviteAuthUser(input: InviteAuthUserInput) {
+  const sb = getSupabaseAdmin();
+  const { data, error } = await sb.auth.admin.inviteUserByEmail(input.email, {
+    data: {
+      role: input.role,
+      full_name: input.full_name,
+    },
+    redirectTo: input.redirectTo,
+  });
+  if (error) throw error;
+  if (!data.user) throw new Error("inviteUserByEmail returned no user");
+  return data.user;
+}
+
+/**
+ * Re-issues a recovery email to an existing user via Supabase's admin
+ * generateLink flow. With SMTP configured in the Supabase project,
+ * generateLink sends the email through the project's transport. Returns
+ * the action_link as a fallback the admin can copy/paste if email
+ * delivery fails.
+ */
+export async function sendRecoveryEmail(email: string, redirectTo?: string) {
+  const sb = getSupabaseAdmin();
+  const { data, error } = await sb.auth.admin.generateLink({
+    type: "recovery",
+    email,
+    options: redirectTo ? { redirectTo } : undefined,
+  });
+  if (error) throw error;
+  return data?.properties?.action_link ?? null;
+}
+
 /**
  * Looks up a user by email via public.users (which the auth.users insert
  * trigger keeps in sync). Avoids auth.admin.listUsers, which paginates and

@@ -99,11 +99,7 @@ export function UserForm({ mode, initial }: Props) {
           );
           return;
         }
-        toast.success(
-          data?.email_sent
-            ? "User created. Welcome email sent."
-            : "User created. Welcome email failed — resend from the user page.",
-        );
+        toast.success("User invited. They will receive an email to set their password.");
         router.push("/admin/users");
         router.refresh();
       } else {
@@ -155,11 +151,7 @@ export function UserForm({ mode, initial }: Props) {
         );
         return;
       }
-      toast.success(
-        data?.email_sent
-          ? "New temp password emailed."
-          : "Temp password reset; email send failed.",
-      );
+      toast.success("Recovery email sent.");
     } catch (err) {
       const msg = err instanceof Error ? err.message : "Network error";
       toast.error(msg);

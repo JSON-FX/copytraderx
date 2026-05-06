@@ -2,9 +2,7 @@ import { NextResponse } from "next/server";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { extractRole } from "@/lib/role";
-import { resetAuthUserPassword } from "@/lib/supabase/admin";
-import { generateTempPassword } from "@/lib/users";
-import { sendWelcomeEmail, wasSent } from "@/lib/email";
+import { sendRecoveryEmail } from "@/lib/supabase/admin";
 
 export async function POST(
   _req: Request,
@@ -26,7 +24,7 @@ export async function POST(
   const sbAdmin = getSupabaseAdmin();
   const { data: user, error } = await sbAdmin
     .from("users")
-    .select("id, email, full_name")
+    .select("id, email")
     .eq("id", id)
     .maybeSingle();
   if (error) {
@@ -39,18 +37,21 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const tempPassword = generateTempPassword();
+  const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/change-password`;
+  let actionLink: string | null = null;
   try {
-    await resetAuthUserPassword(id, tempPassword);
+    actionLink = await sendRecoveryEmail(user.email, redirectTo);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
-      { error: "reset_failed", details: msg },
+      { error: "recovery_failed", details: msg },
       { status: 500 },
     );
   }
 
-  // Mirror must_change_password=true on public.users.
+  // Supabase generated the recovery link and (if SMTP is configured on the
+  // project) sent the email. Mirror must_change_password=true on public.users
+  // so the user lands on /auth/change-password after clicking through.
   const { error: flagErr } = await sbAdmin
     .from("users")
     .update({ must_change_password: true })
@@ -59,19 +60,8 @@ export async function POST(
     console.error("[resend-welcome] failed to set must_change_password:", flagErr.message);
   }
 
-  const loginUrl = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/login`;
-  const emailResult = await sendWelcomeEmail({
-    to: user.email,
-    full_name: user.full_name,
-    temp_password: tempPassword,
-    login_url: loginUrl,
-  });
-  if (!emailResult.ok) {
-    console.error("[resend-welcome] welcome email failed:", emailResult.error);
-  }
-
   return NextResponse.json({
     ok: true,
-    email_sent: wasSent(emailResult),
+    action_link: actionLink,
   });
 }
