@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 9 — RoleBadge component
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = (this commit)
-- **Next task to execute:** Task 10 — UserTable component
+- **Last completed:** Task 10 — UserTable component
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = (this commit)
+- **Next task to execute:** Task 11 — /admin/users list page
 - **Plan version:** 1.0
 
 ---
@@ -1624,7 +1624,7 @@ Render the list. Per-row "Edit" link to `/admin/users/[id]`. Includes a "Pending
 **Files:**
 - Create: `components/admin/user-table.tsx`
 
-- [ ] **Step 10.1: Create the component**
+- [x] **Step 10.1: Create the component**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/components/admin/user-table.tsx`:
 
@@ -1708,7 +1708,7 @@ export function UserTable({ users }: Props) {
 ```
 
 
-- [ ] **Step 10.2: Verify**
+- [x] **Step 10.2: Verify**
 
 Run:
 
@@ -1718,7 +1718,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 10.3: Commit**
+- [x] **Step 10.3: Commit**
 
 ```bash
 git add components/admin/user-table.tsx docs/superpowers/plans/2026-05-06-roles-admin-users.md
