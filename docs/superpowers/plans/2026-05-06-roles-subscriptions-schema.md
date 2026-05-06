@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 3 (subscriptions table migration)
+- **Last completed:** Task 4 (licenses alter for product + multi-EA)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 4
+- **Next task to execute:** Task 5
 - **Plan version:** 1.0
 
 ---
@@ -500,7 +500,7 @@ EOF
 **Files:**
 - Create: `~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260506000003_alter_licenses_add_user_subscription.sql`
 
-- [ ] **Step 4.1: Write the migration**
+- [x] **Step 4.1: Write the migration**
 
 ```sql
 -- Add subscription_id, user_id, product to licenses. All nullable during the
@@ -537,7 +537,7 @@ comment on column public.licenses.user_id is
   'Owning user (denormalized from subscription for query speed and RLS).';
 ```
 
-- [ ] **Step 4.2: Apply (user runs)**
+- [x] **Step 4.2: Apply (user runs)**
 
 ```bash
 cd ~/Documents/development/EA/JSONFX-IMPULSE
@@ -557,7 +557,7 @@ select indexname from pg_indexes where schemaname='public' and tablename='licens
 ```
 Expected: includes `idx_licenses_mt5_product`, `idx_licenses_one_per_slot`, `idx_licenses_user`, `idx_licenses_product`.
 
-- [ ] **Step 4.3: Commit (EA repo) + plan update (this repo)**
+- [x] **Step 4.3: Commit (EA repo) + plan update (this repo)**
 
 EA repo:
 ```bash
