@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** _(none yet — Plan 1 must be complete first)_
-- **Last completed commit:** _(none yet)_
-- **Next task to execute:** Task 1 (after Plan 1 closes out)
+- **Last completed:** Task 1 (canonical product module)
+- **Last completed commit:** _(filled by commit)_
+- **Next task to execute:** Task 2
 - **Plan version:** 1.0
 
 ---
@@ -85,7 +85,7 @@ A pure-data module that holds the 5 product codes, their display names, and thei
 - Create: `lib/products.ts`
 - Create: `lib/products.test.ts`
 
-- [ ] **Step 1.1: Write the failing test**
+- [x] **Step 1.1: Write the failing test**
 
 Create `lib/products.test.ts`:
 
@@ -171,7 +171,7 @@ describe("productDisplayName", () => {
 });
 ```
 
-- [ ] **Step 1.2: Run the test (expected to fail)**
+- [x] **Step 1.2: Run the test (expected to fail)**
 
 ```bash
 pnpm test -- lib/products.test.ts
@@ -179,7 +179,7 @@ pnpm test -- lib/products.test.ts
 
 Expected: all tests fail with "Cannot find module './products'".
 
-- [ ] **Step 1.3: Implement `lib/products.ts`**
+- [x] **Step 1.3: Implement `lib/products.ts`**
 
 Create `lib/products.ts`:
 
@@ -229,7 +229,7 @@ export function productDisplayName(code: Product): string {
 }
 ```
 
-- [ ] **Step 1.4: Run the test (expected to pass)**
+- [x] **Step 1.4: Run the test (expected to pass)**
 
 ```bash
 pnpm test -- lib/products.test.ts
@@ -238,7 +238,7 @@ pnpm test
 
 Expected: green.
 
-- [ ] **Step 1.5: Commit + update plan**
+- [x] **Step 1.5: Commit + update plan**
 
 ```bash
 git add lib/products.ts lib/products.test.ts docs/superpowers/plans/2026-05-06-roles-subscriptions-schema.md
