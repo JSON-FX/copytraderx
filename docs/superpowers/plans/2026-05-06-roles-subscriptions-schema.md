@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 2 (license-key generator product-aware)
+- **Last completed:** Task 3 (subscriptions table migration)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 3
+- **Next task to execute:** Task 4
 - **Plan version:** 1.0
 
 ---
@@ -409,7 +409,7 @@ EOF
 **Files:**
 - Create: `~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260506000002_create_subscriptions_table.sql`
 
-- [ ] **Step 3.1: Write the migration**
+- [x] **Step 3.1: Write the migration**
 
 Create the file with exactly this content:
 
@@ -446,7 +446,7 @@ comment on table public.subscriptions is
   'One paid bundle = entitles user to 1 live + 1 demo license for one product.';
 ```
 
-- [ ] **Step 3.2: Apply (user runs)**
+- [x] **Step 3.2: Apply (user runs)**
 
 The agent does NOT run this. Stop and request the user to:
 
@@ -462,7 +462,7 @@ select column_name, data_type from information_schema.columns
 ```
 Expected: 12 rows.
 
-- [ ] **Step 3.3: Commit (in EA repo) + update plan in this repo**
+- [x] **Step 3.3: Commit (in EA repo) + update plan in this repo**
 
 In EA repo:
 ```bash
