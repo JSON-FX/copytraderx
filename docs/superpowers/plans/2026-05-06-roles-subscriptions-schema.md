@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 4 (licenses alter for product + multi-EA)
+- **Last completed:** Task 5 (subscription→license cascade trigger)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 5
+- **Next task to execute:** Task 6
 - **Plan version:** 1.0
 
 ---
@@ -596,7 +596,7 @@ EOF
 **Files:**
 - Create: `~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260506000005_subscription_expiry_trigger.sql`
 
-- [ ] **Step 5.1: Write the migration**
+- [x] **Step 5.1: Write the migration**
 
 ```sql
 -- When a subscription's status flips to expired/revoked/rejected, cascade the
@@ -630,7 +630,7 @@ comment on function public.handle_subscription_status_cascade is
   'Cascade subscription status (expired/revoked/rejected) to all child licenses.';
 ```
 
-- [ ] **Step 5.2: Apply (user runs)**
+- [x] **Step 5.2: Apply (user runs)**
 
 ```bash
 cd ~/Documents/development/EA/JSONFX-IMPULSE
@@ -667,7 +667,7 @@ begin;
 rollback;
 ```
 
-- [ ] **Step 5.3: Commit + plan update**
+- [x] **Step 5.3: Commit + plan update**
 
 EA repo:
 ```bash
