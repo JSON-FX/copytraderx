@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 10 — UserTable component
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = (this commit)
-- **Next task to execute:** Task 11 — /admin/users list page
+- **Last completed:** Task 11 — /admin/users list page
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = (this commit)
+- **Next task to execute:** Task 12 — UserForm component (create+edit)
 - **Plan version:** 1.0
 
 ---
@@ -1742,7 +1742,7 @@ Server-rendered. Calls the service-role client directly (faster than the API rou
 **Files:**
 - Create: `app/admin/users/page.tsx`
 
-- [ ] **Step 11.1: Create the page**
+- [x] **Step 11.1: Create the page**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/app/admin/users/page.tsx`:
 
@@ -1793,11 +1793,11 @@ export default async function UsersPage() {
 }
 ```
 
-- [ ] **Step 11.2: Verify the page renders**
+- [x] **Step 11.2: Verify the page renders**
 
 Run `pnpm dev` and navigate to `/admin/users`. Expect to see the seed admin and the legacy admin in the list. Sign out and try again — expect a redirect to `/login` (handled by `app/admin/layout.tsx`).
 
-- [ ] **Step 11.3: Commit**
+- [x] **Step 11.3: Commit**
 
 ```bash
 git add app/admin/users/page.tsx docs/superpowers/plans/2026-05-06-roles-admin-users.md
