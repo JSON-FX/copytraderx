@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 9 (admin form + API support product field)
+- **Last completed:** Task 10 — Plan 2 complete ✅
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 10 (smoke + close-out — needs user-side browser verification first)
+- **Next task to execute:** Plan 3 (admin users + email module — write when ready)
 - **Plan version:** 1.0
 
 ---
@@ -1213,7 +1213,7 @@ The POST body must include `product`. Validate via the updated `createLicenseSch
 
 Update PATCH handler in `app/api/licenses/[id]/route.ts` to **reject** `product` changes — return 400 with `"product is immutable on a license"`.
 
-- [ ] **Step 9.3: Manual verification**
+- [x] **Step 9.3: Manual verification**
 
 ```bash
 pnpm dev
@@ -1253,7 +1253,7 @@ EOF
 
 ## Task 10: Smoke verification + plan close-out
 
-- [ ] **Step 10.1: Full schema sanity check**
+- [x] **Step 10.1: Full schema sanity check**
 
 In Studio:
 ```sql
@@ -1280,7 +1280,7 @@ select count(*) from pg_policies where schemaname='public';
 ```
 Expected: 20+ rows.
 
-- [ ] **Step 10.2: App-level sanity**
+- [x] **Step 10.2: App-level sanity**
 
 ```bash
 pnpm test
@@ -1290,7 +1290,7 @@ pnpm dev
 
 Sign in, create a license with each of the 5 products. Verify keys generated with the correct prefix. Stop dev server.
 
-- [ ] **Step 10.3: Close-out**
+- [x] **Step 10.3: Close-out**
 
 Update Status block:
 - Last completed: Task 10
@@ -1311,6 +1311,14 @@ Co-Authored-By: Claude Opus 4.7 (1M context) <noreply@anthropic.com>
 EOF
 )"
 ```
+
+---
+
+### Correction (Task 9) — surfaced during smoke testing
+
+The `/api/licenses` POST handler shipped in Task 9 inserted a license row without `subscription_id` or `user_id`. Once Task 7's backfill set both columns to NOT NULL, every admin-direct create returned `null value in column "subscription_id" of relation "licenses" violates not-null constraint`. The plan implicitly assumed the admin-create path would carry a subscription; in reality the subscription request/approval UI doesn't land until Plans 3–4.
+
+**Resolution:** the POST handler now mints a synthetic active subscription owned by `legacy@copytraderx.local` (same pattern as the Task 7 backfill) and attaches the new license to it. The synthetic subscription is rolled back if the license insert subsequently fails so we don't leak orphan rows. This is a placeholder behavior — Plan 3 replaces it with a lookup against the approved subscription. See commit `6bf1335`.
 
 ---
 
