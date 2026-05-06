@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 1 (canonical product module)
+- **Last completed:** Task 2 (license-key generator product-aware)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 2
+- **Next task to execute:** Task 3
 - **Plan version:** 1.0
 
 ---
@@ -265,7 +265,7 @@ EOF
 - Modify: `lib/license-key.ts`
 - Modify: `lib/license-key.test.ts`
 
-- [ ] **Step 2.1: Update tests for product-aware API**
+- [x] **Step 2.1: Update tests for product-aware API**
 
 Read the existing `lib/license-key.test.ts` first to understand its current shape:
 
@@ -313,7 +313,7 @@ describe("generateLicenseKey", () => {
 });
 ```
 
-- [ ] **Step 2.2: Run the test (expected to fail — old API doesn't take a product)**
+- [x] **Step 2.2: Run the test (expected to fail — old API doesn't take a product)**
 
 ```bash
 pnpm test -- lib/license-key.test.ts
@@ -321,7 +321,7 @@ pnpm test -- lib/license-key.test.ts
 
 Expected: failures along "Expected 0 arguments, but got 1" or runtime mismatches because `generateLicenseKey()` ignores the product and always returns `IMPX-...`.
 
-- [ ] **Step 2.3: Update `lib/license-key.ts`**
+- [x] **Step 2.3: Update `lib/license-key.ts`**
 
 Replace the file:
 
@@ -364,7 +364,7 @@ function secureRandomIndex(max: number): number {
 }
 ```
 
-- [ ] **Step 2.4: Find every existing caller and migrate**
+- [x] **Step 2.4: Find every existing caller and migrate**
 
 ```bash
 grep -rn "generateLicenseKey" app components lib 2>&1 | grep -v node_modules
@@ -376,7 +376,7 @@ For each call site, the caller must now know the product. Most call sites are in
 
 Update each call to pass the relevant product. Where the caller doesn't have the product yet (because the UI hasn't been updated), pass `"impulse"` as a temporary default and add a `// TODO: Plan 2 Task 6` comment so we can find them in Task 6.
 
-- [ ] **Step 2.5: Run the suite**
+- [x] **Step 2.5: Run the suite**
 
 ```bash
 pnpm test
@@ -385,7 +385,7 @@ pnpm exec tsc --noEmit
 
 Expected: green. If TypeScript fails, the failures should be in the call sites you migrated in Step 2.4.
 
-- [ ] **Step 2.6: Commit + update plan**
+- [x] **Step 2.6: Commit + update plan**
 
 ```bash
 git add lib/license-key.ts lib/license-key.test.ts app components docs/superpowers/plans/2026-05-06-roles-subscriptions-schema.md

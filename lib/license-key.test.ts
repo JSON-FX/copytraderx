@@ -1,20 +1,28 @@
 import { generateLicenseKey, LICENSE_KEY_ALPHABET } from "./license-key";
-import { LICENSE_KEY_PATTERN } from "./schemas";
+import { PRODUCTS } from "./products";
 
 describe("generateLicenseKey", () => {
-  it("returns a key matching the IMPX format", () => {
-    const key = generateLicenseKey();
-    expect(key).toMatch(LICENSE_KEY_PATTERN);
+  for (const { code, prefix } of PRODUCTS) {
+    it(`generates a key with the ${prefix} prefix for product ${code}`, () => {
+      const key = generateLicenseKey(code);
+      expect(key.startsWith(`${prefix}-`)).toBe(true);
+    });
+  }
+
+  it("matches the IMPX-XXXX-XXXX-XXXX-XXXX shape for impulse", () => {
+    const key = generateLicenseKey("impulse");
+    expect(key).toMatch(/^IMPX-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
   });
 
-  it("returns a 24-character key", () => {
-    expect(generateLicenseKey()).toHaveLength(24);
+  it("matches the CTXL- shape for ctx-live", () => {
+    const key = generateLicenseKey("ctx-live");
+    expect(key).toMatch(/^CTXL-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}-[A-Z2-9]{4}$/);
   });
 
-  it("uses only safe alphabet characters in the random portion", () => {
-    const key = generateLicenseKey();
-    const groups = key.slice(5).split("-").join("");
-    for (const ch of groups) {
+  it("uses only safe-alphabet characters in the body", () => {
+    const key = generateLicenseKey("impulse");
+    const body = key.slice(5).replace(/-/g, "");
+    for (const ch of body) {
       expect(LICENSE_KEY_ALPHABET).toContain(ch);
     }
   });
@@ -23,9 +31,9 @@ describe("generateLicenseKey", () => {
     expect(LICENSE_KEY_ALPHABET).not.toMatch(/[01OIL]/);
   });
 
-  it("returns different keys on consecutive calls (probabilistic)", () => {
-    const a = generateLicenseKey();
-    const b = generateLicenseKey();
+  it("generates distinct keys on repeated calls (sanity check)", () => {
+    const a = generateLicenseKey("impulse");
+    const b = generateLicenseKey("impulse");
     expect(a).not.toBe(b);
   });
 });

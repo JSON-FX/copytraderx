@@ -73,7 +73,7 @@ export function LicenseForm({ mode, initial }: Props) {
   }, []);
 
   const defaultValues: FormValues = {
-    license_key: initial?.license_key ?? generateLicenseKey(),
+    license_key: initial?.license_key ?? generateLicenseKey("impulse"), // TODO: Plan 2 Task 9
     mt5_account: initial?.mt5_account ?? (0 as unknown as number),
     tier: (initial?.tier as LicenseTier | undefined) ?? "monthly",
     intended_account_type: (initial?.intended_account_type as "demo" | "live" | undefined) ?? "demo",
@@ -171,7 +171,7 @@ export function LicenseForm({ mode, initial }: Props) {
   // -------------------------------------------------------------------------
 
   function regenerateKey() {
-    form.setValue("license_key", generateLicenseKey(), { shouldDirty: true });
+    form.setValue("license_key", generateLicenseKey("impulse"), { shouldDirty: true }); // TODO: Plan 2 Task 9
   }
 
   async function copyKey() {
