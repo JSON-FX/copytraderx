@@ -42,6 +42,7 @@ export async function POST(req: Request) {
     .insert({
       license_key: input.license_key,
       mt5_account: input.mt5_account,
+      product: input.product,
       tier: input.tier,
       // expires_at + activated_at left null on purpose: the EA stamps both
       // on first successful validation. Admin can override via

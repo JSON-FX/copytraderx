@@ -33,9 +33,9 @@ Same protocol as Plan 1 (see `2026-05-06-roles-foundation.md`). To resume:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 8 (product-aware types & schemas)
+- **Last completed:** Task 9 (admin form + API support product field)
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 9
+- **Next task to execute:** Task 10 (smoke + close-out — needs user-side browser verification first)
 - **Plan version:** 1.0
 
 ---
@@ -1201,13 +1201,13 @@ The admin "create license" path is the only writer that exists today. Plan 4 wil
 - Modify: `components/license-form.tsx`
 - Modify: `app/api/licenses/route.ts`
 
-- [ ] **Step 9.1: Add product dropdown to `components/license-form.tsx`**
+- [x] **Step 9.1: Add product dropdown to `components/license-form.tsx`**
 
 Read the component first. Add a `Product` field as a select using the `PRODUCTS` array from `lib/products.ts`. Default to `"impulse"` for backwards compatibility on edits of legacy licenses (which have `product='impulse'` after the backfill).
 
 When the user changes the product, regenerate the license key with `generateLicenseKey(product)` so the prefix matches.
 
-- [ ] **Step 9.2: Update `app/api/licenses/route.ts` (POST handler)**
+- [x] **Step 9.2: Update `app/api/licenses/route.ts` (POST handler)**
 
 The POST body must include `product`. Validate via the updated `createLicenseSchema`. The auto-key regeneration helper should call `generateLicenseKey(body.product)`.
 
@@ -1232,7 +1232,7 @@ select license_key, product from public.licenses order by created_at desc limit 
 
 Stop the dev server.
 
-- [ ] **Step 9.4: Commit + plan update**
+- [x] **Step 9.4: Commit + plan update**
 
 ```bash
 git add components/license-form.tsx app/api/licenses docs/superpowers/plans/2026-05-06-roles-subscriptions-schema.md

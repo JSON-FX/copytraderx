@@ -50,6 +50,14 @@ export async function PATCH(req: Request, ctx: RouteContext) {
     return NextResponse.json({ error: "invalid_json" }, { status: 400 });
   }
 
+  // product is immutable on a license; reject any PATCH that tries to change it.
+  if (body && typeof body === "object" && "product" in body) {
+    return NextResponse.json(
+      { error: "product_immutable", details: "product is immutable on a license" },
+      { status: 400 },
+    );
+  }
+
   const parsed = patchBodySchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(

@@ -24,29 +24,41 @@ import { ConfirmDialog } from "./confirm-dialog";
 import { generateLicenseKey } from "@/lib/license-key";
 import { calculateExpiresAt, formatExpiry } from "@/lib/expiry";
 import { copyToClipboard } from "@/lib/clipboard";
-import { LICENSE_KEY_PATTERN } from "@/lib/schemas";
+import { isValidLicenseKey } from "@/lib/schemas";
+import { PRODUCTS, type Product } from "@/lib/products";
 import type { License, LicenseTier, LicenseStatus, PropfirmRule } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-const formSchema = z.object({
-  license_key: z
-    .string()
-    .regex(LICENSE_KEY_PATTERN, "Must match IMPX-XXXX-XXXX-XXXX-XXXX"),
-  mt5_account: z.coerce
-    .number()
-    .int("Must be a whole number")
-    .positive("Must be a positive integer"),
-  tier: z.enum(["monthly", "quarterly", "yearly"]),
-  intended_account_type: z.enum(["demo", "live"]),
-  status: z.enum(["active", "revoked", "expired"]),
-  customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
-  notes: z.string().optional(),
-  push_interval_seconds: z.number().int().min(3).max(60).default(10),
-  propfirm_rule_id: z.number().int().positive().nullable().default(null),
-});
+const productEnum = z.enum(
+  PRODUCTS.map((p) => p.code) as [Product, ...Product[]],
+);
+
+const formSchema = z
+  .object({
+    license_key: z.string(),
+    product: productEnum,
+    mt5_account: z.coerce
+      .number()
+      .int("Must be a whole number")
+      .positive("Must be a positive integer"),
+    tier: z.enum(["monthly", "quarterly", "yearly"]),
+    intended_account_type: z.enum(["demo", "live"]),
+    status: z.enum(["active", "revoked", "expired"]),
+    customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
+    notes: z.string().optional(),
+    push_interval_seconds: z.number().int().min(3).max(60).default(10),
+    propfirm_rule_id: z.number().int().positive().nullable().default(null),
+  })
+  .refine(
+    (v) => isValidLicenseKey(v.license_key, v.product),
+    {
+      message: "License key prefix must match the selected product",
+      path: ["license_key"],
+    },
+  );
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -72,8 +84,10 @@ export function LicenseForm({ mode, initial }: Props) {
     fetch("/api/propfirm-rules").then((r) => r.json()).then(setRules).catch(() => {});
   }, []);
 
+  const defaultProduct: Product = initial?.product ?? "impulse";
   const defaultValues: FormValues = {
-    license_key: initial?.license_key ?? generateLicenseKey("impulse"), // TODO: Plan 2 Task 9
+    license_key: initial?.license_key ?? generateLicenseKey(defaultProduct),
+    product: defaultProduct,
     mt5_account: initial?.mt5_account ?? (0 as unknown as number),
     tier: (initial?.tier as LicenseTier | undefined) ?? "monthly",
     intended_account_type: (initial?.intended_account_type as "demo" | "live" | undefined) ?? "demo",
@@ -110,6 +124,7 @@ export function LicenseForm({ mode, initial }: Props) {
       mode === "create"
         ? {
             license_key: values.license_key,
+            product: values.product,
             mt5_account: values.mt5_account,
             tier: values.tier,
             intended_account_type: values.intended_account_type,
@@ -119,6 +134,7 @@ export function LicenseForm({ mode, initial }: Props) {
             propfirm_rule_id: values.propfirm_rule_id,
           }
         : {
+            // product is intentionally omitted — immutable on a license.
             mt5_account: values.mt5_account,
             tier: values.tier,
             intended_account_type: values.intended_account_type,
@@ -171,7 +187,17 @@ export function LicenseForm({ mode, initial }: Props) {
   // -------------------------------------------------------------------------
 
   function regenerateKey() {
-    form.setValue("license_key", generateLicenseKey("impulse"), { shouldDirty: true }); // TODO: Plan 2 Task 9
+    const product = form.getValues("product");
+    form.setValue("license_key", generateLicenseKey(product), { shouldDirty: true });
+  }
+
+  function onProductChange(next: Product) {
+    form.setValue("product", next, { shouldDirty: true });
+    if (mode === "create") {
+      // Regenerate the key with the new prefix; the regex refine will fail
+      // otherwise.
+      form.setValue("license_key", generateLicenseKey(next), { shouldDirty: true });
+    }
   }
 
   async function copyKey() {
@@ -200,6 +226,32 @@ export function LicenseForm({ mode, initial }: Props) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 max-w-xl">
+
+      {/* Product */}
+      <div className="space-y-1.5">
+        <Label htmlFor="product" className="text-sm font-semibold">
+          Product
+        </Label>
+        <Select
+          value={form.watch("product")}
+          onValueChange={(v) => onProductChange(v as Product)}
+          disabled={mode === "edit"}
+        >
+          <SelectTrigger id="product">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PRODUCTS.map((p) => (
+              <SelectItem key={p.code} value={p.code}>{p.displayName}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          {mode === "edit"
+            ? "Product is fixed for the life of a license."
+            : "Picks the EA this key activates. Changing it regenerates the key with the matching prefix."}
+        </p>
+      </div>
 
       {/* License Key */}
       <div className="space-y-1.5">
