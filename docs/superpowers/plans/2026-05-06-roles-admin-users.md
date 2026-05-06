@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 4 — Extend lib/supabase/admin.ts
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = (this commit)
-- **Next task to execute:** Task 5 — GET /api/users route
+- **Last completed:** Task 5 — GET /api/users
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = (this commit)
+- **Next task to execute:** Task 6 — POST /api/users
 - **Plan version:** 1.0
 
 ---
@@ -882,7 +882,7 @@ Returns every row in `public.users`. Admin-only via `requireAdmin`.
 **Files:**
 - Create: `app/api/users/route.ts`
 
-- [ ] **Step 5.1: Implement the GET handler**
+- [x] **Step 5.1: Implement the GET handler**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/app/api/users/route.ts`:
 
@@ -924,7 +924,7 @@ export async function GET() {
 
 > The POST handler is added in Task 6 in this same file.
 
-- [ ] **Step 5.2: Verify the route compiles**
+- [x] **Step 5.2: Verify the route compiles**
 
 Run:
 
@@ -934,7 +934,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 5.3: Manual smoke test**
+- [x] **Step 5.3: Manual smoke test**
 
 Sign in as admin. From the browser devtools console at any `/admin/*` page:
 
@@ -946,7 +946,7 @@ Expected: `{ users: [...] }` with at least the seed admin and the legacy admin (
 
 Then sign out, attempt the same fetch with no session: expect HTTP 403 (or redirect, depending on middleware behavior; the API route itself returns 403).
 
-- [ ] **Step 5.4: Commit**
+- [x] **Step 5.4: Commit**
 
 ```bash
 git add app/api/users/route.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md
