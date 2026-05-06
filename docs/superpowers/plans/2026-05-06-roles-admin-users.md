@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 3 — AppUser type + Zod schemas
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = (this commit)
-- **Next task to execute:** Task 4 — Extend lib/supabase/admin.ts
+- **Last completed:** Task 4 — Extend lib/supabase/admin.ts
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = (this commit)
+- **Next task to execute:** Task 5 — GET /api/users route
 - **Plan version:** 1.0
 
 ---
@@ -795,7 +795,7 @@ The Users API needs to mutate `auth.users` (role / app_metadata) and delete user
 **Files:**
 - Modify: `lib/supabase/admin.ts`
 
-- [ ] **Step 4.1: Add `updateAuthUserRole` and `deleteAuthUser`**
+- [x] **Step 4.1: Add `updateAuthUserRole` and `deleteAuthUser`**
 
 Append to `/Users/jsonse/Documents/development/copytraderx-license/lib/supabase/admin.ts`:
 
@@ -845,7 +845,7 @@ export async function deleteAuthUser(userId: string): Promise<void> {
 }
 ```
 
-- [ ] **Step 4.2: Verify the file compiles**
+- [x] **Step 4.2: Verify the file compiles**
 
 Run:
 
@@ -855,7 +855,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 4.3: Commit**
+- [x] **Step 4.3: Commit**
 
 ```bash
 git add lib/supabase/admin.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md

@@ -40,3 +40,47 @@ export async function invalidateAuthSession(userId: string) {
   const { error } = await sb.auth.admin.signOut(userId);
   if (error) throw error;
 }
+
+/**
+ * Updates the role on auth.users.app_metadata. The on_users_role_change
+ * trigger from migration 20260506000001 keeps public.users.role in sync —
+ * but since we're updating from the admin API (which writes
+ * auth.users.app_metadata directly), we update public.users separately.
+ */
+export async function updateAuthUserRole(
+  userId: string,
+  role: "admin" | "user",
+): Promise<void> {
+  const sb = getSupabaseAdmin();
+  const { error } = await sb.auth.admin.updateUserById(userId, {
+    app_metadata: { role },
+  });
+  if (error) throw error;
+}
+
+/**
+ * Resets a user's password to a freshly generated value and forces a
+ * password change on next login. Used by "resend welcome".
+ */
+export async function resetAuthUserPassword(
+  userId: string,
+  newPassword: string,
+): Promise<void> {
+  const sb = getSupabaseAdmin();
+  const { error } = await sb.auth.admin.updateUserById(userId, {
+    password: newPassword,
+    app_metadata: { must_change_password: true },
+  });
+  if (error) throw error;
+}
+
+/**
+ * Deletes a user from auth.users. The ON DELETE CASCADE on
+ * public.users.id references auth.users(id), so the public.users row
+ * goes away automatically. Subscriptions and licenses cascade in turn.
+ */
+export async function deleteAuthUser(userId: string): Promise<void> {
+  const sb = getSupabaseAdmin();
+  const { error } = await sb.auth.admin.deleteUser(userId);
+  if (error) throw error;
+}
