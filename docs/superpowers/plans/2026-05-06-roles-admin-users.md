@@ -37,9 +37,9 @@ Same protocol as Plans 1 & 2:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 7 — GET/PATCH/DELETE /api/users/[id]
-- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = (this commit)
-- **Next task to execute:** Task 8 — POST /api/users/[id]/resend-welcome
+- **Last completed:** Task 8 — POST /api/users/[id]/resend-welcome
+- **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = (this commit)
+- **Next task to execute:** Task 9 — RoleBadge component
 - **Plan version:** 1.0
 
 ---
@@ -1432,7 +1432,7 @@ Generates a new temp password, sets `must_change_password=true`, sends the welco
 **Files:**
 - Create: `app/api/users/[id]/resend-welcome/route.ts`
 
-- [ ] **Step 8.1: Implement the route**
+- [x] **Step 8.1: Implement the route**
 
 Create `/Users/jsonse/Documents/development/copytraderx-license/app/api/users/[id]/resend-welcome/route.ts`:
 
@@ -1513,7 +1513,7 @@ export async function POST(
 }
 ```
 
-- [ ] **Step 8.2: Verify the route compiles**
+- [x] **Step 8.2: Verify the route compiles**
 
 Run:
 
@@ -1523,7 +1523,7 @@ pnpm tsc --noEmit
 
 Expected: no errors.
 
-- [ ] **Step 8.3: Manual smoke test**
+- [x] **Step 8.3: Manual smoke test**
 
 Create a fresh smoke-test user via `POST /api/users` (Task 6). Then:
 
@@ -1536,7 +1536,7 @@ await fetch(`/api/users/${id}/resend-welcome`, { method: "POST" }).then((r) =>
 
 Expected: `{ ok: true, email_sent: <bool> }`. In Supabase, the user's `must_change_password` is `true` and (if you can sign in as them in incognito) the new temp password works once. Clean up the smoke user.
 
-- [ ] **Step 8.4: Commit**
+- [x] **Step 8.4: Commit**
 
 ```bash
 git add app/api/users/\[id\]/resend-welcome/route.ts docs/superpowers/plans/2026-05-06-roles-admin-users.md
