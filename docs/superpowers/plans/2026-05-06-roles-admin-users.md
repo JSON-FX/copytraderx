@@ -39,7 +39,7 @@ Same protocol as Plans 1 & 2:
 
 - **Last completed:** Task 17 — Plan 3 complete ✅
 - **Last completed commit:** Task 1 = 3e20def + 112eec7 + 14a925b; Task 2 = ea12980; Task 3 = f635770; Task 4 = 62420b3; Task 5 = 4e4dc76; Task 6 = f66f0b9; Task 7 = 10b57d6; Task 8 = ecb55ff; Task 9 = 53d62e1; Task 10 = 5ec8f17; Task 11 = e64002e; Task 12 = f423dae; Task 13 = 4300a1a; Task 14 = 761a4d1; Task 15 = 1f50a90; Task 16 = 8069298; Task 17 = (this commit)
-- **Next task to execute:** Plan 4 (`docs/superpowers/plans/2026-05-06-roles-user-dashboard.md` — write when ready)
+- **Next task to execute:** Plan 4 (`docs/superpowers/plans/2026-05-06-roles-user-dashboard.md` — written 2026-05-07, ready to execute)
 - **Plan version:** 1.0
 - **Final verification:** `pnpm test` → 150/150 pass (15 suites). `pnpm tsc --noEmit` → clean.
 
@@ -2477,7 +2477,7 @@ Edit the **Status** block at the top of this file:
 
 - **Last completed:** Task 17 — Plan 3 complete ✅
 - **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Plan 4 (`docs/superpowers/plans/2026-05-06-roles-user-dashboard.md` — write when ready)
+- **Next task to execute:** Plan 4 (`docs/superpowers/plans/2026-05-06-roles-user-dashboard.md` — written 2026-05-07, ready to execute)
 - **Plan version:** 1.0
 - **Post-closeout fix:** (this commit)
 
@@ -2488,7 +2488,7 @@ Edit the **Status** block at the top of this file:
 - Optional initial subscription is provisioned with `status='active'`, computed expiry, and `approved_by = <calling admin>`.
 - `lib/email.ts` is the single transactional-email surface for the rest of the app — Plans 4 & 5 wire up the request-submitted / request-approved / request-rejected senders.
 - Self-demote and self-delete are blocked. Deleting `legacy@copytraderx.local` is blocked (it owns legacy licenses + the admin-direct create path).
-- Next plan: `2026-05-06-roles-user-dashboard.md` (Plan 4 — write when ready)
+- Next plan: `2026-05-06-roles-user-dashboard.md` (Plan 4 — written 2026-05-07, ready to execute)
 ```
 
 - [x] **Step 17.4: Commit the closeout**
