@@ -17,6 +17,18 @@ Project knowledge base (Obsidian vault):
 
 **Don't write to it inline.** Vault updates happen via `/update-kb` after a feature is shipped. If you notice the vault is out of date during a session, flag it — don't fix it silently.
 
+```kb-config
+vault: /Users/jsonse/Documents/Obsidian/CopyTraderX
+project_name: CopyTraderX
+subsystems:
+  - Licenses
+  - Users
+  - Propfirm Rules
+  - Journal
+specs_dir: docs/superpowers/specs
+plans_dir: docs/superpowers/plans
+```
+
 ## Specs and plans
 
 - Design specs: `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`
