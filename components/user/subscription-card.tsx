@@ -29,9 +29,11 @@ export function SubscriptionCard({
             {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
           </p>
         </div>
-        <Badge variant={isActive ? "default" : isPending ? "secondary" : "outline"}>
-          {sub.status}
-        </Badge>
+        {!compact && (
+          <Badge variant={isActive ? "default" : isPending ? "secondary" : "outline"}>
+            {sub.status}
+          </Badge>
+        )}
       </div>
 
       {isPending ? (
