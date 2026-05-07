@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 6 — DELETE /api/subscriptions/[id]
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = (this commit)
-- **Next task to execute:** Task 7 — POST /api/subscriptions/renew
+- **Last completed:** Task 7 — POST /api/subscriptions/renew
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = (this commit)
+- **Next task to execute:** Task 8 — POST /api/licenses/claim
 - **Plan version:** 1.0
 
 ---
@@ -563,7 +563,7 @@ Commit message: `feat(api): DELETE /api/subscriptions/[id] — user cancels pend
 **Files:**
 - Create: `app/api/subscriptions/renew/route.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 import { NextResponse } from "next/server";
@@ -647,7 +647,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
@@ -656,6 +656,10 @@ git commit
 ```
 
 Commit message: `feat(api): POST /api/subscriptions/renew — user renews from source subscription`
+
+### Correction: email signature + admin recipient
+
+The plan's pseudocode used a stale `sendRequestSubmittedEmail` signature `{ userEmail, productDisplay, tier, notes }`. The real signature in `lib/email.ts` is `{ to, user_email, product_label, tier_label, notes }`. The implementation uses the real signature and resolves the admin `to:` from `INITIAL_ADMIN_EMAIL` (skip-and-warn when unset), matching the pattern established in Task 5.
 
 ---
 
