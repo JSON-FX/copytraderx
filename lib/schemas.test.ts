@@ -7,6 +7,9 @@ import {
   approveSubscriptionSchema,
   rejectSubscriptionSchema,
   isValidLicenseKey,
+  createUserSchema,
+  updateUserSchema,
+  claimSlotSchema,
 } from "./schemas";
 
 describe("createLicenseSchema", () => {
@@ -289,8 +292,6 @@ describe("rejectSubscriptionSchema", () => {
   });
 });
 
-import { createUserSchema, updateUserSchema } from "./schemas";
-
 describe("createUserSchema", () => {
   it("accepts a minimal valid input (email + role only)", () => {
     const result = createUserSchema.safeParse({
@@ -349,6 +350,33 @@ describe("updateUserSchema", () => {
 
   it("rejects an empty body", () => {
     const result = updateUserSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("claimSlotSchema", () => {
+  it("accepts a valid claim", () => {
+    const result = claimSlotSchema.safeParse({
+      subscription_id: 42,
+      mt5_account: 1234567,
+      intended_account_type: "live",
+    });
+    expect(result.success).toBe(true);
+  });
+  it("rejects mt5_account <= 0", () => {
+    const result = claimSlotSchema.safeParse({
+      subscription_id: 42,
+      mt5_account: 0,
+      intended_account_type: "demo",
+    });
+    expect(result.success).toBe(false);
+  });
+  it("rejects intended_account_type='contest'", () => {
+    const result = claimSlotSchema.safeParse({
+      subscription_id: 42,
+      mt5_account: 1234567,
+      intended_account_type: "contest",
+    });
     expect(result.success).toBe(false);
   });
 });

@@ -197,6 +197,18 @@ export const updateUserSchema = z
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 
+// ── User slot-claim schema ────────────────────────────────────────────────────
+
+export const claimSlotSchema = z
+  .object({
+    subscription_id: z.number().int().positive(),
+    mt5_account: z.number().int().positive(),
+    intended_account_type: accountTypeEnum, // demo | live, no contest
+  })
+  .strict();
+
+export type ClaimSlotInput = z.infer<typeof claimSlotSchema>;
+
 export const propfirmRuleSchema = z.object({
   name: z.string().min(1).max(120),
   account_size: z.number().positive(),

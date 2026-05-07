@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 1 — subscription-state pure helpers
-- **Last completed commit:** Task 1 = (this commit)
-- **Next task to execute:** Task 2 — `claimSlotSchema` in `lib/schemas.ts`
+- **Last completed:** Task 2 — claimSlotSchema in lib/schemas.ts
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = (this commit)
+- **Next task to execute:** Task 3 — DashboardSubscription view type in lib/types.ts
 - **Plan version:** 1.0
 
 ---
@@ -214,7 +214,7 @@ Commit message: `feat(subscriptions): add subscription-state pure helpers (canCa
 - Modify: `lib/schemas.ts`
 - Modify: `lib/schemas.test.ts`
 
-- [ ] **Step 1: Failing test**
+- [x] **Step 1: Failing test**
 
 In `lib/schemas.test.ts`, add:
 
@@ -251,7 +251,7 @@ describe("claimSlotSchema", () => {
 
 Run → import-error red.
 
-- [ ] **Step 2: Implement**
+- [x] **Step 2: Implement**
 
 In `lib/schemas.ts`, after `accountTypeEnum` and the renew-schema block, add:
 
@@ -269,7 +269,7 @@ export type ClaimSlotInput = z.infer<typeof claimSlotSchema>;
 
 Run tests → green.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add lib/schemas.ts lib/schemas.test.ts docs/superpowers/plans/2026-05-06-roles-user-dashboard.md
