@@ -23,15 +23,14 @@ export function SubscriptionCard({
     <div className={compact ? "space-y-3" : "rounded-lg border bg-card p-4"}>
       {compact ? (
         <div className="mb-3 flex justify-end">
-          <div className="flex flex-col items-end gap-1">
-            <Badge variant={isActive ? "default" : isPending ? "secondary" : "outline"}>
-              {sub.status}
-            </Badge>
-            <p className="text-xs text-muted-foreground">
-              {sub.tier}
-              {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
-            </p>
-          </div>
+          <Badge
+            variant={isActive ? "default" : isPending ? "secondary" : "outline"}
+            className="whitespace-nowrap"
+          >
+            {sub.status}
+            {` · ${sub.tier}`}
+            {sub.expires_at ? ` · expires ${formatExpiry(sub.expires_at)}` : ""}
+          </Badge>
         </div>
       ) : (
         <div className="mb-3 flex items-start justify-between">

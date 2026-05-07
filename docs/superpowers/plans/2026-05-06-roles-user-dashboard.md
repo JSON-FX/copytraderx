@@ -72,6 +72,7 @@ Same protocol as Plans 1–3:
   - Task 24 = (this commit)
   - UI polish (compact-mode badge removal + grid items-start) = (this commit)
   - UI polish (tier+expiry under inner badge; remove group sub-line) = (this commit)
+  - UI polish (single combined badge per row; remove group-level badge) = (this commit)
 - **Verification state at end of Task 23:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). UI-only components — no new unit tests required.
 - **Next task to execute:** Task 21 — Manual browser E2E + close-out commit (the addendum is now code-complete; awaiting user browser verification of the grouped UI before final close-out commit)
 - **Known follow-up (deferred to Plan 5):** A legacy license that pre-dates the user (matched only by `customer_email`) still sits under the synthetic legacy admin until an admin explicitly reattaches it. We did this once via SQL during the 2026-05-08 E2E session (subscription 6 + license 11 moved from `0b6137e2-…` → `d9ce1958-…`). Plan 5 will add a proper "Reattach to user" admin UI on `/admin/licenses/[id]` so this isn't a SQL-only operation.
