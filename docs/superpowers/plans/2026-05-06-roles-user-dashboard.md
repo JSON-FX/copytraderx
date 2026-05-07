@@ -44,7 +44,7 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 22 — groupByProduct helper
+- **Last completed:** Task 23 — ProductGroupCard + SubscriptionCard compact mode
 - **Last completed commits (resolved):**
   - Task 1 = `c9a22ff`
   - Task 2 = `8302691`
@@ -67,9 +67,10 @@ Same protocol as Plans 1–3:
   - Task 18 = `31d687e`
   - Task 19 = `502c049` (Step 2 browser-verification deferred to Task 21)
   - Task 20 = `2960be7`
-  - Task 22 = (this commit)
-- **Verification state at end of Task 22:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). New code is unit-tested where pure (subscription-state, claimSlotSchema, groupByProduct); API routes and UI components are integration-tested manually in Task 21.
-- **Next task to execute:** Task 23 — ProductGroupCard + compact mode
+  - Task 22 = (previous commit)
+  - Task 23 = (this commit)
+- **Verification state at end of Task 23:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). UI-only components — no new unit tests required.
+- **Next task to execute:** Task 24 — Wire ProductGroupCard into /dashboard
 - **Known follow-up (deferred to Plan 5):** A legacy license that pre-dates the user (matched only by `customer_email`) still sits under the synthetic legacy admin until an admin explicitly reattaches it. We did this once via SQL during the 2026-05-08 E2E session (subscription 6 + license 11 moved from `0b6137e2-…` → `d9ce1958-…`). Plan 5 will add a proper "Reattach to user" admin UI on `/admin/licenses/[id]` so this isn't a SQL-only operation.
 - **Plan version:** 1.1 (added Tasks 22–24 grouping addendum on 2026-05-08)
 
@@ -1977,7 +1978,7 @@ Commit message: `feat(dashboard): groupByProduct helper for product-grouped UI`
 
 **Goal:** wrap N `<SubscriptionCard>`s under one product header; render the inner cards in a compact, borderless mode so they read as siblings under one product, not as four separate things.
 
-- [ ] **Step 1: Add `compact` prop to SubscriptionCard**
+- [x] **Step 1: Add `compact` prop to SubscriptionCard**
 
 Modify `components/user/subscription-card.tsx`:
 
@@ -1988,7 +1989,7 @@ Modify `components/user/subscription-card.tsx`:
   - Keep the tier · expires line, the status badge, the slot grid, the renew button, and rejection reason.
 - Default behavior (no `compact`) is unchanged so the component is still usable elsewhere if anything imports it.
 
-- [ ] **Step 2: Create ProductGroupCard**
+- [x] **Step 2: Create ProductGroupCard**
 
 ```tsx
 import { Badge } from "@/components/ui/badge";
@@ -2034,7 +2035,7 @@ export function ProductGroupCard({ group }: { group: DashboardProductGroup }) {
 }
 ```
 
-- [ ] **Step 3: Type-check + commit**
+- [x] **Step 3: Type-check + commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test

@@ -6,7 +6,13 @@ import { SlotCard } from "./slot-card";
 import { CancelRequestButton } from "./cancel-request-button";
 import { RenewDialog } from "./renew-dialog";
 
-export function SubscriptionCard({ data }: { data: DashboardSubscription }) {
+export function SubscriptionCard({
+  data,
+  compact = false,
+}: {
+  data: DashboardSubscription;
+  compact?: boolean;
+}) {
   const sub = data.subscription;
   const productDisplay = productDisplayName(sub.product);
   const isPending = sub.status === "pending";
@@ -14,10 +20,10 @@ export function SubscriptionCard({ data }: { data: DashboardSubscription }) {
   const canRenew = sub.status === "expired" || sub.status === "revoked";
 
   return (
-    <div className="rounded-lg border bg-card p-4">
+    <div className={compact ? "space-y-3" : "rounded-lg border bg-card p-4"}>
       <div className="mb-3 flex items-start justify-between">
         <div>
-          <h3 className="text-base font-semibold">{productDisplay}</h3>
+          {!compact && <h3 className="text-base font-semibold">{productDisplay}</h3>}
           <p className="text-sm text-muted-foreground">
             {sub.tier}
             {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
