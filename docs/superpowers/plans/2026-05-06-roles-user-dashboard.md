@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 10 — /api/licenses/[id] tightened (owner-or-admin GET; admin-only PATCH/DELETE)
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (this commit)
-- **Next task to execute:** Task 11 — /dashboard layout + nav
+- **Last completed:** Task 11 — /dashboard layout + nav
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit)
+- **Next task to execute:** Task 12 — SlotCard component
 - **Plan version:** 1.0
 
 ---
@@ -895,7 +895,7 @@ Commit message: `feat(api): scope GET /api/licenses/[id] to owner; require admin
 - Create: `app/dashboard/layout.tsx`
 - Create: `components/user/dashboard-nav.tsx`
 
-- [ ] **Step 1: Write the layout**
+- [x] **Step 1: Write the layout**
 
 `app/dashboard/layout.tsx`:
 
@@ -956,7 +956,7 @@ export function DashboardNav({ userEmail }: { userEmail: string }) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
