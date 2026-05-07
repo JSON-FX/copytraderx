@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 14 — SubscriptionCard composite
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit)
-- **Next task to execute:** Task 18 — ExpiredBanner
+- **Last completed:** Task 18 — ExpiredBanner
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit); Task 18 = (this commit)
+- **Next task to execute:** Task 19 — /dashboard page
 - **Plan version:** 1.0
 
 ---
@@ -1608,7 +1608,7 @@ Commit message: `feat(ui): CancelRequestButton for pending subscriptions`
 **Files:**
 - Create: `components/shared/expired-banner.tsx`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```tsx
 import { AlertTriangle } from "lucide-react";
@@ -1625,7 +1625,7 @@ export function ExpiredBanner({ count }: { count: number }) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
