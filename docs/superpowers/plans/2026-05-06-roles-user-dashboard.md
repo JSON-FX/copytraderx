@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 15 — RequestLicenseDialog
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit)
-- **Next task to execute:** Task 17 — CancelRequestButton
+- **Last completed:** Task 17 — CancelRequestButton
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit)
+- **Next task to execute:** Task 16 — RenewDialog
 - **Plan version:** 1.0
 
 ---
@@ -1552,7 +1552,7 @@ Commit message: `feat(ui): RenewDialog with product locked from source`
 **Files:**
 - Create: `components/user/cancel-request-button.tsx`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```tsx
 "use client";
@@ -1591,7 +1591,7 @@ export function CancelRequestButton({ subscriptionId }: { subscriptionId: number
 
 (Using the native `confirm()` is fine for v1 per the spec's no-bespoke-modal stance for this control. Plan 5 may swap in a confirm dialog if the admin-revoke flow shares one.)
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
