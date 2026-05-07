@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 9 — journal API per-user ownership filter
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = (this commit)
-- **Next task to execute:** Task 10 — Tighten /api/licenses/[id]
+- **Last completed:** Task 10 — /api/licenses/[id] tightened (owner-or-admin GET; admin-only PATCH/DELETE)
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (this commit)
+- **Next task to execute:** Task 11 — /dashboard layout + nav
 - **Plan version:** 1.0
 
 ---
@@ -860,7 +860,7 @@ Commit message: `feat(api/journal): scope journal reads by user ownership`
 **Files:**
 - Modify: `app/api/licenses/[id]/route.ts`
 
-- [ ] **Step 1: Add an explicit guard**
+- [x] **Step 1: Add an explicit guard**
 
 At the top of the `GET` handler (before the existing fetch), insert:
 
@@ -877,7 +877,7 @@ After the license is fetched but before responding, when `role === "user"` enfor
 
 For `PATCH` and `DELETE` handlers in the same file, add an explicit `if (role !== "admin") return 403` guard at the top (defense in depth — middleware already blocks user-tree access to admin paths, but the API path is `/api/licenses/[id]` which is NOT prefixed by `/admin`).
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit

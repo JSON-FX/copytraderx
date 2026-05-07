@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { updateLicenseSchema, renewActionSchema } from "@/lib/schemas";
 import { calculateExpiresAt } from "@/lib/expiry";
 
@@ -14,6 +15,13 @@ export async function GET(_req: Request, ctx: RouteContext) {
   if (!Number.isInteger(numericId) || numericId <= 0) {
     return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   }
+
+  const ssr = await getSupabaseSSR();
+  const {
+    data: { user },
+  } = await ssr.auth.getUser();
+  if (!user) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const role = (user.app_metadata?.role as "admin" | "user" | undefined) ?? null;
 
   const sb = getSupabaseAdmin();
   const { data, error } = await sb
@@ -31,6 +39,9 @@ export async function GET(_req: Request, ctx: RouteContext) {
   if (!data) {
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
+  if (role !== "admin" && data.user_id !== user.id) {
+    return NextResponse.json({ error: "not_found" }, { status: 404 });
+  }
   return NextResponse.json({ license: data });
 }
 
@@ -42,6 +53,14 @@ export async function PATCH(req: Request, ctx: RouteContext) {
   if (!Number.isInteger(numericId) || numericId <= 0) {
     return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   }
+
+  const ssr = await getSupabaseSSR();
+  const {
+    data: { user },
+  } = await ssr.auth.getUser();
+  if (!user) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const role = (user.app_metadata?.role as "admin" | "user" | undefined) ?? null;
+  if (role !== "admin") return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   let body: unknown;
   try {
@@ -127,6 +146,14 @@ export async function DELETE(_req: Request, ctx: RouteContext) {
   if (!Number.isInteger(numericId) || numericId <= 0) {
     return NextResponse.json({ error: "invalid_id" }, { status: 400 });
   }
+
+  const ssr = await getSupabaseSSR();
+  const {
+    data: { user },
+  } = await ssr.auth.getUser();
+  if (!user) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
+  const role = (user.app_metadata?.role as "admin" | "user" | undefined) ?? null;
+  if (role !== "admin") return NextResponse.json({ error: "forbidden" }, { status: 403 });
 
   const sb = getSupabaseAdmin();
   const { error } = await sb.from("licenses").delete().eq("id", numericId);
