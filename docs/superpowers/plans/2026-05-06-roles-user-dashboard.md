@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 3 — DashboardSubscription view type
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = (this commit)
-- **Next task to execute:** Task 4 — getDashboardData server loader
+- **Last completed:** Task 4 — getDashboardData server loader
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = (this commit)
+- **Next task to execute:** Task 5 — POST /api/subscriptions
 - **Plan version:** 1.0
 
 ---
@@ -318,7 +318,7 @@ Commit message: `feat(types): add DashboardSubscription view type`
 **Files:**
 - Create: `lib/dashboard-data.ts`
 
-- [ ] **Step 1: Implement the loader**
+- [x] **Step 1: Implement the loader**
 
 ```ts
 import { getSupabaseAdmin } from "@/lib/supabase/server";
@@ -383,7 +383,7 @@ export async function getDashboardData(
 
 Notes: this file is server-only by import-graph (it imports `getSupabaseAdmin`). The dashboard page imports it directly; client components must not.
 
-- [ ] **Step 2: Type-check and commit**
+- [x] **Step 2: Type-check and commit**
 
 ```bash
 pnpm tsc --noEmit
