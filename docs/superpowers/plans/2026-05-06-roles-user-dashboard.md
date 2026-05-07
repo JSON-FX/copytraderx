@@ -68,8 +68,9 @@ Same protocol as Plans 1–3:
   - Task 19 = `502c049` (Step 2 browser-verification deferred to Task 21)
   - Task 20 = `2960be7`
 - **Verification state at end of Task 20:** `pnpm tsc --noEmit` clean; `pnpm test` 168/168 (16 suites). New code is unit-tested where pure (subscription-state, claimSlotSchema); API routes and UI components are integration-tested manually in Task 21.
-- **Next task to execute:** Task 21 — Manual browser E2E + close-out commit. This is user-facing verification (requires `docker compose up -d --build`); the subagent-driven implementation phase is complete.
-- **Plan version:** 1.0
+- **Next task to execute:** Tasks 22–24 (per-product grouping addendum) and Task 21 (close-out). Task 21 manual E2E was largely done in browser on 2026-05-08 — the only outstanding manual checks are the legacy-license reattach action (handled ad-hoc via SQL during the session — see "Known follow-up" below) and a re-run of the dashboard verification *after* Tasks 22–24 land so the close-out screenshot shows the grouped UI.
+- **Known follow-up (deferred to Plan 5):** A legacy license that pre-dates the user (matched only by `customer_email`) still sits under the synthetic legacy admin until an admin explicitly reattaches it. We did this once via SQL during the 2026-05-08 E2E session (subscription 6 + license 11 moved from `0b6137e2-…` → `d9ce1958-…`). Plan 5 will add a proper "Reattach to user" admin UI on `/admin/licenses/[id]` so this isn't a SQL-only operation.
+- **Plan version:** 1.1 (added Tasks 22–24 grouping addendum on 2026-05-08)
 
 ---
 
@@ -1889,3 +1890,199 @@ Commit message: `docs(plan): close out Plan 4 — user dashboard, claim, request
   - §8 (slot/license claiming edge cases) → Task 8 surfaces both unique-violation flavors.
 
 Anything left from the spec lives in Plan 5: admin pending-requests panel, approve/reject API + UI, cron-driven expiry, admin revoke, the email senders for approve/reject, replacing the synthetic-subscription branch in admin-direct license create, and Playwright E2E.
+
+---
+
+## Addendum (added 2026-05-08): Tasks 22–24 — group subscription cards by product
+
+> **Why this addendum lives here, not in Plan 5.** During Task 21 manual E2E, we hit a presentation issue: a user with two subscriptions for the same product (e.g. legacy yearly Impulse + a freshly-approved monthly Impulse) sees two side-by-side Impulse cards on `/dashboard`. The data model is correct (per spec §5.3, slot uniqueness is per-subscription), but the UI grain is wrong — users think in *products*, not in *subscription rows*. The fix is purely presentational: group existing `<SubscriptionCard>`s under a single per-product wrapper so the user sees "I have Impulse" once, with their multiple subscriptions visually nested inside it. No schema, API, or business-logic change. We add it to Plan 4 because it finishes the Plan 4 surface area before Plan 5 starts on the admin side.
+
+**Goal:** One card per (product the user has anything for), with that product's subscription cards rendered as nested rows inside it. Pending and expired subscriptions for the same product nest in the same wrapper. Empty product groups are not rendered.
+
+**Architecture decision recap:** **Option A** from the brainstorm — keep per-subscription as the slot grain (so the data model and the spec are unchanged), wrap them in a presentation-only `ProductGroupCard` component on the dashboard.
+
+**Spec impact:** None. `2026-05-06-admin-client-roles-design.md` §5.3 (one slot per subscription) is unchanged. §6.3 (the user dashboard listing) gets a UI tweak, not a model change.
+
+### Task 22: Add `groupByProduct` to `lib/dashboard-data.ts`
+
+**Files:**
+- Modify: `lib/dashboard-data.ts`
+- Modify: `lib/types.ts`
+
+- [ ] **Step 1: New view type**
+
+In `lib/types.ts`, after `DashboardSubscription`, add:
+
+```ts
+/**
+ * Dashboard projection grouped one level higher than DashboardSubscription:
+ * a single product the user has at least one subscription for, plus that
+ * product's subscriptions ordered by status (active first, pending, then
+ * expired/revoked/rejected). Presentation-only — does not change the
+ * underlying slot/license model.
+ */
+export interface DashboardProductGroup {
+  product: import("./products").Product;
+  subscriptions: DashboardSubscription[];
+}
+```
+
+- [ ] **Step 2: Group helper in dashboard-data**
+
+In `lib/dashboard-data.ts`, alongside the existing `getDashboardData`, add a pure helper:
+
+```ts
+import { PRODUCT_CODES } from "./products";
+
+export function groupByProduct(items: DashboardSubscription[]): DashboardProductGroup[] {
+  const byProduct = new Map<Product, DashboardSubscription[]>();
+  for (const item of items) {
+    const code = item.subscription.product;
+    const arr = byProduct.get(code);
+    if (arr) arr.push(item);
+    else byProduct.set(code, [item]);
+  }
+  // Preserve the input ordering (active-first within each product is already
+  // guaranteed by getDashboardData's sort) and emit groups in PRODUCT_CODES
+  // canonical order so the dashboard reads the same every refresh.
+  const out: DashboardProductGroup[] = [];
+  for (const code of PRODUCT_CODES) {
+    const subs = byProduct.get(code);
+    if (subs && subs.length > 0) out.push({ product: code, subscriptions: subs });
+  }
+  return out;
+}
+```
+
+`Product` and `DashboardProductGroup` get imported as needed. Add a `groupByProduct.test.ts`-style test if you want full TDD here — at minimum, exercise: empty input, single product with two subscriptions (order preserved), two products in mixed input (canonical product order out).
+
+- [ ] **Step 3: Type-check + commit**
+
+```bash
+pnpm tsc --noEmit && pnpm test
+git add lib/types.ts lib/dashboard-data.ts docs/superpowers/plans/2026-05-06-roles-user-dashboard.md
+git commit
+```
+
+Commit message: `feat(dashboard): groupByProduct helper for product-grouped UI`
+
+---
+
+### Task 23: `<ProductGroupCard>` component + `<SubscriptionCard>` compact mode
+
+**Files:**
+- Create: `components/user/product-group-card.tsx`
+- Modify: `components/user/subscription-card.tsx`
+
+**Goal:** wrap N `<SubscriptionCard>`s under one product header; render the inner cards in a compact, borderless mode so they read as siblings under one product, not as four separate things.
+
+- [ ] **Step 1: Add `compact` prop to SubscriptionCard**
+
+Modify `components/user/subscription-card.tsx`:
+
+- Add an optional `compact?: boolean` prop.
+- When `compact === true`:
+  - Drop the outer `rounded-lg border bg-card p-4` chrome (becomes `space-y-3` only).
+  - Drop the product name `<h3>` (the wrapper renders it once).
+  - Keep the tier · expires line, the status badge, the slot grid, the renew button, and rejection reason.
+- Default behavior (no `compact`) is unchanged so the component is still usable elsewhere if anything imports it.
+
+- [ ] **Step 2: Create ProductGroupCard**
+
+```tsx
+import { Badge } from "@/components/ui/badge";
+import { productDisplayName } from "@/lib/products";
+import type { DashboardProductGroup } from "@/lib/types";
+import { SubscriptionCard } from "./subscription-card";
+
+export function ProductGroupCard({ group }: { group: DashboardProductGroup }) {
+  const display = productDisplayName(group.product);
+  const subs = group.subscriptions;
+
+  // Header summary: show count + the most-active status.
+  const activeCount = subs.filter((s) => s.subscription.status === "active").length;
+  const pendingCount = subs.filter((s) => s.subscription.status === "pending").length;
+  const headlineStatus =
+    activeCount > 0 ? "active" : pendingCount > 0 ? "pending" : subs[0]?.subscription.status ?? "expired";
+
+  return (
+    <div className="rounded-lg border bg-card p-4">
+      <div className="mb-4 flex items-start justify-between">
+        <div>
+          <h3 className="text-base font-semibold">{display}</h3>
+          <p className="text-sm text-muted-foreground">
+            {subs.length === 1
+              ? "1 subscription"
+              : `${subs.length} subscriptions`}
+          </p>
+        </div>
+        <Badge variant={activeCount > 0 ? "default" : pendingCount > 0 ? "secondary" : "outline"}>
+          {headlineStatus}
+        </Badge>
+      </div>
+
+      <div className="space-y-4 divide-y">
+        {subs.map((s, i) => (
+          <div key={s.subscription.id} className={i === 0 ? "" : "pt-4"}>
+            <SubscriptionCard data={s} compact />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+```
+
+- [ ] **Step 3: Type-check + commit**
+
+```bash
+pnpm tsc --noEmit && pnpm test
+git add components/user/subscription-card.tsx components/user/product-group-card.tsx docs/superpowers/plans/2026-05-06-roles-user-dashboard.md
+git commit
+```
+
+Commit message: `feat(ui): ProductGroupCard + SubscriptionCard compact mode`
+
+---
+
+### Task 24: Wire `<ProductGroupCard>` into `/dashboard/page.tsx`
+
+**Files:**
+- Modify: `app/dashboard/page.tsx`
+
+- [ ] **Step 1: Switch the page from per-subscription to per-product rendering**
+
+In `app/dashboard/page.tsx`:
+
+- Import `groupByProduct` from `@/lib/dashboard-data`.
+- Import `ProductGroupCard` from `@/components/user/product-group-card`.
+- After `const items = await getDashboardData(user.id);`, compute `const groups = groupByProduct(items);`.
+- Replace the `items.map(...)` block with `groups.map((g) => <ProductGroupCard key={g.product} group={g} />)`.
+- The empty-state condition becomes `groups.length === 0`.
+- The `expiredCount` heuristic remains based on `items` (subscription grain), no change there.
+
+- [ ] **Step 2: Manual browser check**
+
+Refresh `/dashboard`. Expected:
+
+- A user with `[Impulse-yearly active, Impulse-monthly active, CTX-Prop-Passer-monthly active]` sees **two cards**: one Impulse card containing two compact subscription rows, one CTX Prop Passer card containing one. (Down from three flat cards to two grouped ones.)
+- A user with one pending Impulse + one active Impulse sees a single Impulse card with two stacked rows; the pending row has its own status badge and Cancel button; the active row has its slot grid.
+- A user with only one subscription per product sees the same number of cards as before — no visual regression.
+
+- [ ] **Step 3: Commit**
+
+```bash
+git add app/dashboard/page.tsx docs/superpowers/plans/2026-05-06-roles-user-dashboard.md
+git commit
+```
+
+Commit message: `feat(dashboard): group subscription cards by product`
+
+---
+
+### Coverage check (addendum)
+
+- [ ] **Brainstorm decision recorded:** Option A (presentation-only grouping; no schema change). Rejected Option B (one-product-per-user uniqueness) because it would have broken the legitimate "different tiers / different MT5s on the same product" case the spec already supports.
+- [ ] **No spec drift:** §5.3 slot uniqueness still per-subscription. §5.4 quota still derived from active-subscription count. §6.3 still describes per-subscription claim semantics; the dashboard just groups the visual presentation.
+- [ ] **No data migration needed.**
+- [ ] **Plan 5 unaffected:** the admin Pending Requests panel reads `subscriptions where status='pending'` directly; how the user-side dashboard renders has no impact on it.
