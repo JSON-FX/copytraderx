@@ -48,6 +48,16 @@ export interface Subscription {
   created_at: string;
 }
 
+/**
+ * Dashboard projection: a subscription bundled with its child licenses
+ * keyed by intended_account_type. Either slot can be empty.
+ */
+export interface DashboardSubscription {
+  subscription: Subscription;
+  liveLicense: License | null;
+  demoLicense: License | null;
+}
+
 /** Derived "display" status: revoked > expired (date-based) > active. */
 export type DisplayStatus = "active" | "revoked" | "expired";
 

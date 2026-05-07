@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 2 — claimSlotSchema in lib/schemas.ts
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = (this commit)
-- **Next task to execute:** Task 3 — DashboardSubscription view type in lib/types.ts
+- **Last completed:** Task 3 — DashboardSubscription view type
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = (this commit)
+- **Next task to execute:** Task 4 — getDashboardData server loader
 - **Plan version:** 1.0
 
 ---
@@ -285,7 +285,7 @@ Commit message: `feat(schemas): add claimSlotSchema for user slot claim`
 **Files:**
 - Modify: `lib/types.ts`
 
-- [ ] **Step 1: Add the view type**
+- [x] **Step 1: Add the view type**
 
 After the existing `Subscription` interface, add:
 
@@ -301,7 +301,7 @@ export interface DashboardSubscription {
 }
 ```
 
-- [ ] **Step 2: Type-check and commit**
+- [x] **Step 2: Type-check and commit**
 
 ```bash
 pnpm tsc --noEmit
