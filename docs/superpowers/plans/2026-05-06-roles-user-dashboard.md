@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 4 — getDashboardData server loader
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = (this commit)
-- **Next task to execute:** Task 5 — POST /api/subscriptions
+- **Last completed:** Task 5 — POST /api/subscriptions
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = (this commit)
+- **Next task to execute:** Task 6 — DELETE /api/subscriptions/[id]
 - **Plan version:** 1.0
 
 ---
@@ -400,7 +400,7 @@ Commit message: `feat(dashboard): add getDashboardData server loader`
 **Files:**
 - Create: `app/api/subscriptions/route.ts`
 
-- [ ] **Step 1: Implement the route**
+- [x] **Step 1: Implement the route**
 
 ```ts
 import { NextResponse } from "next/server";
@@ -466,7 +466,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- [ ] **Step 2: Type-check and commit**
+- [x] **Step 2: Type-check and commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
@@ -475,6 +475,10 @@ git commit
 ```
 
 Commit message: `feat(api): POST /api/subscriptions — user creates pending request`
+
+### Correction (2026-05-08)
+
+The plan's draft used a stale signature `{ userEmail, productDisplay, tier, notes }` for `sendRequestSubmittedEmail`. The real signature in `lib/email.ts` (added by Plan 3) is `{ to, user_email, product_label, tier_label, notes }`. The implementation uses the real signature and resolves the admin `to:` from `INITIAL_ADMIN_EMAIL` (already in `.env.example`); when the env is unset, the call is skipped with a warning. No behavioral change versus the plan's intent.
 
 ---
 
