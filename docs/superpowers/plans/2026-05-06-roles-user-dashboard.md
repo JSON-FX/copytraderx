@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 13 — ClaimSlotDialog
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit)
-- **Next task to execute:** Task 12 — SlotCard component (built after Task 13 because SlotCard imports ClaimSlotDialog)
+- **Last completed:** Task 12 — SlotCard
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit)
+- **Next task to execute:** Task 14 — SubscriptionCard composite
 - **Plan version:** 1.0
 
 ---
@@ -973,7 +973,7 @@ Commit message: `feat(dashboard): add /dashboard layout + nav`
 **Files:**
 - Create: `components/user/slot-card.tsx`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```tsx
 import Link from "next/link";
@@ -1035,7 +1035,7 @@ export function SlotCard({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
