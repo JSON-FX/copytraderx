@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 8 — POST /api/licenses/claim
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = (this commit)
-- **Next task to execute:** Task 9 — Harden journal API per-user
+- **Last completed:** Task 9 — journal API per-user ownership filter
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = (this commit)
+- **Next task to execute:** Task 10 — Tighten /api/licenses/[id]
 - **Plan version:** 1.0
 
 ---
@@ -790,7 +790,7 @@ Commit message: `feat(api): POST /api/licenses/claim — user claims live/demo s
 
 **Goal:** users may only fetch journal data for `mt5_account`s present in `licenses` where `user_id = self`. Admins are unrestricted.
 
-- [ ] **Step 1: Add a shared helper**
+- [x] **Step 1: Add a shared helper**
 
 Create `lib/journal-access.ts`:
 
@@ -827,7 +827,7 @@ export async function ensureJournalAccess(mt5_account: number): Promise<JournalA
 }
 ```
 
-- [ ] **Step 2: Wire into each route**
+- [x] **Step 2: Wire into each route**
 
 In each of the 5 journal routes, at the top of the handler (after parsing `mt5_account`), call:
 
@@ -843,7 +843,7 @@ if (!access.allowed) {
 
 Verify each route still type-checks and that the existing fetch logic runs unchanged after the gate.
 
-- [ ] **Step 3: Type-check and commit**
+- [x] **Step 3: Type-check and commit**
 
 ```bash
 pnpm tsc --noEmit
