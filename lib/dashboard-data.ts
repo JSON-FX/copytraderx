@@ -33,9 +33,7 @@ export async function getDashboardData(
 
   const bySub = new Map<number, { live: License | null; demo: License | null }>();
   for (const sub of subs) bySub.set(sub.id, { live: null, demo: null });
-  type LicenseRow = License & { subscription_id: number | null };
-  for (const lic of (lics ?? []) as LicenseRow[]) {
-    if (lic.subscription_id === null) continue;
+  for (const lic of (lics ?? []) as License[]) {
     const slot = bySub.get(lic.subscription_id);
     if (!slot) continue;
     if (lic.intended_account_type === "live") slot.live = lic;

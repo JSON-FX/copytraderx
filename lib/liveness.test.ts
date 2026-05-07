@@ -7,6 +7,8 @@ function makeLicense(overrides: Partial<License>): License {
     license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
     mt5_account: 12345,
     product: "impulse",
+    subscription_id: 1,
+    user_id: "00000000-0000-0000-0000-000000000001",
     status: "active",
     tier: "monthly",
     expires_at: "2099-01-01T00:00:00Z",

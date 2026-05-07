@@ -10,6 +10,8 @@ export interface License {
   license_key: string;
   mt5_account: number;
   product: Product;
+  subscription_id: number;
+  user_id: string;
   status: LicenseStatus;
   tier: LicenseTier | null;
   expires_at: string | null;            // ISO 8601 or null (null = not yet activated)
