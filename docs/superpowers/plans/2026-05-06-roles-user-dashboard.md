@@ -44,7 +44,7 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 23 — ProductGroupCard + SubscriptionCard compact mode
+- **Last completed:** Task 24 — ProductGroupCard wired into /dashboard (Step 2 browser verification deferred to user)
 - **Last completed commits (resolved):**
   - Task 1 = `c9a22ff`
   - Task 2 = `8302691`
@@ -68,9 +68,10 @@ Same protocol as Plans 1–3:
   - Task 19 = `502c049` (Step 2 browser-verification deferred to Task 21)
   - Task 20 = `2960be7`
   - Task 22 = (previous commit)
-  - Task 23 = (this commit)
+  - Task 23 = `6da8384`
+  - Task 24 = (this commit)
 - **Verification state at end of Task 23:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). UI-only components — no new unit tests required.
-- **Next task to execute:** Task 24 — Wire ProductGroupCard into /dashboard
+- **Next task to execute:** Task 21 — Manual browser E2E + close-out commit (the addendum is now code-complete; awaiting user browser verification of the grouped UI before final close-out commit)
 - **Known follow-up (deferred to Plan 5):** A legacy license that pre-dates the user (matched only by `customer_email`) still sits under the synthetic legacy admin until an admin explicitly reattaches it. We did this once via SQL during the 2026-05-08 E2E session (subscription 6 + license 11 moved from `0b6137e2-…` → `d9ce1958-…`). Plan 5 will add a proper "Reattach to user" admin UI on `/admin/licenses/[id]` so this isn't a SQL-only operation.
 - **Plan version:** 1.1 (added Tasks 22–24 grouping addendum on 2026-05-08)
 
@@ -2052,7 +2053,7 @@ Commit message: `feat(ui): ProductGroupCard + SubscriptionCard compact mode`
 **Files:**
 - Modify: `app/dashboard/page.tsx`
 
-- [ ] **Step 1: Switch the page from per-subscription to per-product rendering**
+- [x] **Step 1: Switch the page from per-subscription to per-product rendering**
 
 In `app/dashboard/page.tsx`:
 
@@ -2071,7 +2072,7 @@ Refresh `/dashboard`. Expected:
 - A user with one pending Impulse + one active Impulse sees a single Impulse card with two stacked rows; the pending row has its own status badge and Cancel button; the active row has its slot grid.
 - A user with only one subscription per product sees the same number of cards as before — no visual regression.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 git add app/dashboard/page.tsx docs/superpowers/plans/2026-05-06-roles-user-dashboard.md
