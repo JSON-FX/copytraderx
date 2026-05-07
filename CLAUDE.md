@@ -25,6 +25,7 @@ subsystems:
   - Users
   - Propfirm Rules
   - Journal
+  - Tooling
 specs_dir: docs/superpowers/specs
 plans_dir: docs/superpowers/plans
 ```
