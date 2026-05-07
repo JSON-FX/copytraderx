@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 5 — POST /api/subscriptions
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = (this commit)
-- **Next task to execute:** Task 6 — DELETE /api/subscriptions/[id]
+- **Last completed:** Task 6 — DELETE /api/subscriptions/[id]
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = (this commit)
+- **Next task to execute:** Task 7 — POST /api/subscriptions/renew
 - **Plan version:** 1.0
 
 ---
@@ -487,7 +487,7 @@ The plan's draft used a stale signature `{ userEmail, productDisplay, tier, note
 **Files:**
 - Create: `app/api/subscriptions/[id]/route.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 import { NextResponse } from "next/server";
@@ -546,7 +546,7 @@ export async function DELETE(
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
