@@ -1,5 +1,7 @@
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import type { DashboardSubscription, License, Subscription } from "./types";
+import { PRODUCT_CODES } from "./products";
+import type { Product } from "./products";
+import type { DashboardProductGroup, DashboardSubscription, License, Subscription } from "./types";
 
 const STATUS_ORDER: Record<Subscription["status"], number> = {
   active: 0,
@@ -53,5 +55,29 @@ export async function getDashboardData(
     return new Date(b.subscription.created_at).getTime() - new Date(a.subscription.created_at).getTime();
   });
 
+  return out;
+}
+
+/**
+ * Group dashboard subscriptions by product. Within each product group, the
+ * input ordering is preserved (so getDashboardData's status sort flows
+ * through). Groups are emitted in PRODUCT_CODES canonical order so the
+ * rendered dashboard is stable across refreshes.
+ */
+export function groupByProduct(
+  items: DashboardSubscription[],
+): DashboardProductGroup[] {
+  const byProduct = new Map<Product, DashboardSubscription[]>();
+  for (const item of items) {
+    const code = item.subscription.product;
+    const arr = byProduct.get(code);
+    if (arr) arr.push(item);
+    else byProduct.set(code, [item]);
+  }
+  const out: DashboardProductGroup[] = [];
+  for (const code of PRODUCT_CODES) {
+    const subs = byProduct.get(code);
+    if (subs && subs.length > 0) out.push({ product: code, subscriptions: subs });
+  }
   return out;
 }

@@ -60,6 +60,18 @@ export interface DashboardSubscription {
   demoLicense: License | null;
 }
 
+/**
+ * Dashboard projection grouped one level higher than DashboardSubscription:
+ * a single product the user has at least one subscription for, plus that
+ * product's subscriptions ordered by status (active first, pending, then
+ * expired/revoked/rejected). Presentation-only — does not change the
+ * underlying slot/license model.
+ */
+export interface DashboardProductGroup {
+  product: import("./products").Product;
+  subscriptions: DashboardSubscription[];
+}
+
 /** Derived "display" status: revoked > expired (date-based) > active. */
 export type DisplayStatus = "active" | "revoked" | "expired";
 

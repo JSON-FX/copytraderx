@@ -44,7 +44,7 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Tasks 1–20 — all code shipped ✅. Task 21 (manual E2E in browser + final close-out commit) is the only remaining work.
+- **Last completed:** Task 22 — groupByProduct helper
 - **Last completed commits (resolved):**
   - Task 1 = `c9a22ff`
   - Task 2 = `8302691`
@@ -67,8 +67,9 @@ Same protocol as Plans 1–3:
   - Task 18 = `31d687e`
   - Task 19 = `502c049` (Step 2 browser-verification deferred to Task 21)
   - Task 20 = `2960be7`
-- **Verification state at end of Task 20:** `pnpm tsc --noEmit` clean; `pnpm test` 168/168 (16 suites). New code is unit-tested where pure (subscription-state, claimSlotSchema); API routes and UI components are integration-tested manually in Task 21.
-- **Next task to execute:** Tasks 22–24 (per-product grouping addendum) and Task 21 (close-out). Task 21 manual E2E was largely done in browser on 2026-05-08 — the only outstanding manual checks are the legacy-license reattach action (handled ad-hoc via SQL during the session — see "Known follow-up" below) and a re-run of the dashboard verification *after* Tasks 22–24 land so the close-out screenshot shows the grouped UI.
+  - Task 22 = (this commit)
+- **Verification state at end of Task 22:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). New code is unit-tested where pure (subscription-state, claimSlotSchema, groupByProduct); API routes and UI components are integration-tested manually in Task 21.
+- **Next task to execute:** Task 23 — ProductGroupCard + compact mode
 - **Known follow-up (deferred to Plan 5):** A legacy license that pre-dates the user (matched only by `customer_email`) still sits under the synthetic legacy admin until an admin explicitly reattaches it. We did this once via SQL during the 2026-05-08 E2E session (subscription 6 + license 11 moved from `0b6137e2-…` → `d9ce1958-…`). Plan 5 will add a proper "Reattach to user" admin UI on `/admin/licenses/[id]` so this isn't a SQL-only operation.
 - **Plan version:** 1.1 (added Tasks 22–24 grouping addendum on 2026-05-08)
 
@@ -1909,7 +1910,7 @@ Anything left from the spec lives in Plan 5: admin pending-requests panel, appro
 - Modify: `lib/dashboard-data.ts`
 - Modify: `lib/types.ts`
 
-- [ ] **Step 1: New view type**
+- [x] **Step 1: New view type**
 
 In `lib/types.ts`, after `DashboardSubscription`, add:
 
@@ -1927,7 +1928,7 @@ export interface DashboardProductGroup {
 }
 ```
 
-- [ ] **Step 2: Group helper in dashboard-data**
+- [x] **Step 2: Group helper in dashboard-data**
 
 In `lib/dashboard-data.ts`, alongside the existing `getDashboardData`, add a pure helper:
 
@@ -1956,7 +1957,7 @@ export function groupByProduct(items: DashboardSubscription[]): DashboardProduct
 
 `Product` and `DashboardProductGroup` get imported as needed. Add a `groupByProduct.test.ts`-style test if you want full TDD here — at minimum, exercise: empty input, single product with two subscriptions (order preserved), two products in mixed input (canonical product order out).
 
-- [ ] **Step 3: Type-check + commit**
+- [x] **Step 3: Type-check + commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
