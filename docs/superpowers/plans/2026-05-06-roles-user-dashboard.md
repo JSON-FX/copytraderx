@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** _none yet_
-- **Last completed commit:** _(filled by commit)_
-- **Next task to execute:** Task 1 — `lib/subscription-state.ts` (TDD)
+- **Last completed:** Task 1 — subscription-state pure helpers
+- **Last completed commit:** Task 1 = (this commit)
+- **Next task to execute:** Task 2 — `claimSlotSchema` in `lib/schemas.ts`
 - **Plan version:** 1.0
 
 ---
@@ -111,7 +111,7 @@ Same as Plans 1–3:
 
 **Why first:** every API route in this plan checks "is this transition allowed?" and the cleanest way to keep that consistent is one module that owns the answer. Pure functions, no Supabase imports, exhaustively tested.
 
-- [ ] **Step 1: Write failing tests**
+- [x] **Step 1: Write failing tests**
 
 In `lib/subscription-state.test.ts`, cover:
 
@@ -167,7 +167,7 @@ describe("canRenewFrom", () => {
 
 Run: `pnpm test lib/subscription-state.test.ts` → expect "Cannot find module" failure.
 
-- [ ] **Step 2: Implement to GREEN**
+- [x] **Step 2: Implement to GREEN**
 
 In `lib/subscription-state.ts`:
 
@@ -196,7 +196,7 @@ export function canRenewFrom(s: { status: SubscriptionStatus }): GuardResult {
 
 Re-run tests → green.
 
-- [ ] **Step 3: Type-check and commit**
+- [x] **Step 3: Type-check and commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
