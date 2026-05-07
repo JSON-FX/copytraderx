@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 18 — ExpiredBanner
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit); Task 18 = (this commit)
-- **Next task to execute:** Task 19 — /dashboard page
+- **Last completed:** Task 19 — /dashboard page (Step 2 browser-verification deferred to Task 21)
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit); Task 18 = (this commit); Task 19 = (this commit)
+- **Next task to execute:** Task 20 — User-side journal page
 - **Plan version:** 1.0
 
 ---
@@ -1642,7 +1642,7 @@ Commit message: `feat(ui): ExpiredBanner shared component`
 **Files:**
 - Create: `app/dashboard/page.tsx`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```tsx
 import { redirect } from "next/navigation";
@@ -1704,7 +1704,7 @@ Rebuild Docker, log in as a freshly-provisioned non-admin user (create one via `
 - Request a license → pending card shows; click Cancel → card disappears after refresh.
 - Admin (still signed in elsewhere) creates a user with `initial_subscription` (existing flow); that user logging in sees one active card with two empty slots; clicking Add MT5 account on the live slot succeeds; the slot now shows the license.
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
