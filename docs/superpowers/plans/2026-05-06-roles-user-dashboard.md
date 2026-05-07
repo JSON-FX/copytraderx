@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 17 — CancelRequestButton
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit)
-- **Next task to execute:** Task 16 — RenewDialog
+- **Last completed:** Task 16 — RenewDialog
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit)
+- **Next task to execute:** Task 14 — SubscriptionCard composite
 - **Plan version:** 1.0
 
 ---
@@ -1414,7 +1414,7 @@ Commit message: `feat(ui): RequestLicenseDialog for /dashboard`
 **Files:**
 - Create: `components/user/renew-dialog.tsx`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 Same pattern as `RequestLicenseDialog`, but:
 - The trigger is `<Button variant="outline" size="sm">Renew</Button>`.
@@ -1535,7 +1535,7 @@ export function RenewDialog({
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit
