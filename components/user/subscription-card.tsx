@@ -21,20 +21,32 @@ export function SubscriptionCard({
 
   return (
     <div className={compact ? "space-y-3" : "rounded-lg border bg-card p-4"}>
-      <div className="mb-3 flex items-start justify-between">
-        <div>
-          {!compact && <h3 className="text-base font-semibold">{productDisplay}</h3>}
-          <p className="text-sm text-muted-foreground">
-            {sub.tier}
-            {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
-          </p>
+      {compact ? (
+        <div className="mb-3 flex justify-end">
+          <div className="flex flex-col items-end gap-1">
+            <Badge variant={isActive ? "default" : isPending ? "secondary" : "outline"}>
+              {sub.status}
+            </Badge>
+            <p className="text-xs text-muted-foreground">
+              {sub.tier}
+              {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
+            </p>
+          </div>
         </div>
-        {!compact && (
+      ) : (
+        <div className="mb-3 flex items-start justify-between">
+          <div>
+            <h3 className="text-base font-semibold">{productDisplay}</h3>
+            <p className="text-sm text-muted-foreground">
+              {sub.tier}
+              {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
+            </p>
+          </div>
           <Badge variant={isActive ? "default" : isPending ? "secondary" : "outline"}>
             {sub.status}
           </Badge>
-        )}
-      </div>
+        </div>
+      )}
 
       {isPending ? (
         <div className="flex items-center justify-between rounded-md border-dashed border p-3">

@@ -20,12 +20,7 @@ export function ProductGroupCard({ group }: { group: DashboardProductGroup }) {
   return (
     <div className="rounded-lg border bg-card p-4">
       <div className="mb-4 flex items-start justify-between">
-        <div>
-          <h3 className="text-base font-semibold">{display}</h3>
-          <p className="text-sm text-muted-foreground">
-            {subs.length === 1 ? "1 subscription" : `${subs.length} subscriptions`}
-          </p>
-        </div>
+        <h3 className="text-base font-semibold">{display}</h3>
         <Badge
           variant={
             activeCount > 0 ? "default" : pendingCount > 0 ? "secondary" : "outline"
