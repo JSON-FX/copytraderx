@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 7 — POST /api/subscriptions/renew
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = (this commit)
-- **Next task to execute:** Task 8 — POST /api/licenses/claim
+- **Last completed:** Task 8 — POST /api/licenses/claim
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = (this commit)
+- **Next task to execute:** Task 9 — Harden journal API per-user
 - **Plan version:** 1.0
 
 ---
@@ -668,7 +668,7 @@ The plan's pseudocode used a stale `sendRequestSubmittedEmail` signature `{ user
 **Files:**
 - Create: `app/api/licenses/claim/route.ts`
 
-- [ ] **Step 1: Implement**
+- [x] **Step 1: Implement**
 
 ```ts
 import { NextResponse } from "next/server";
@@ -767,7 +767,7 @@ export async function POST(req: Request) {
 }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
