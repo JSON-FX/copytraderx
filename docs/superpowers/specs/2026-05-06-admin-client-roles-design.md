@@ -8,6 +8,10 @@
 
 - **2026-05-06 — Multi-product support added.** Originally the spec assumed Impulse-only licenses. The codebase already has multi-EA awareness on the journal side (`EaSource` enum in `lib/types.ts`), but the `licenses` table did not carry a product dimension and the license-key prefix was hardcoded `IMPX-`. This amendment introduces a `product` column on `subscriptions` and `licenses`, per-product license-key prefixes, and a product picker in the Request New License modal. See §3.5 (new) and references throughout §5–§6.
 
+- **2026-05-08 — Admin license create form rework folded into Plan 5.** During Plan 4 close-out, the user flagged that `/admin/licenses/new` predates the user-side request flow and now contradicts it (Account Type picker is redundant, MT5 number shouldn't be admin-supplied, license key shouldn't be visible at form-fill time). Plan 5 was already going to replace the synthetic-subscription branch this form depends on; the rework is now formalized as part of Plan 5's scope. See `2026-05-08-plan5-scope-note-admin-form-rework.md` for the design.
+
+- **2026-05-08 — Subscription extensions (Plan 6) added as a sibling spec.** §6.6 of this spec defines renewal-as-replacement (post-expiry only). Pre-expiry extension is added as a separate spec (`2026-05-08-subscription-extensions-design.md`) that introduces a new `subscription_extensions` audit table and an in-place mutation flow on `active` subscriptions. The two flows live side by side — renew on `expired/revoked`, extend on `active` — and never overlap.
+
 ## 1. Problem
 
 CopyTraderX-License is currently a single-admin tool with no authentication. Every visitor implicitly has full control: create licenses, edit any license, see every account's journal. To deploy this beyond a single operator we need:
