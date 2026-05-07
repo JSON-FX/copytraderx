@@ -44,9 +44,9 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 19 — /dashboard page (Step 2 browser-verification deferred to Task 21)
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit); Task 18 = (this commit); Task 19 = (this commit)
-- **Next task to execute:** Task 20 — User-side journal page
+- **Last completed:** Task 20 — user-side journal page
+- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit); Task 18 = (this commit); Task 19 = (this commit); Task 20 = (this commit)
+- **Next task to execute:** Task 21 — Manual E2E + close-out commit
 - **Plan version:** 1.0
 
 ---
@@ -1722,7 +1722,7 @@ Commit message: `feat(dashboard): /dashboard page renders subscriptions + slots`
 - Create: `app/dashboard/licenses/[id]/page.tsx`
 - Create: `app/dashboard/licenses/[id]/loading.tsx`
 
-- [ ] **Step 1: Implement the page**
+- [x] **Step 1: Implement the page**
 
 ```tsx
 import { notFound, redirect } from "next/navigation";
@@ -1766,7 +1766,7 @@ export default async function UserJournalPage({
 
 `app/dashboard/licenses/[id]/loading.tsx`: copy the existing `app/admin/licenses/[id]/journal/loading.tsx` verbatim if it exists, otherwise render a basic skeleton.
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
@@ -1775,6 +1775,10 @@ git commit
 ```
 
 Commit message: `feat(dashboard): user-side journal page scoped by ownership`
+
+### Correction — Task 20
+
+The plan's draft only passed `license` to `JournalShell` (i.e., `<JournalShell license={license} />`), but the actual `JournalShell` interface (`components/journal/journal-shell.tsx`) requires six initial-data props plus the propfirm rule: `initialSnapshot`, `initialDaily`, `initialPositions`, `initialDeals`, `initialOrders`, and `rule`. The implementation mirrors `app/admin/licenses/[id]/journal/page.tsx` exactly — using the same `Promise.all` pattern over the six `lib/journal/queries` helpers — except for the ownership gate (404 when `license.user_id !== user.id` for non-admins) and the omission of `<SiteNav />` (the dashboard layout owns navigation).
 
 ---
 
