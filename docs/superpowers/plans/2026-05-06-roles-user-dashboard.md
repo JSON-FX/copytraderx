@@ -44,9 +44,31 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 20 — user-side journal page
-- **Last completed commit:** Task 1 = c9a22ff; Task 2 = 8302691; Task 3 = 7587c09; Task 4 = 595d599; refactor(types) = c9ce0bd; Task 5 = 86e24d4; Task 6 = 8c29aec; Task 7 = 6120e89; Task 8 = e97c347; Task 9 = e38b744; Task 10 = (prev commit); Task 11 = (this commit); Task 13 = (this commit); Task 12 = (this commit); Task 15 = (this commit); Task 17 = (this commit); Task 16 = (this commit); Task 14 = (this commit); Task 18 = (this commit); Task 19 = (this commit); Task 20 = (this commit)
-- **Next task to execute:** Task 21 — Manual E2E + close-out commit
+- **Last completed:** Tasks 1–20 — all code shipped ✅. Task 21 (manual E2E in browser + final close-out commit) is the only remaining work.
+- **Last completed commits (resolved):**
+  - Task 1 = `c9a22ff`
+  - Task 2 = `8302691`
+  - Task 3 = `7587c09`
+  - Task 4 = `595d599`
+  - Inline refactor (License gained `subscription_id`/`user_id`) = `c9ce0bd`
+  - Task 5 = `86e24d4`
+  - Task 6 = `8c29aec`
+  - Task 7 = `6120e89`
+  - Task 8 = `e97c347`
+  - Task 9 = `e38b744`
+  - Task 10 = `4a73f07`
+  - Task 11 = `1e83ec0`
+  - Task 13 = `a2e1d15` (built before Task 12 because SlotCard imports ClaimSlotDialog)
+  - Task 12 = `932e317`
+  - Task 15 = `62df4a3`
+  - Task 17 = `f9e8f9d`
+  - Task 16 = `53fd410`
+  - Task 14 = `5fffa6a` (built last among 12–17 because it composes the others)
+  - Task 18 = `31d687e`
+  - Task 19 = `502c049` (Step 2 browser-verification deferred to Task 21)
+  - Task 20 = `2960be7`
+- **Verification state at end of Task 20:** `pnpm tsc --noEmit` clean; `pnpm test` 168/168 (16 suites). New code is unit-tested where pure (subscription-state, claimSlotSchema); API routes and UI components are integration-tested manually in Task 21.
+- **Next task to execute:** Task 21 — Manual browser E2E + close-out commit. This is user-facing verification (requires `docker compose up -d --build`); the subagent-driven implementation phase is complete.
 - **Plan version:** 1.0
 
 ---
