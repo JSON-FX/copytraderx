@@ -44,7 +44,7 @@ Same protocol as Plans 1–3:
 
 > **Updated by the executor after each completed task. Single source of truth for "what's done."**
 
-- **Last completed:** Task 24 — ProductGroupCard wired into /dashboard (Step 2 browser verification deferred to user)
+- **Last completed:** Task 21 — Plan 4 complete ✅ (manual E2E verified in browser 2026-05-08; addendum's grouped UI accepted by user)
 - **Last completed commits (resolved):**
   - Task 1 = `c9a22ff`
   - Task 2 = `8302691`
@@ -65,18 +65,20 @@ Same protocol as Plans 1–3:
   - Task 16 = `53fd410`
   - Task 14 = `5fffa6a` (built last among 12–17 because it composes the others)
   - Task 18 = `31d687e`
-  - Task 19 = `502c049` (Step 2 browser-verification deferred to Task 21)
+  - Task 19 = `502c049` (Step 2 browser-verification rolled into Task 21 close-out)
   - Task 20 = `2960be7`
-  - Task 22 = (previous commit)
+  - Plan addendum doc = `5b30b19`
+  - Task 22 = `855236d`
   - Task 23 = `6da8384`
-  - Task 24 = (this commit)
-  - UI polish (compact-mode badge removal + grid items-start) = (this commit)
-  - UI polish (tier+expiry under inner badge; remove group sub-line) = (this commit)
-  - UI polish (single combined badge per row; remove group-level badge) = (this commit)
-- **Verification state at end of Task 23:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). UI-only components — no new unit tests required.
-- **Next task to execute:** Task 21 — Manual browser E2E + close-out commit (the addendum is now code-complete; awaiting user browser verification of the grouped UI before final close-out commit)
+  - Task 24 = `0c14eda`
+  - UI polish (compact-mode badge removal + grid items-start) = `190e807`
+  - UI polish (tier+expiry under inner badge; remove group sub-line) = `dd72225`
+  - UI polish (single combined badge per row; remove group-level badge) = `cc02b95`
+  - Task 21 close-out (this commit)
+- **Final verification:** `pnpm tsc --noEmit` clean; `pnpm test` 172/172 (17 suites). E2E walked through in browser at copytraderx.local on 2026-05-08 — covered: admin user creation, force-change-password flow, claim live + demo slots, open user-side journal, request a license (DB row confirmed), manual approve, manual expiry → renew (product-locked dialog), cross-role access checks, grouped-UI presentation polish (combined `status · tier · expires` badge, group-level header simplified to product name only).
+- **Next task to execute:** Plan 5 (`docs/superpowers/plans/2026-05-06-roles-requests-and-e2e.md` — to be written) — admin Pending Requests panel, approve/reject API + UI, cron-driven expiry, admin revoke, "Reattach to user" admin UI for legacy licenses, email senders for approve/reject, Playwright E2E.
 - **Known follow-up (deferred to Plan 5):** A legacy license that pre-dates the user (matched only by `customer_email`) still sits under the synthetic legacy admin until an admin explicitly reattaches it. We did this once via SQL during the 2026-05-08 E2E session (subscription 6 + license 11 moved from `0b6137e2-…` → `d9ce1958-…`). Plan 5 will add a proper "Reattach to user" admin UI on `/admin/licenses/[id]` so this isn't a SQL-only operation.
-- **Plan version:** 1.1 (added Tasks 22–24 grouping addendum on 2026-05-08)
+- **Plan version:** 1.1 (added Tasks 22–24 grouping addendum on 2026-05-08; closed out 2026-05-08)
 
 ---
 
@@ -1725,7 +1727,7 @@ export default async function DashboardPage() {
 }
 ```
 
-- [ ] **Step 2: Verify in the browser**
+- [x] **Step 2: Verify in the browser**
 
 Rebuild Docker, log in as a freshly-provisioned non-admin user (create one via `/admin/users/new` first while signed in as admin), confirm:
 
@@ -1816,7 +1818,7 @@ The plan's draft only passed `license` to `JournalShell` (i.e., `<JournalShell l
 **Files:**
 - _(none)_
 
-- [ ] **Step 1: Spin up the app**
+- [x] **Step 1: Spin up the app**
 
 ```bash
 pnpm tsc --noEmit && pnpm test
@@ -1825,18 +1827,18 @@ docker compose up -d --build
 
 Open `http://copytraderx.local`.
 
-- [ ] **Step 2: As admin — create a test user**
+- [x] **Step 2: As admin — create a test user**
 
 1. Sign in as `help.copytraderx@gmail.com`.
 2. `/admin/users/new` → email `test-user-plan4@example.com`, full_name "Plan 4 Tester", initial_subscription: product=Impulse, tier=Monthly. Submit.
 3. Confirm user appears in `/admin/users`. Note the temp password (or use admin "Resend welcome" if email isn't configured).
 
-- [ ] **Step 3: As the test user — first login + change password**
+- [x] **Step 3: As the test user — first login + change password**
 
 1. Open a private window. `/login` → email + temp password → forced redirect to `/auth/change-password` → set a real password → redirected to `/dashboard`.
 2. Confirm dashboard shows the Impulse Monthly card with two empty slots.
 
-- [ ] **Step 4: Claim flows**
+- [x] **Step 4: Claim flows**
 
 1. Click "Add MT5 account" on the live slot → enter `12345001` → submit.
 2. Confirm slot now shows the MT5 number, an `IMPX-…` license_key, and an "Open journal" link.
@@ -1844,13 +1846,13 @@ Open `http://copytraderx.local`.
 4. Try opening another user's journal by guessing a license id (e.g. `/dashboard/licenses/1` if id 1 belongs to another account). Confirm 404.
 5. Repeat for the demo slot with MT5 `12345002`.
 
-- [ ] **Step 5: Request flows**
+- [x] **Step 5: Request flows**
 
 1. On the dashboard, click "Request New License" → product=CTX Live, tier=Quarterly, notes "test request" → submit. Confirm pending card appears.
 2. Click "Cancel request" → confirm → card disappears.
 3. Submit another request, then sign in as admin in another window. Confirm the request shows in `/admin/licenses` (visual verification only — the Pending Requests panel isn't built until Plan 5; for now, query `subscriptions where status='pending'` directly via `/admin/users/[id]` if visible there, or `select * from public.subscriptions where status = 'pending'` in Supabase Studio).
 
-- [ ] **Step 6: Renewal flow setup**
+- [x] **Step 6: Renewal flow setup**
 
 Manually flip a subscription to `expired` via Supabase Studio (`update public.subscriptions set status='expired', expires_at = now() - interval '1 day' where id = X`). Refresh the user dashboard and confirm:
 
@@ -1859,14 +1861,14 @@ Manually flip a subscription to `expired` via Supabase Studio (`update public.su
 - Clicking Renew opens the renew dialog with product locked to the source's product.
 - Submitting creates a new pending row visible at the top of the dashboard.
 
-- [ ] **Step 7: Cross-role access checks**
+- [x] **Step 7: Cross-role access checks**
 
 1. As the test user, hit `/admin/licenses` directly → should redirect to `/dashboard`.
 2. As admin, hit `/dashboard` → should render (admins can browse).
 3. As anonymous (sign out), hit `/dashboard` → redirect to `/login?next=/dashboard`.
 4. Hit `/api/journal/12345001/snapshot` as the test user → 200. As a different user → 404. As anon → 401.
 
-- [ ] **Step 8: Final commit — close out the plan**
+- [x] **Step 8: Final commit — close out the plan**
 
 Update Status block:
 
@@ -1884,7 +1886,7 @@ Commit message: `docs(plan): close out Plan 4 — user dashboard, claim, request
 
 ## Coverage check
 
-- [ ] **Spec coverage:**
+- [x] **Spec coverage:**
   - §3.5 (products) → Tasks 4, 8, 14, 15, 16 (everywhere a product picker / display happens).
   - §4.1 (`/dashboard/*` routes) → Tasks 11, 19, 20.
   - §4.2 (three-layer enforcement) → Tasks 5, 6, 7, 8, 9, 10, 11, 19, 20.
@@ -2067,7 +2069,7 @@ In `app/dashboard/page.tsx`:
 - The empty-state condition becomes `groups.length === 0`.
 - The `expiredCount` heuristic remains based on `items` (subscription grain), no change there.
 
-- [ ] **Step 2: Manual browser check**
+- [x] **Step 2: Manual browser check**
 
 Refresh `/dashboard`. Expected:
 
@@ -2088,7 +2090,7 @@ Commit message: `feat(dashboard): group subscription cards by product`
 
 ### Coverage check (addendum)
 
-- [ ] **Brainstorm decision recorded:** Option A (presentation-only grouping; no schema change). Rejected Option B (one-product-per-user uniqueness) because it would have broken the legitimate "different tiers / different MT5s on the same product" case the spec already supports.
-- [ ] **No spec drift:** §5.3 slot uniqueness still per-subscription. §5.4 quota still derived from active-subscription count. §6.3 still describes per-subscription claim semantics; the dashboard just groups the visual presentation.
-- [ ] **No data migration needed.**
-- [ ] **Plan 5 unaffected:** the admin Pending Requests panel reads `subscriptions where status='pending'` directly; how the user-side dashboard renders has no impact on it.
+- [x] **Brainstorm decision recorded:** Option A (presentation-only grouping; no schema change). Rejected Option B (one-product-per-user uniqueness) because it would have broken the legitimate "different tiers / different MT5s on the same product" case the spec already supports.
+- [x] **No spec drift:** §5.3 slot uniqueness still per-subscription. §5.4 quota still derived from active-subscription count. §6.3 still describes per-subscription claim semantics; the dashboard just groups the visual presentation.
+- [x] **No data migration needed.**
+- [x] **Plan 5 unaffected:** the admin Pending Requests panel reads `subscriptions where status='pending'` directly; how the user-side dashboard renders has no impact on it.
