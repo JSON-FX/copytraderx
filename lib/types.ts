@@ -208,3 +208,31 @@ export interface AppUser {
   created_at: string;
   created_by: string | null;
 }
+
+// ── Plan 6: subscription extensions ──────────────────────────────────────────
+
+export type SubscriptionExtensionStatus = "pending" | "approved" | "rejected";
+
+export type RejectionCode =
+  | "source_expired_before_approval"
+  | "source_revoked_before_approval"
+  | "admin_manual";
+
+export interface SubscriptionExtension {
+  id: number;
+  subscription_id: number;
+  user_id: string;
+  requested_tier: LicenseTier;
+  status: SubscriptionExtensionStatus;
+  requested_at: string;
+  approved_at: string | null;
+  approved_by: string | null;
+  rejection_code: RejectionCode | null;
+  rejection_message: string | null;
+  old_tier: LicenseTier | null;
+  new_tier: LicenseTier | null;
+  old_expires_at: string | null;
+  new_expires_at: string | null;
+  notes: string | null;
+  created_at: string;
+}

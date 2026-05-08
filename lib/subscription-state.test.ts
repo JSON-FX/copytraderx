@@ -88,3 +88,48 @@ describe("canRevoke", () => {
     }
   });
 });
+
+import {
+  canExtendFrom,
+  canExtendToTier,
+  tierRank,
+} from "./subscription-state";
+
+describe("canExtendFrom", () => {
+  test.each([
+    ["pending", false, "subscription_not_active"],
+    ["active", true, undefined],
+    ["rejected", false, "subscription_not_active"],
+    ["expired", false, "subscription_not_active"],
+    ["revoked", false, "subscription_not_active"],
+  ] as const)("status=%s → ok=%s", (status, ok, reason) => {
+    const r = canExtendFrom({ status });
+    expect(r.ok).toBe(ok);
+    if (!r.ok) expect(r.reason).toBe(reason);
+  });
+});
+
+describe("tierRank", () => {
+  test("orders monthly < quarterly < yearly", () => {
+    expect(tierRank.monthly).toBeLessThan(tierRank.quarterly);
+    expect(tierRank.quarterly).toBeLessThan(tierRank.yearly);
+  });
+});
+
+describe("canExtendToTier", () => {
+  test.each([
+    ["monthly", "monthly", true],
+    ["monthly", "quarterly", true],
+    ["monthly", "yearly", true],
+    ["quarterly", "monthly", false],
+    ["quarterly", "quarterly", true],
+    ["quarterly", "yearly", true],
+    ["yearly", "monthly", false],
+    ["yearly", "quarterly", false],
+    ["yearly", "yearly", true],
+  ] as const)("source=%s requested=%s → ok=%s", (source, requested, ok) => {
+    const r = canExtendToTier(source, requested);
+    expect(r.ok).toBe(ok);
+    if (!r.ok) expect(r.reason).toBe("tier_downgrade_not_allowed");
+  });
+});

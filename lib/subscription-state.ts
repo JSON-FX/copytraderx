@@ -1,4 +1,4 @@
-import type { SubscriptionStatus } from "./types";
+import type { SubscriptionStatus, LicenseTier } from "./types";
 
 export type GuardResult =
   | { ok: true }
@@ -32,4 +32,19 @@ export function canReject(s: { status: SubscriptionStatus }): GuardResult {
 export function canRevoke(s: { status: SubscriptionStatus }): GuardResult {
   if (s.status === "active") return { ok: true };
   return { ok: false, reason: "not_active" };
+}
+
+export const tierRank = { monthly: 1, quarterly: 2, yearly: 3 } as const;
+
+export function canExtendFrom(s: { status: SubscriptionStatus }): GuardResult {
+  if (s.status === "active") return { ok: true };
+  return { ok: false, reason: "subscription_not_active" };
+}
+
+export function canExtendToTier(
+  sourceTier: LicenseTier,
+  requestedTier: LicenseTier,
+): GuardResult {
+  if (tierRank[requestedTier] >= tierRank[sourceTier]) return { ok: true };
+  return { ok: false, reason: "tier_downgrade_not_allowed" };
 }
