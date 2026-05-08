@@ -8,7 +8,8 @@
     "start": "next start",
     "lint": "eslint",
     "test": "jest",
-    "seed:admin": "tsx scripts/seed-admin.ts"
+    "seed:admin": "tsx scripts/seed-admin.ts",
+    "expire:subs": "tsx scripts/expire-subscriptions.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
