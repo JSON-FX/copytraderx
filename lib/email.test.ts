@@ -1,4 +1,4 @@
-import { sendEmail, sendWelcomeEmail, sendRequestSubmittedEmail, mockTransport } from "./email";
+import { sendEmail, sendWelcomeEmail, sendRequestSubmittedEmail, sendSubscriptionGrantedEmail, sendSubscriptionRevokedEmail, mockTransport } from "./email";
 
 describe("sendEmail (mock transport)", () => {
   beforeEach(() => mockTransport.reset());
@@ -107,5 +107,51 @@ describe("sendRequestSubmittedEmail", () => {
     const text = mockTransport.sent[0].text;
     expect(text).toContain("Notes:");
     expect(text).toContain("renewing my prop firm challenge");
+  });
+});
+
+describe("sendSubscriptionGrantedEmail", () => {
+  beforeEach(() => mockTransport.reset());
+
+  it("renders subject and body with product/tier/login_url", async () => {
+    const result = await sendSubscriptionGrantedEmail(
+      {
+        to: "user@example.com",
+        product_label: "CTX Live",
+        tier_label: "Monthly",
+        expires_at: "2026-06-08",
+        login_url: "https://copytraderx.example/login",
+      },
+      mockTransport,
+    );
+    expect(result.ok).toBe(true);
+    expect(mockTransport.sent).toHaveLength(1);
+    const msg = mockTransport.sent[0];
+    expect(msg.to).toBe("user@example.com");
+    expect(msg.subject).toContain("CTX Live");
+    expect(msg.text).toContain("Monthly");
+    expect(msg.text).toContain("2026-06-08");
+    expect(msg.text).toContain("https://copytraderx.example/login");
+  });
+});
+
+describe("sendSubscriptionRevokedEmail", () => {
+  beforeEach(() => mockTransport.reset());
+
+  it("renders subject and body with product/tier", async () => {
+    const result = await sendSubscriptionRevokedEmail(
+      {
+        to: "user@example.com",
+        product_label: "Impulse",
+        tier_label: "Yearly",
+      },
+      mockTransport,
+    );
+    expect(result.ok).toBe(true);
+    expect(mockTransport.sent).toHaveLength(1);
+    const msg = mockTransport.sent[0];
+    expect(msg.subject).toContain("revoked");
+    expect(msg.subject).toContain("Impulse");
+    expect(msg.text).toContain("Yearly");
   });
 });

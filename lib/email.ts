@@ -234,6 +234,65 @@ export async function sendRequestRejectedEmail(
   );
 }
 
+export type SubscriptionGrantedEmailInput = {
+  to: string;
+  product_label: string;
+  tier_label: string;
+  expires_at: string;
+  login_url: string;
+};
+
+export async function sendSubscriptionGrantedEmail(
+  input: SubscriptionGrantedEmailInput,
+  transport: EmailTransport = smtpTransport,
+): Promise<SendResult> {
+  const text = [
+    `An administrator has granted you a ${input.product_label} (${input.tier_label}) subscription.`,
+    ``,
+    `Valid until: ${input.expires_at}`,
+    ``,
+    `Sign in to claim your live and demo slots:`,
+    input.login_url,
+    ``,
+    `— CopyTraderX`,
+  ].join("\n");
+  return sendEmail(
+    {
+      to: input.to,
+      subject: `Subscription granted: ${input.product_label} (${input.tier_label})`,
+      text,
+    },
+    transport,
+  );
+}
+
+export type SubscriptionRevokedEmailInput = {
+  to: string;
+  product_label: string;
+  tier_label: string;
+};
+
+export async function sendSubscriptionRevokedEmail(
+  input: SubscriptionRevokedEmailInput,
+  transport: EmailTransport = smtpTransport,
+): Promise<SendResult> {
+  const text = [
+    `Your ${input.product_label} (${input.tier_label}) subscription has been revoked by an administrator.`,
+    ``,
+    `Any active licenses on this subscription are now deactivated. If this was unexpected, please reply to this email.`,
+    ``,
+    `— CopyTraderX`,
+  ].join("\n");
+  return sendEmail(
+    {
+      to: input.to,
+      subject: `Subscription revoked: ${input.product_label} (${input.tier_label})`,
+      text,
+    },
+    transport,
+  );
+}
+
 /** True only if the message was actually delivered to the transport (not skipped). */
 export function wasSent(result: SendResult): boolean {
   return result.ok && !("skipped" in result && result.skipped === true);
