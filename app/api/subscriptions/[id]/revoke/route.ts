@@ -3,7 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { extractRole } from "@/lib/role";
 import { canRevoke } from "@/lib/subscription-state";
-import { sendSubscriptionRevokedEmail } from "@/lib/email";
+import { sendSubscriptionRevokedEmail, rejectionCopyFor } from "@/lib/email";
 import { productDisplayName } from "@/lib/products";
 import { tierLabel } from "@/lib/users";
 
@@ -53,6 +53,25 @@ export async function POST(
       { error: "update_failed", details: updErr.message },
       { status: 500 },
     );
+
+  // Plan 6: auto-reject any pending extensions on this source. Idempotent via
+  // WHERE status='pending' clause — safe even if the cron expiry sweep also
+  // fires on the same source. Don't fail the revoke if this step fails.
+  const { error: extRejectErr } = await sb
+    .from("subscription_extensions")
+    .update({
+      status: "rejected",
+      rejection_code: "source_revoked_before_approval",
+      rejection_message: rejectionCopyFor("source_revoked_before_approval")!,
+    })
+    .eq("subscription_id", id)
+    .eq("status", "pending");
+  if (extRejectErr) {
+    console.error(
+      `[api/subscriptions/${id}/revoke] auto-reject extensions failed:`,
+      extRejectErr.message,
+    );
+  }
 
   const { data: targetUser } = await sb
     .from("users")
