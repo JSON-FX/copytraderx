@@ -24,15 +24,12 @@ interface Props {
   initialDeals: Deal[];
   initialOrders: OrderRow[];
   rule: PropfirmRule | null;
+  pushIntervalSeconds: number;
 }
-
-// TODO(T20): source pushIntervalSeconds from the parent subscription once
-// the subscription policy fields are exposed to the journal page.
-const DEFAULT_PUSH_INTERVAL_SECONDS = 10;
 
 export function JournalShell(props: Props) {
   const { license } = props;
-  const pushIntervalMs = DEFAULT_PUSH_INTERVAL_SECONDS * 1000;
+  const pushIntervalMs = props.pushIntervalSeconds * 1000;
   const acct = license.mt5_account;
 
   const snapshot = useJournalPoll<AccountSnapshotCurrent | null>({
@@ -68,7 +65,7 @@ export function JournalShell(props: Props) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-6 py-6">
-      <JournalHeader license={license} pushedAt={snapshot.data?.pushed_at ?? null} />
+      <JournalHeader license={license} pushedAt={snapshot.data?.pushed_at ?? null} pushIntervalSeconds={props.pushIntervalSeconds} />
       <LiveAccountPanel snapshot={snapshot.data} />
       <Tabs defaultValue="overview">
         <TabsList>

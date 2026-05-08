@@ -9,15 +9,30 @@ import {
   getOrders,
 } from "@/lib/journal/queries";
 import { JournalShell } from "@/components/journal/journal-shell";
-import type { License } from "@/lib/types";
+import type { License, PropfirmRule } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
 
-async function loadLicense(id: number): Promise<License | null> {
+interface LicenseWithSubscription extends License {
+  subscriptions: { push_interval_seconds: number; propfirm_rule_id: number | null } | null;
+}
+
+async function loadLicense(id: number): Promise<LicenseWithSubscription | null> {
   const sb = getSupabaseAdmin();
-  const { data, error } = await sb.from("licenses").select("*").eq("id", id).maybeSingle();
+  const { data, error } = await sb
+    .from("licenses")
+    .select("*, subscriptions(push_interval_seconds, propfirm_rule_id)")
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw error;
-  return (data as License | null) ?? null;
+  return (data as LicenseWithSubscription | null) ?? null;
+}
+
+async function loadPropfirmRule(ruleId: number): Promise<PropfirmRule | null> {
+  const sb = getSupabaseAdmin();
+  const { data, error } = await sb.from("propfirm_rules").select("*").eq("id", ruleId).maybeSingle();
+  if (error) return null;
+  return (data as PropfirmRule | null) ?? null;
 }
 
 export default async function UserJournalPage({
@@ -43,15 +58,18 @@ export default async function UserJournalPage({
     notFound();
   }
 
-  // TODO(T20): propfirm_rule_id moved to subscriptions; fetch via subscription join.
-  const [snapshot, positions, deals, orders, daily] = await Promise.all([
+  const sub = license.subscriptions;
+  const pushIntervalSeconds = sub?.push_interval_seconds ?? 10;
+  const ruleId = sub?.propfirm_rule_id ?? null;
+
+  const [snapshot, positions, deals, orders, daily, rule] = await Promise.all([
     getAccountSnapshotCurrent(license.mt5_account),
     getOpenPositions(license.mt5_account),
     getDeals(license.mt5_account),
     getOrders(license.mt5_account),
     getAccountSnapshotsDaily(license.mt5_account),
+    ruleId ? loadPropfirmRule(ruleId) : Promise.resolve(null),
   ]);
-  const rule = null;
 
   return (
     <JournalShell
@@ -62,6 +80,7 @@ export default async function UserJournalPage({
       initialDeals={deals}
       initialOrders={orders}
       rule={rule}
+      pushIntervalSeconds={pushIntervalSeconds}
     />
   );
 }

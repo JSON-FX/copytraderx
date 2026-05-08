@@ -12,9 +12,10 @@ import type { License } from "@/lib/types";
 interface Props {
   license: License;
   pushedAt: string | null;
+  pushIntervalSeconds: number;
 }
 
-export function JournalHeader({ license, pushedAt }: Props) {
+export function JournalHeader({ license, pushedAt, pushIntervalSeconds }: Props) {
   const livenessState = deriveLiveness(license, new Date());
   const displayStatus =
     license.status === "revoked"
@@ -42,8 +43,7 @@ export function JournalHeader({ license, pushedAt }: Props) {
             <span className="rounded bg-muted px-2 py-0.5 text-xs uppercase">{license.account_type}</span>
           )}
           <LivenessBadge state={livenessState} />
-          {/* TODO(T20): pass pushIntervalSeconds from subscription once wired up */}
-          <DataAgeIndicator pushedAt={pushedAt} pushIntervalSeconds={10} />
+          <DataAgeIndicator pushedAt={pushedAt} pushIntervalSeconds={pushIntervalSeconds} />
         </div>
       </div>
     </div>
