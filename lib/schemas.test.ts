@@ -14,6 +14,7 @@ import {
   revokeSubscriptionSchema,
   updateSubscriptionPolicySchema,
   reattachLicenseSchema,
+  extendSubscriptionRequestSchema,
 } from "./schemas";
 
 describe("createLicenseSchema", () => {
@@ -487,5 +488,50 @@ describe("reattachLicenseSchema", () => {
     expect(
       reattachLicenseSchema.safeParse({ target_user_id: "abc" }).success,
     ).toBe(false);
+  });
+});
+
+describe("extendSubscriptionRequestSchema", () => {
+  test("accepts valid body", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "yearly",
+    });
+    expect(r.success).toBe(true);
+  });
+
+  test("rejects non-positive subscription_id", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 0,
+      requested_tier: "monthly",
+    });
+    expect(r.success).toBe(false);
+  });
+
+  test("rejects unknown tier", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "weekly",
+    });
+    expect(r.success).toBe(false);
+  });
+
+  test("accepts optional notes", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "monthly",
+      notes: "thanks",
+    });
+    expect(r.success).toBe(true);
+  });
+
+  test("strips empty-string notes to null", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "monthly",
+      notes: "",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.notes).toBeNull();
   });
 });

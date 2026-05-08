@@ -257,3 +257,22 @@ export type AdminCreateSubscriptionInput = z.infer<typeof adminCreateSubscriptio
 export type RevokeSubscriptionInput = z.infer<typeof revokeSubscriptionSchema>;
 export type UpdateSubscriptionPolicyInput = z.infer<typeof updateSubscriptionPolicySchema>;
 export type ReattachLicenseInput = z.infer<typeof reattachLicenseSchema>;
+
+// ── Plan 6: subscription extensions ──────────────────────────────────────────
+
+export const extendSubscriptionRequestSchema = z
+  .object({
+    subscription_id: z.number().int().positive(),
+    requested_tier: tierEnum,
+    notes: optionalNonEmpty,
+  })
+  .strict();
+
+export const rejectExtensionSchema = z
+  .object({
+    rejection_message: z.string().min(1).max(500),
+  })
+  .strict();
+
+export type ExtendSubscriptionRequestInput = z.infer<typeof extendSubscriptionRequestSchema>;
+export type RejectExtensionInput = z.infer<typeof rejectExtensionSchema>;
