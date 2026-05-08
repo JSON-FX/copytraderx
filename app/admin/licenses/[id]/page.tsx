@@ -11,6 +11,8 @@ import { deriveLiveness } from "@/lib/liveness";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { AlertTriangle, Clock } from "lucide-react";
 import type { License } from "@/lib/types";
+import { isLegacyAdmin } from "@/lib/users";
+import { ReattachLegacyLicenseSection } from "@/components/admin/reattach-legacy-license-section";
 
 export const dynamic = "force-dynamic";
 
@@ -23,6 +25,13 @@ async function fetchLicense(id: number): Promise<License | null> {
     .maybeSingle();
   if (error) return null;
   return data as License | null;
+}
+
+async function fetchOwnerEmail(userId: string | null): Promise<string | null> {
+  if (!userId) return null;
+  const sb = getSupabaseAdmin();
+  const { data } = await sb.from("users").select("email").eq("id", userId).maybeSingle();
+  return data?.email ?? null;
 }
 
 function daysSince(iso: string): number {
@@ -41,6 +50,9 @@ export default async function EditLicensePage({
 
   const license = await fetchLicense(numericId);
   if (!license) notFound();
+
+  const ownerEmail = await fetchOwnerEmail(license.user_id);
+  const legacyOwned = isLegacyAdmin(ownerEmail);
 
   const liveness = deriveLiveness(license, new Date());
   const pastExpiry =
@@ -91,6 +103,8 @@ export default async function EditLicensePage({
         )}
 
         <LicenseForm mode="edit" initial={license} />
+
+        {legacyOwned && <ReattachLegacyLicenseSection licenseId={license.id} />}
 
         <Card className="mt-10 max-w-xl">
           <CardHeader>
