@@ -18,3 +18,18 @@ export function canRenewFrom(s: { status: SubscriptionStatus }): GuardResult {
   if (s.status === "expired" || s.status === "revoked") return { ok: true };
   return { ok: false, reason: "not_renewable" };
 }
+
+export function canApprove(s: { status: SubscriptionStatus }): GuardResult {
+  if (s.status === "pending") return { ok: true };
+  return { ok: false, reason: "not_pending" };
+}
+
+export function canReject(s: { status: SubscriptionStatus }): GuardResult {
+  if (s.status === "pending") return { ok: true };
+  return { ok: false, reason: "not_pending" };
+}
+
+export function canRevoke(s: { status: SubscriptionStatus }): GuardResult {
+  if (s.status === "active") return { ok: true };
+  return { ok: false, reason: "not_active" };
+}
