@@ -2,6 +2,7 @@
   "name": "copytraderx-license",
   "version": "0.1.0",
   "private": true,
+  "packageManager": "pnpm@10.12.4",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -53,5 +54,13 @@
     "ts-jest": "^29.4.9",
     "tsx": "^4.21.0",
     "typescript": "^5"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "msw",
+      "sharp",
+      "unrs-resolver"
+    ]
   }
 }
