@@ -5,12 +5,14 @@ import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { UserForm } from "@/components/admin/user-form";
 import { UserSubscriptionsPanel } from "@/components/admin/user-subscriptions-panel";
 import type { AppUser, Subscription } from "@/lib/types";
+import type { PropfirmRuleOption } from "@/components/admin/subscription-policy-form";
 
 export const dynamic = "force-dynamic";
 
 async function fetchUserAndSubs(id: string): Promise<{
   user: AppUser;
   subscriptions: Subscription[];
+  rules: PropfirmRuleOption[];
 } | null> {
   const sb = getSupabaseAdmin();
   const { data: user } = await sb
@@ -24,7 +26,11 @@ async function fetchUserAndSubs(id: string): Promise<{
     .select("*")
     .eq("user_id", id)
     .order("created_at", { ascending: false });
-  return { user: user as AppUser, subscriptions: (subs ?? []) as Subscription[] };
+  const { data: rules } = await sb
+    .from("propfirm_rules")
+    .select("id, name")
+    .order("name");
+  return { user: user as AppUser, subscriptions: (subs ?? []) as Subscription[], rules: rules ?? [] };
 }
 
 export default async function EditUserPage({
@@ -35,7 +41,7 @@ export default async function EditUserPage({
   const { id } = await params;
   const result = await fetchUserAndSubs(id);
   if (!result) notFound();
-  const { user, subscriptions } = result;
+  const { user, subscriptions, rules } = result;
 
   return (
     <div className="min-h-screen">
@@ -61,7 +67,7 @@ export default async function EditUserPage({
 
         <section className="space-y-3">
           <h2 className="text-sm font-medium">Subscriptions</h2>
-          <UserSubscriptionsPanel subscriptions={subscriptions} />
+          <UserSubscriptionsPanel subscriptions={subscriptions} rules={rules} />
         </section>
       </main>
     </div>
