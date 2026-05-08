@@ -1,4 +1,4 @@
-import { generateTempPassword, tierLabel, productLabel } from "./users";
+import { generateTempPassword, tierLabel, productLabel, LEGACY_ADMIN_EMAIL, isLegacyAdmin } from "./users";
 
 describe("generateTempPassword", () => {
   it("returns a 12-character string by default", () => {
@@ -36,5 +36,18 @@ describe("productLabel", () => {
   it("renders the product display name", () => {
     expect(productLabel("impulse")).toBe("Impulse");
     expect(productLabel("ctx-live")).toBe("CTX Live");
+  });
+});
+
+describe("isLegacyAdmin", () => {
+  it("matches the legacy admin email", () => {
+    expect(LEGACY_ADMIN_EMAIL).toBe("legacy@copytraderx.local");
+    expect(isLegacyAdmin("legacy@copytraderx.local")).toBe(true);
+  });
+  it("rejects other emails", () => {
+    expect(isLegacyAdmin("help.copytraderx@gmail.com")).toBe(false);
+    expect(isLegacyAdmin("user@example.com")).toBe(false);
+    expect(isLegacyAdmin(null)).toBe(false);
+    expect(isLegacyAdmin(undefined)).toBe(false);
   });
 });

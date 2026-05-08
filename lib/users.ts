@@ -38,3 +38,9 @@ const PRODUCT_LABELS: Record<Product, string> = Object.fromEntries(
 export function productLabel(product: Product): string {
   return PRODUCT_LABELS[product];
 }
+
+export const LEGACY_ADMIN_EMAIL = "legacy@copytraderx.local";
+
+export function isLegacyAdmin(email: string | null | undefined): boolean {
+  return email === LEGACY_ADMIN_EMAIL;
+}
