@@ -20,6 +20,8 @@ function fakeItem(
       rejection_reason: null,
       notes: null,
       created_at: new Date(2026, 0, id).toISOString(),
+      push_interval_seconds: 10,
+      propfirm_rule_id: null,
     },
     liveLicense: null,
     demoLicense: null,

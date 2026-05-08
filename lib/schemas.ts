@@ -67,8 +67,6 @@ export const createLicenseSchema = z
     intended_account_type: accountTypeEnum,
     customer_email: optionalEmail,
     notes: optionalNonEmpty,
-    push_interval_seconds: z.number().int().min(3).max(60).default(10),
-    propfirm_rule_id: z.number().int().positive().nullable().default(null),
   })
   .strict()
   .refine(
@@ -92,8 +90,6 @@ export const updateLicenseSchema = z
     expires_at: z.string().datetime().nullable().optional(),
     customer_email: optionalEmail,
     notes: optionalNonEmpty,
-    push_interval_seconds: z.number().int().min(3).max(60).optional(),
-    propfirm_rule_id: z.number().int().positive().nullable().optional(),
   })
   .strict()
   .refine(

@@ -7,7 +7,6 @@ import {
   getDeals,
   getOpenPositions,
   getOrders,
-  getPropfirmRule,
 } from "@/lib/journal/queries";
 import { JournalShell } from "@/components/journal/journal-shell";
 import type { License } from "@/lib/types";
@@ -44,14 +43,15 @@ export default async function UserJournalPage({
     notFound();
   }
 
-  const [snapshot, positions, deals, orders, daily, rule] = await Promise.all([
+  // TODO(T20): propfirm_rule_id moved to subscriptions; fetch via subscription join.
+  const [snapshot, positions, deals, orders, daily] = await Promise.all([
     getAccountSnapshotCurrent(license.mt5_account),
     getOpenPositions(license.mt5_account),
     getDeals(license.mt5_account),
     getOrders(license.mt5_account),
     getAccountSnapshotsDaily(license.mt5_account),
-    license.propfirm_rule_id ? getPropfirmRule(license.propfirm_rule_id) : null,
   ]);
+  const rule = null;
 
   return (
     <JournalShell

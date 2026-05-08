@@ -42,7 +42,8 @@ export function JournalHeader({ license, pushedAt }: Props) {
             <span className="rounded bg-muted px-2 py-0.5 text-xs uppercase">{license.account_type}</span>
           )}
           <LivenessBadge state={livenessState} />
-          <DataAgeIndicator pushedAt={pushedAt} pushIntervalSeconds={license.push_interval_seconds} />
+          {/* TODO(T20): pass pushIntervalSeconds from subscription once wired up */}
+          <DataAgeIndicator pushedAt={pushedAt} pushIntervalSeconds={10} />
         </div>
       </div>
     </div>

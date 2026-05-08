@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import {
   getAccountSnapshotCurrent, getAccountSnapshotsDaily, getDeals,
-  getOpenPositions, getOrders, getPropfirmRule,
+  getOpenPositions, getOrders,
 } from "@/lib/journal/queries";
 import { SiteNav } from "@/components/site-nav";
 import { JournalShell } from "@/components/journal/journal-shell";
@@ -25,14 +25,15 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
   const license = await loadLicense(n);
   if (!license) notFound();
 
-  const [snapshot, positions, deals, orders, daily, rule] = await Promise.all([
+  // TODO(T20): propfirm_rule_id moved to subscriptions; fetch via subscription join.
+  const [snapshot, positions, deals, orders, daily] = await Promise.all([
     getAccountSnapshotCurrent(license.mt5_account),
     getOpenPositions(license.mt5_account),
     getDeals(license.mt5_account),       // all history
     getOrders(license.mt5_account),       // all history
     getAccountSnapshotsDaily(license.mt5_account), // all history
-    license.propfirm_rule_id ? getPropfirmRule(license.propfirm_rule_id) : null,
   ]);
+  const rule = null;
 
   return (
     <>

@@ -26,9 +26,13 @@ interface Props {
   rule: PropfirmRule | null;
 }
 
+// TODO(T20): source pushIntervalSeconds from the parent subscription once
+// the subscription policy fields are exposed to the journal page.
+const DEFAULT_PUSH_INTERVAL_SECONDS = 10;
+
 export function JournalShell(props: Props) {
   const { license } = props;
-  const pushIntervalMs = license.push_interval_seconds * 1000;
+  const pushIntervalMs = DEFAULT_PUSH_INTERVAL_SECONDS * 1000;
   const acct = license.mt5_account;
 
   const snapshot = useJournalPoll<AccountSnapshotCurrent | null>({

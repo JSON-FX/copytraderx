@@ -160,6 +160,18 @@ describe("createLicenseSchema", () => {
     });
     expect(result.success).toBe(false);
   });
+
+  it("rejects push_interval_seconds (moved to subscriptions)", () => {
+    const r = createLicenseSchema.safeParse({
+      license_key: "IMPX-AAAA-AAAA-AAAA-AAAA",
+      mt5_account: 1,
+      product: "impulse",
+      tier: "monthly",
+      intended_account_type: "live",
+      push_interval_seconds: 10,
+    });
+    expect(r.success).toBe(false);
+  });
 });
 
 describe("isValidLicenseKey", () => {

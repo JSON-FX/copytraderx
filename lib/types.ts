@@ -24,8 +24,6 @@ export interface License {
   intended_account_type: AccountType | null;
   notes: string | null;
   created_at: string;
-  push_interval_seconds: number;        // 3-60, default 10
-  propfirm_rule_id: number | null;      // FK to propfirm_rules
 }
 
 export type SubscriptionStatus =
@@ -48,6 +46,8 @@ export interface Subscription {
   rejection_reason: string | null;
   notes: string | null;
   created_at: string;
+  push_interval_seconds: number;        // 3-60, default 10
+  propfirm_rule_id: number | null;      // FK to propfirm_rules
 }
 
 /**
