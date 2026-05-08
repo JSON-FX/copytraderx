@@ -180,9 +180,9 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
         </Select>
         <div className="flex-1" />
         <Button asChild>
-          <Link href="/admin/licenses/new">
+          <Link href="/admin/subscriptions/new">
             <Plus className="mr-2 h-4 w-4" />
-            New License
+            Create subscription
           </Link>
         </Button>
       </div>
