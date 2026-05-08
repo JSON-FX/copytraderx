@@ -1,4 +1,5 @@
 import nodemailer from "nodemailer";
+import type { RejectionCode } from "./types";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -150,20 +151,26 @@ export async function sendWelcomeEmail(
 
 // ── Scaffolded senders (wired up in Plans 4 & 5) ──────────────────────────────
 
+export type EmailKind = "license" | "extension";
+
 export type RequestSubmittedEmailInput = {
   to: string;
   user_email: string;
   product_label: string;
   tier_label: string;
   notes: string | null;
+  kind?: EmailKind; // default "license"
 };
 
 export async function sendRequestSubmittedEmail(
   input: RequestSubmittedEmailInput,
   transport: EmailTransport = smtpTransport,
 ): Promise<SendResult> {
+  const kind: EmailKind = input.kind ?? "license";
+  const prefix = kind === "extension" ? "[Extension]" : "[New License]";
+  const noun = kind === "extension" ? "extension request" : "license request";
   const lines = [
-    `New license request from ${input.user_email}.`,
+    `New ${noun} from ${input.user_email}.`,
     ``,
     `Product: ${input.product_label}`,
     `Tier: ${input.tier_label}`,
@@ -172,7 +179,7 @@ export async function sendRequestSubmittedEmail(
   return sendEmail(
     {
       to: input.to,
-      subject: `New license request: ${input.product_label} (${input.tier_label})`,
+      subject: `${prefix} ${input.product_label} (${input.tier_label})`,
       text: lines.join("\n"),
     },
     transport,
@@ -184,24 +191,36 @@ export type RequestApprovedEmailInput = {
   product_label: string;
   tier_label: string;
   expires_at: string;
+  kind?: EmailKind;
 };
 
 export async function sendRequestApprovedEmail(
   input: RequestApprovedEmailInput,
   transport: EmailTransport = smtpTransport,
 ): Promise<SendResult> {
-  const text = [
-    `Your ${input.product_label} (${input.tier_label}) license has been approved.`,
-    ``,
-    `Valid until: ${input.expires_at}`,
-    ``,
-    `Sign in to claim your live and demo slots.`,
-  ].join("\n");
+  const kind: EmailKind = input.kind ?? "license";
+  const subjectPrefix = kind === "extension" ? "Extension approved" : "License approved";
+  const body =
+    kind === "extension"
+      ? [
+          `Your ${input.product_label} (${input.tier_label}) extension has been approved.`,
+          ``,
+          `New expiry: ${input.expires_at}`,
+          ``,
+          `Your existing slots and licenses are unchanged.`,
+        ]
+      : [
+          `Your ${input.product_label} (${input.tier_label}) license has been approved.`,
+          ``,
+          `Valid until: ${input.expires_at}`,
+          ``,
+          `Sign in to claim your live and demo slots.`,
+        ];
   return sendEmail(
     {
       to: input.to,
-      subject: `License approved: ${input.product_label}`,
-      text,
+      subject: `${subjectPrefix}: ${input.product_label}`,
+      text: body.join("\n"),
     },
     transport,
   );
@@ -212,14 +231,18 @@ export type RequestRejectedEmailInput = {
   product_label: string;
   tier_label: string;
   rejection_reason: string;
+  kind?: EmailKind;
 };
 
 export async function sendRequestRejectedEmail(
   input: RequestRejectedEmailInput,
   transport: EmailTransport = smtpTransport,
 ): Promise<SendResult> {
+  const kind: EmailKind = input.kind ?? "license";
+  const noun = kind === "extension" ? "extension request" : "license request";
+  const subjectPrefix = kind === "extension" ? "Extension request not approved" : "License request not approved";
   const text = [
-    `Your ${input.product_label} (${input.tier_label}) license request was not approved.`,
+    `Your ${input.product_label} (${input.tier_label}) ${noun} was not approved.`,
     ``,
     `Reason:`,
     input.rejection_reason,
@@ -227,7 +250,7 @@ export async function sendRequestRejectedEmail(
   return sendEmail(
     {
       to: input.to,
-      subject: `License request not approved: ${input.product_label}`,
+      subject: `${subjectPrefix}: ${input.product_label}`,
       text,
     },
     transport,
@@ -291,6 +314,22 @@ export async function sendSubscriptionRevokedEmail(
     },
     transport,
   );
+}
+
+const AUTO_REJECT_COPY: Record<Exclude<RejectionCode, "admin_manual">, string> = {
+  source_expired_before_approval:
+    "Your subscription expired before we could approve your extension. Submit a fresh renewal from your dashboard.",
+  source_revoked_before_approval:
+    "This subscription was revoked before the extension could be approved. Contact support if you believe this is an error.",
+};
+
+/**
+ * Returns user-facing copy for an auto-reject rejection_code, or `null` for
+ * `admin_manual` (caller uses the stored rejection_message verbatim).
+ */
+export function rejectionCopyFor(code: RejectionCode): string | null {
+  if (code === "admin_manual") return null;
+  return AUTO_REJECT_COPY[code];
 }
 
 /** True only if the message was actually delivered to the transport (not skipped). */

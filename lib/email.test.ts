@@ -1,4 +1,4 @@
-import { sendEmail, sendWelcomeEmail, sendRequestSubmittedEmail, sendSubscriptionGrantedEmail, sendSubscriptionRevokedEmail, mockTransport } from "./email";
+import { sendEmail, sendWelcomeEmail, sendRequestSubmittedEmail, sendRequestApprovedEmail, sendRequestRejectedEmail, sendSubscriptionGrantedEmail, sendSubscriptionRevokedEmail, rejectionCopyFor, mockTransport } from "./email";
 
 describe("sendEmail (mock transport)", () => {
   beforeEach(() => mockTransport.reset());
@@ -153,5 +153,81 @@ describe("sendSubscriptionRevokedEmail", () => {
     expect(msg.subject).toContain("revoked");
     expect(msg.subject).toContain("Impulse");
     expect(msg.text).toContain("Yearly");
+  });
+});
+
+describe("kind field on senders", () => {
+  beforeEach(() => mockTransport.reset());
+
+  test("sendRequestSubmittedEmail with kind='extension' uses [Extension] subject prefix", async () => {
+    await sendRequestSubmittedEmail(
+      {
+        to: "admin@example.com",
+        user_email: "u@example.com",
+        product_label: "Impulse",
+        tier_label: "yearly",
+        notes: null,
+        kind: "extension",
+      },
+      mockTransport,
+    );
+    expect(mockTransport.sent[0].subject).toMatch(/^\[Extension\]/);
+  });
+
+  test("sendRequestSubmittedEmail with kind='license' (default) uses [New License] prefix", async () => {
+    await sendRequestSubmittedEmail(
+      {
+        to: "admin@example.com",
+        user_email: "u@example.com",
+        product_label: "Impulse",
+        tier_label: "monthly",
+        notes: null,
+      },
+      mockTransport,
+    );
+    expect(mockTransport.sent[0].subject).toMatch(/^\[New License\]/);
+  });
+
+  test("sendRequestApprovedEmail with kind='extension' mentions extension", async () => {
+    await sendRequestApprovedEmail(
+      {
+        to: "u@example.com",
+        product_label: "Impulse",
+        tier_label: "yearly",
+        expires_at: "2027-05-09",
+        kind: "extension",
+      },
+      mockTransport,
+    );
+    expect(mockTransport.sent[0].text).toMatch(/extension/i);
+  });
+
+  test("sendRequestRejectedEmail kind='extension' uses extension copy", async () => {
+    await sendRequestRejectedEmail(
+      {
+        to: "u@example.com",
+        product_label: "Impulse",
+        tier_label: "yearly",
+        rejection_reason: "manual reason",
+        kind: "extension",
+      },
+      mockTransport,
+    );
+    expect(mockTransport.sent[0].text).toMatch(/extension/i);
+    expect(mockTransport.sent[0].text).toMatch(/manual reason/);
+  });
+});
+
+describe("rejectionCopyFor", () => {
+  test("source_expired_before_approval", () => {
+    expect(rejectionCopyFor("source_expired_before_approval")).toMatch(/expired/i);
+  });
+
+  test("source_revoked_before_approval", () => {
+    expect(rejectionCopyFor("source_revoked_before_approval")).toMatch(/revoked/i);
+  });
+
+  test("admin_manual returns null (caller uses stored message verbatim)", () => {
+    expect(rejectionCopyFor("admin_manual")).toBeNull();
   });
 });
