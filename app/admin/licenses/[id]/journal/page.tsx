@@ -4,7 +4,7 @@ import {
   getAccountSnapshotCurrent, getAccountSnapshotsDaily, getDeals,
   getOpenPositions, getOrders,
 } from "@/lib/journal/queries";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { JournalShell } from "@/components/journal/journal-shell";
 import type { License, PropfirmRule } from "@/lib/types";
 
@@ -55,7 +55,7 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
 
   return (
     <>
-      <SiteNav />
+      <AdminSiteNav />
       <JournalShell
         license={license}
         initialSnapshot={snapshot}

@@ -1,11 +1,11 @@
 import Link from "next/link";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { UserForm } from "@/components/admin/user-form";
 
 export default function NewUserPage() {
   return (
     <div className="min-h-screen">
-      <SiteNav />
+      <AdminSiteNav />
       <main className="mx-auto max-w-2xl px-6 py-8">
         <div className="mb-6">
           <Link

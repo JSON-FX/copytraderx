@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { UserForm } from "@/components/admin/user-form";
 import { UserSubscriptionsPanel } from "@/components/admin/user-subscriptions-panel";
 import type { AppUser, Subscription } from "@/lib/types";
@@ -39,7 +39,7 @@ export default async function EditUserPage({
 
   return (
     <div className="min-h-screen">
-      <SiteNav />
+      <AdminSiteNav />
       <main className="mx-auto max-w-2xl px-6 py-8 space-y-8">
         <div>
           <Link

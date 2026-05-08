@@ -1,11 +1,11 @@
 import Link from "next/link";
 import { LicenseForm } from "@/components/license-form";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 
 export default function NewLicensePage() {
   return (
     <div className="min-h-screen">
-      <SiteNav />
+      <AdminSiteNav />
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6">
           <Link href="/admin/licenses" className="text-sm text-muted-foreground hover:underline">

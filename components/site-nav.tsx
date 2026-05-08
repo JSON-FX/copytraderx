@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ThemeToggle } from "@/components/theme-toggle";
 
-export function SiteNav() {
+export function SiteNav({ pendingRequestsCount = 0 }: { pendingRequestsCount?: number } = {}) {
   const pathname = usePathname();
 
   const linkClass = (href: string) =>
@@ -47,6 +47,18 @@ export function SiteNav() {
             aria-current={pathname?.startsWith("/admin/users") ? "page" : undefined}
           >
             Users
+          </Link>
+          <Link
+            href="/admin/requests"
+            className={linkClass("/admin/requests")}
+            aria-current={pathname?.startsWith("/admin/requests") ? "page" : undefined}
+          >
+            Requests
+            {pendingRequestsCount > 0 && (
+              <span className="ml-1 inline-flex items-center justify-center rounded-full bg-amber-500/15 text-amber-600 dark:text-amber-400 text-xs px-1.5 py-0.5">
+                {pendingRequestsCount}
+              </span>
+            )}
           </Link>
           <Link
             href="/admin/settings"

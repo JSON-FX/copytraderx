@@ -4,7 +4,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { LicenseForm } from "@/components/license-form";
 import { LivenessBadge } from "@/components/liveness-badge";
 import { ActivateNowButton } from "@/components/activate-now-button";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { isExpired } from "@/lib/expiry";
 import { deriveLiveness } from "@/lib/liveness";
@@ -50,7 +50,7 @@ export default async function EditLicensePage({
 
   return (
     <div className="min-h-screen">
-      <SiteNav />
+      <AdminSiteNav />
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6">
           <Link

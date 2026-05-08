@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { Button } from "@/components/ui/button";
 import { UserTable } from "@/components/admin/user-table";
 import type { AppUser } from "@/lib/types";
@@ -24,7 +24,7 @@ export default async function UsersPage() {
   const users = await fetchUsers();
   return (
     <div className="min-h-screen">
-      <SiteNav />
+      <AdminSiteNav />
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6 flex items-end justify-between">
           <div>

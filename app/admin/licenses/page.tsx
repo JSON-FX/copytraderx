@@ -1,6 +1,6 @@
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { LicenseTable } from "@/components/license-table";
-import { SiteNav } from "@/components/site-nav";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import type { License } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -22,7 +22,7 @@ export default async function LicensesPage() {
   const licenses = await fetchLicenses();
   return (
     <div className="min-h-screen">
-      <SiteNav />
+      <AdminSiteNav />
       <main className="mx-auto max-w-6xl px-6 py-8">
         <div className="mb-6">
           <h1 className="text-2xl font-semibold">Licenses</h1>
