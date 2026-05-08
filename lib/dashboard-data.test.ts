@@ -25,6 +25,7 @@ function fakeItem(
     },
     liveLicense: null,
     demoLicense: null,
+    pendingExtension: null,
   };
 }
 
@@ -57,5 +58,50 @@ describe("groupByProduct", () => {
   it("does not emit groups for products with no subscriptions", () => {
     const result = groupByProduct([fakeItem(1, "impulse")]);
     expect(result.map((g) => g.product)).toEqual(["impulse"]);
+  });
+});
+
+describe("groupByProduct preserves pendingExtension", () => {
+  test("attaches pendingExtension through the projection", () => {
+    const sub: DashboardSubscription = {
+      subscription: {
+        id: 1,
+        user_id: "u",
+        product: "impulse",
+        tier: "monthly",
+        status: "active",
+        requested_at: "2026-01-01T00:00:00Z",
+        approved_at: "2026-01-01T00:00:00Z",
+        approved_by: "a",
+        expires_at: "2026-06-01T00:00:00Z",
+        rejection_reason: null,
+        notes: null,
+        created_at: "2026-01-01T00:00:00Z",
+        push_interval_seconds: 10,
+        propfirm_rule_id: null,
+      },
+      liveLicense: null,
+      demoLicense: null,
+      pendingExtension: {
+        id: 99,
+        subscription_id: 1,
+        user_id: "u",
+        requested_tier: "yearly",
+        status: "pending",
+        requested_at: "2026-05-09T00:00:00Z",
+        approved_at: null,
+        approved_by: null,
+        rejection_code: null,
+        rejection_message: null,
+        old_tier: null,
+        new_tier: null,
+        old_expires_at: null,
+        new_expires_at: null,
+        notes: null,
+        created_at: "2026-05-09T00:00:00Z",
+      },
+    };
+    const groups = groupByProduct([sub]);
+    expect(groups[0].subscriptions[0].pendingExtension?.id).toBe(99);
   });
 });

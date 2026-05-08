@@ -1,7 +1,13 @@
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { PRODUCT_CODES } from "./products";
 import type { Product } from "./products";
-import type { DashboardProductGroup, DashboardSubscription, License, Subscription } from "./types";
+import type {
+  DashboardProductGroup,
+  DashboardSubscription,
+  License,
+  Subscription,
+  SubscriptionExtension,
+} from "./types";
 
 const STATUS_ORDER: Record<Subscription["status"], number> = {
   active: 0,
@@ -33,6 +39,15 @@ export async function getDashboardData(
 
   if (licErr) throw new Error(`licenses_fetch_failed: ${licErr.message}`);
 
+  // Plan 6: load pending extensions for these subs in one batch.
+  const { data: exts, error: extErr } = await sb
+    .from("subscription_extensions")
+    .select("*")
+    .in("subscription_id", subIds)
+    .eq("status", "pending");
+
+  if (extErr) throw new Error(`extensions_fetch_failed: ${extErr.message}`);
+
   const bySub = new Map<number, { live: License | null; demo: License | null }>();
   for (const sub of subs) bySub.set(sub.id, { live: null, demo: null });
   for (const lic of (lics ?? []) as License[]) {
@@ -42,10 +57,17 @@ export async function getDashboardData(
     if (lic.intended_account_type === "demo") slot.demo = lic;
   }
 
+  const extBySub = new Map<number, SubscriptionExtension>();
+  for (const e of (exts ?? []) as SubscriptionExtension[]) {
+    // Unique-pending-per-source index ensures at most one row per sub.
+    extBySub.set(e.subscription_id, e);
+  }
+
   const out: DashboardSubscription[] = subs.map((sub) => ({
     subscription: sub as Subscription,
     liveLicense: bySub.get(sub.id)!.live,
     demoLicense: bySub.get(sub.id)!.demo,
+    pendingExtension: extBySub.get(sub.id) ?? null,
   }));
 
   out.sort((a, b) => {

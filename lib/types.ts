@@ -58,6 +58,7 @@ export interface DashboardSubscription {
   subscription: Subscription;
   liveLicense: License | null;
   demoLicense: License | null;
+  pendingExtension: SubscriptionExtension | null; // Plan 6
 }
 
 /**
