@@ -5,6 +5,9 @@ import {
   canApprove,
   canReject,
   canRevoke,
+  canExtendFrom,
+  canExtendToTier,
+  tierRank,
 } from "./subscription-state";
 
 describe("canCancel", () => {
@@ -88,12 +91,6 @@ describe("canRevoke", () => {
     }
   });
 });
-
-import {
-  canExtendFrom,
-  canExtendToTier,
-  tierRank,
-} from "./subscription-state";
 
 describe("canExtendFrom", () => {
   test.each([
