@@ -5,6 +5,8 @@ import type { DashboardSubscription } from "@/lib/types";
 import { SlotCard } from "./slot-card";
 import { CancelRequestButton } from "./cancel-request-button";
 import { RenewDialog } from "./renew-dialog";
+import { ExtendDialog } from "./extend-dialog";
+import { ExtensionStatusLine } from "./extension-status-line";
 
 export function SubscriptionCard({
   data,
@@ -18,6 +20,7 @@ export function SubscriptionCard({
   const isPending = sub.status === "pending";
   const isActive = sub.status === "active";
   const canRenew = sub.status === "expired" || sub.status === "revoked";
+  const hasPendingExtension = data.pendingExtension !== null;
 
   return (
     <div className={compact ? "space-y-3" : "rounded-lg border bg-card p-4"}>
@@ -73,6 +76,21 @@ export function SubscriptionCard({
           />
         </div>
       )}
+
+      {isActive ? (
+        <div className="mt-3 flex justify-end">
+          <ExtendDialog
+            sourceSubscriptionId={sub.id}
+            productDisplay={productDisplay}
+            sourceTier={sub.tier}
+            disabled={hasPendingExtension}
+          />
+        </div>
+      ) : null}
+
+      {data.pendingExtension ? (
+        <ExtensionStatusLine extension={data.pendingExtension} />
+      ) : null}
 
       {canRenew ? (
         <div className="mt-3 flex justify-end">
