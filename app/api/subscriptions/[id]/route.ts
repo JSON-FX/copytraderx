@@ -82,6 +82,14 @@ export async function PATCH(
   }
 
   const sb = getSupabaseAdmin();
+  const { data: sub, error: fetchErr } = await sb
+    .from("subscriptions")
+    .select("id")
+    .eq("id", id)
+    .maybeSingle();
+  if (fetchErr) return NextResponse.json({ error: "lookup_failed", details: fetchErr.message }, { status: 500 });
+  if (!sub) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
   const { data: updated, error } = await sb
     .from("subscriptions")
     .update(parsed.data)
@@ -89,7 +97,6 @@ export async function PATCH(
     .select()
     .single();
   if (error) return NextResponse.json({ error: "update_failed", details: error.message }, { status: 500 });
-  if (!updated) return NextResponse.json({ error: "not_found" }, { status: 404 });
 
   return NextResponse.json({ subscription: updated });
 }

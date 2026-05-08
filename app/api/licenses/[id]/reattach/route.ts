@@ -52,11 +52,12 @@ export async function POST(
     return NextResponse.json({ error: "not_legacy_owned" }, { status: 409 });
   }
 
-  const { data: target } = await sb
+  const { data: target, error: targetErr } = await sb
     .from("users")
     .select("id")
     .eq("id", targetUserId)
     .maybeSingle();
+  if (targetErr) return NextResponse.json({ error: "lookup_failed", details: targetErr.message }, { status: 500 });
   if (!target) return NextResponse.json({ error: "target_not_found" }, { status: 404 });
 
   const nowIso = new Date().toISOString();
