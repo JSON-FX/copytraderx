@@ -76,6 +76,20 @@ export async function POST(
       })
       .eq("id", id)
       .eq("status", "pending");
+    const { data: targetUser } = await sb
+      .from("users")
+      .select("email")
+      .eq("id", ext.user_id)
+      .maybeSingle();
+    if (targetUser?.email) {
+      void sendRequestRejectedEmail({
+        to: targetUser.email,
+        product_label: productDisplayName(source.product),
+        tier_label: tierLabel(ext.requested_tier),
+        rejection_reason: rejectionCopyFor("source_revoked_before_approval")!,
+        kind: "extension",
+      });
+    }
     return NextResponse.json({ error: "source_not_active" }, { status: 409 });
   }
 
