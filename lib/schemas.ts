@@ -223,3 +223,41 @@ export const propfirmRuleSchema = z.object({
   max_trading_days: z.number().int().positive().nullable().optional(),
 });
 export type PropfirmRuleInput = z.infer<typeof propfirmRuleSchema>;
+
+// ── Plan 5 admin schemas ─────────────────────────────────────────────────────
+
+export const adminCreateSubscriptionSchema = z
+  .object({
+    user_id: z.string().uuid(),
+    product: productEnum,
+    tier: tierEnum,
+    push_interval_seconds: z.number().int().min(3).max(60).default(10),
+    propfirm_rule_id: z.number().int().positive().nullable().default(null),
+    notes: z.string().trim().transform((v) => (v === "" ? null : v)).nullable().default(null),
+    send_grant_email: z.boolean().default(true),
+  })
+  .strict();
+
+export const revokeSubscriptionSchema = z.object({}).strict();
+
+export const updateSubscriptionPolicySchema = z
+  .object({
+    push_interval_seconds: z.number().int().min(3).max(60).optional(),
+    propfirm_rule_id: z.number().int().positive().nullable().optional(),
+  })
+  .strict()
+  .refine(
+    (obj) => Object.keys(obj).length > 0,
+    "Update body cannot be empty",
+  );
+
+export const reattachLicenseSchema = z
+  .object({
+    target_user_id: z.string().uuid(),
+  })
+  .strict();
+
+export type AdminCreateSubscriptionInput = z.infer<typeof adminCreateSubscriptionSchema>;
+export type RevokeSubscriptionInput = z.infer<typeof revokeSubscriptionSchema>;
+export type UpdateSubscriptionPolicyInput = z.infer<typeof updateSubscriptionPolicySchema>;
+export type ReattachLicenseInput = z.infer<typeof reattachLicenseSchema>;

@@ -10,6 +10,10 @@ import {
   createUserSchema,
   updateUserSchema,
   claimSlotSchema,
+  adminCreateSubscriptionSchema,
+  revokeSubscriptionSchema,
+  updateSubscriptionPolicySchema,
+  reattachLicenseSchema,
 } from "./schemas";
 
 describe("createLicenseSchema", () => {
@@ -378,5 +382,98 @@ describe("claimSlotSchema", () => {
       intended_account_type: "contest",
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("adminCreateSubscriptionSchema", () => {
+  it("accepts a fully populated body", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "11111111-1111-1111-1111-111111111111",
+      product: "ctx-live",
+      tier: "monthly",
+      push_interval_seconds: 10,
+      propfirm_rule_id: 5,
+      notes: "VIP client",
+      send_grant_email: true,
+    });
+    expect(r.success).toBe(true);
+  });
+  it("defaults push_interval_seconds=10 and send_grant_email=true", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "11111111-1111-1111-1111-111111111111",
+      product: "impulse",
+      tier: "yearly",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.push_interval_seconds).toBe(10);
+      expect(r.data.send_grant_email).toBe(true);
+      expect(r.data.propfirm_rule_id).toBeNull();
+      expect(r.data.notes).toBeNull();
+    }
+  });
+  it("rejects bad uuid", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "not-a-uuid",
+      product: "impulse",
+      tier: "monthly",
+    });
+    expect(r.success).toBe(false);
+  });
+  it("rejects unknown product", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "11111111-1111-1111-1111-111111111111",
+      product: "nope",
+      tier: "monthly",
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe("revokeSubscriptionSchema", () => {
+  it("accepts an empty object", () => {
+    expect(revokeSubscriptionSchema.safeParse({}).success).toBe(true);
+  });
+  it("rejects extra fields", () => {
+    expect(revokeSubscriptionSchema.safeParse({ foo: 1 }).success).toBe(false);
+  });
+});
+
+describe("updateSubscriptionPolicySchema", () => {
+  it("accepts push_interval only", () => {
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ push_interval_seconds: 30 }).success,
+    ).toBe(true);
+  });
+  it("accepts propfirm_rule_id null", () => {
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ propfirm_rule_id: null }).success,
+    ).toBe(true);
+  });
+  it("rejects empty body", () => {
+    expect(updateSubscriptionPolicySchema.safeParse({}).success).toBe(false);
+  });
+  it("rejects out-of-range push interval", () => {
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ push_interval_seconds: 0 }).success,
+    ).toBe(false);
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ push_interval_seconds: 9999 }).success,
+    ).toBe(false);
+  });
+});
+
+describe("reattachLicenseSchema", () => {
+  it("accepts a uuid", () => {
+    expect(
+      reattachLicenseSchema.safeParse({
+        target_user_id: "22222222-2222-2222-2222-222222222222",
+      }).success,
+    ).toBe(true);
+  });
+  it("rejects bad uuid", () => {
+    expect(
+      reattachLicenseSchema.safeParse({ target_user_id: "abc" }).success,
+    ).toBe(false);
   });
 });
