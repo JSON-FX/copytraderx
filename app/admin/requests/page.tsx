@@ -11,7 +11,7 @@ export default async function AdminRequestsPage() {
   const sb = getSupabaseAdmin();
   const { data, error } = await sb
     .from("subscriptions")
-    .select("id, product, tier, notes, requested_at, user_id, users!inner(email, full_name)")
+    .select("id, product, tier, notes, requested_at, user_id, users!subscriptions_user_id_fkey(email, full_name)")
     .eq("status", "pending")
     .order("requested_at", { ascending: true });
 
@@ -44,8 +44,8 @@ export default async function AdminRequestsPage() {
     .from("subscription_extensions")
     .select(
       "id, requested_tier, notes, requested_at, " +
-        "subscription:subscriptions!inner(product, tier, expires_at, user_id), " +
-        "user:users!inner(email, full_name)",
+        "subscription:subscriptions!subscription_extensions_subscription_id_fkey(product, tier, expires_at, user_id), " +
+        "user:users!subscription_extensions_user_id_fkey(email, full_name)",
     )
     .eq("status", "pending")
     .order("requested_at", { ascending: true });
