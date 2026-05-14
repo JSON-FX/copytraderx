@@ -136,9 +136,9 @@ function isFilterState(value: unknown): value is FilterState {
 }
 
 export function loadFilters(): FilterState | null {
-  if (typeof window === "undefined") return null;
+  if (typeof localStorage === "undefined") return null;
   try {
-    const raw = window.localStorage.getItem(LOCAL_STORAGE_KEY);
+    const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
     if (raw === null) return null;
     const parsed = JSON.parse(raw);
     if (!isFilterState(parsed)) return null;
@@ -149,9 +149,9 @@ export function loadFilters(): FilterState | null {
 }
 
 export function saveFilters(state: FilterState): void {
-  if (typeof window === "undefined") return;
+  if (typeof localStorage === "undefined") return;
   try {
-    window.localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(state));
   } catch {
     // swallow quota / privacy-mode errors silently
   }
