@@ -39,17 +39,18 @@ export function DashboardFilterProductChip({
   // has narrowed to a strict subset of the available products.
   const nonDefault = value.length > 0 && value.length < options.length;
   function toggle(p: Product) {
-    if (value.includes(p)) onChange(value.filter((x) => x !== p));
-    else onChange([...value, p]);
+    // Normalize empty (= "all") into the explicit full list before mutating,
+    // so unchecking from "all" yields "all except p" rather than "only p".
+    const normalized =
+      value.length === 0 ? options.map((o) => o.product) : value;
+    if (normalized.includes(p)) {
+      onChange(normalized.filter((x) => x !== p));
+    } else {
+      onChange([...normalized, p]);
+    }
   }
   function selectAll() {
     onChange([]);
-  }
-  function clearAll() {
-    onChange(options.map((o) => o.product));
-    // Note: clearAll selects ALL options so the visible chip says "All";
-    // semantic empty array would mean the same thing. Either is fine.
-    // We use the explicit array to keep counts in the popover correct.
   }
   return (
     <Popover>
@@ -72,20 +73,13 @@ export function DashboardFilterProductChip({
         </Button>
       </PopoverTrigger>
       <PopoverContent align="start" className="w-64 p-2">
-        <div className="mb-1 flex items-center justify-between gap-2 border-b pb-1">
+        <div className="mb-1 border-b pb-1">
           <button
             type="button"
             className="text-xs text-muted-foreground hover:text-foreground"
             onClick={selectAll}
           >
             Select all
-          </button>
-          <button
-            type="button"
-            className="text-xs text-muted-foreground hover:text-foreground"
-            onClick={clearAll}
-          >
-            Clear
           </button>
         </div>
         <div className="flex flex-col gap-1">
