@@ -48,7 +48,7 @@ export async function checkTrialDedupe(
   if (error) throw error;
 
   const result: TrialDedupeResult = {};
-  const rows = (data ?? []) as Array<{
+  const rows = ((data ?? []) as unknown) as Array<{
     id: number;
     email: string;
     telegram_handle: string | null;
