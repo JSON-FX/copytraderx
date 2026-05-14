@@ -82,21 +82,25 @@ function SlotRow(props: SlotRowProps) {
 
   return (
     <div className="border-t border-border/60 px-4 py-2.5 text-sm first:border-t-0">
-      <div className="grid grid-cols-[3rem_minmax(0,7rem)_minmax(0,1fr)_auto] items-center gap-3">
-        <span className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+      <div className="flex items-center gap-3">
+        <span className="w-10 shrink-0 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
           {slotType}
         </span>
-        {license ? (
-          <span className="truncate font-mono text-sm">{license.mt5_account}</span>
-        ) : (
-          <span className="text-xs italic text-muted-foreground">— empty —</span>
-        )}
-        {license ? (
-          <LicenseKeyCell licenseKey={license.license_key} />
-        ) : (
-          <span className="text-muted-foreground">—</span>
-        )}
-        <div className="justify-self-end">{slotPrimaryAction(props)}</div>
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {license ? (
+            <>
+              <span className="truncate font-mono text-sm">
+                {license.mt5_account}
+              </span>
+              <LicenseKeyCell licenseKey={license.license_key} compact />
+            </>
+          ) : (
+            <span className="text-xs italic text-muted-foreground">
+              — empty —
+            </span>
+          )}
+        </div>
+        <div className="shrink-0">{slotPrimaryAction(props)}</div>
       </div>
       {isLicenseDegradedOnActiveSub ? (
         <p className="ml-12 mt-1 flex items-center gap-1 text-xs text-destructive">
