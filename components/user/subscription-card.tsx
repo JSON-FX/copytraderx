@@ -15,6 +15,8 @@ import { ExtensionStatusLine } from "./extension-status-line";
 import { RenewDialog } from "./renew-dialog";
 import { ExtendDialog } from "./extend-dialog";
 import { CancelRequestButton } from "./cancel-request-button";
+import { HideSubscriptionButton } from "./hide-subscription-button";
+import { UnhideSubscriptionButton } from "./unhide-subscription-button";
 import type { DashboardSubscription } from "@/lib/types";
 
 type Mode = "current" | "past";
@@ -165,8 +167,14 @@ export function SubscriptionCard({
             sourceTier={sub.tier}
           />
         ) : null}
-        {sub.status === "rejected" ? (
-          <span className="text-xs text-muted-foreground">—</span>
+        {(sub.status === "expired" ||
+          sub.status === "revoked" ||
+          sub.status === "rejected") ? (
+          sub.hidden_at !== null ? (
+            <UnhideSubscriptionButton subscriptionId={sub.id} />
+          ) : (
+            <HideSubscriptionButton subscriptionId={sub.id} />
+          )
         ) : null}
       </CardFooter>
     </Card>

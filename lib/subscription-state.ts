@@ -48,3 +48,13 @@ export function canExtendToTier(
   if (tierRank[requestedTier] >= tierRank[sourceTier]) return { ok: true };
   return { ok: false, reason: "tier_downgrade_not_allowed" };
 }
+
+export function canHide(
+  s: { status: SubscriptionStatus; hidden_at: string | null },
+): GuardResult {
+  if (s.hidden_at !== null) return { ok: false, reason: "already_hidden" };
+  if (s.status === "expired" || s.status === "revoked" || s.status === "rejected") {
+    return { ok: true };
+  }
+  return { ok: false, reason: "not_hideable" };
+}

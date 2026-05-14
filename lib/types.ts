@@ -46,8 +46,9 @@ export interface Subscription {
   rejection_reason: string | null;
   notes: string | null;
   created_at: string;
-  push_interval_seconds: number;        // 3-60, default 10
-  propfirm_rule_id: number | null;      // FK to propfirm_rules
+  hidden_at: string | null;            // null = visible to user, ISO timestamp = hidden
+  push_interval_seconds: number;
+  propfirm_rule_id: number | null;
 }
 
 /**

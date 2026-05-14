@@ -24,6 +24,8 @@ export const DEFAULT_FILTERS: FilterState = {
 
 export const LOCAL_STORAGE_KEY = "dashboard.filters.v1";
 
+export const CARDS_PER_PAGE = 6;
+
 export function statusGroupOf(status: SubscriptionStatus): StatusGroup {
   if (status === "active") return "active";
   if (status === "pending") return "pending";

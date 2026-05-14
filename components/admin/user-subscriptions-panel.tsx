@@ -3,6 +3,14 @@ import { productLabel, tierLabel } from "@/lib/users";
 import type { Subscription } from "@/lib/types";
 import { SubscriptionPolicyForm, type PropfirmRuleOption } from "./subscription-policy-form";
 import { RevokeDialog } from "./revoke-dialog";
+import { EyeOff } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { formatDistanceToNow } from "date-fns";
 
 interface Props {
   subscriptions: Subscription[];
@@ -31,8 +39,27 @@ export function UserSubscriptionsPanel({ subscriptions, rules }: Props) {
         <li key={s.id} className="rounded-md border p-3 text-sm space-y-3">
           <div className="flex items-center justify-between">
             <div>
-              <div className="font-medium">
-                {productLabel(s.product)} — {tierLabel(s.tier)}
+              <div className="font-medium inline-flex items-center gap-1">
+                <span>
+                  {productLabel(s.product)} — {tierLabel(s.tier)}
+                </span>
+                {s.hidden_at !== null ? (
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span
+                          className="inline-flex items-center text-muted-foreground"
+                          aria-label="Hidden by user"
+                        >
+                          <EyeOff className="h-3 w-3" aria-hidden />
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent side="top">
+                        Hidden by user · {formatDistanceToNow(new Date(s.hidden_at), { addSuffix: true })}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ) : null}
               </div>
               <div className="text-xs text-muted-foreground">
                 {s.status === "active" && s.expires_at
