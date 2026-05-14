@@ -121,6 +121,8 @@ export async function checkTrialDedupe(
 }
 
 function escapeIlike(value: string): string {
-  // PostgREST .or() uses commas as separators; escape any in the value.
-  return value.replace(/,/g, "\\,");
+  // PostgREST .or() uses commas as separators, and SQL ILIKE treats %, _,
+  // and \ as wildcards / escape — escape all four so user-supplied
+  // handles match exactly, not as patterns.
+  return value.replace(/[%_\\,]/g, "\\$&");
 }
