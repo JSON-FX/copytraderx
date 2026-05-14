@@ -25,6 +25,11 @@ subscribers.
 - Any anti-abuse measures beyond DB-level uniqueness (no IP tracking,
   fingerprinting, CAPTCHA, rate limiting, or fuzzy email matching). The admin
   is the human gate.
+- EA-side migration to the new `validate_license` RPC. Each EA binary (IMPX
+  + the CTX EAs) gets its own separate plan in its own repo to switch from
+  direct `SELECT FROM licenses` to `rpc('validate_license', ...)`. Until an
+  EA is migrated, it cannot validate trial keys for its product — trials
+  should only be issued for products whose EA has been migrated.
 
 ## Architectural choice: full isolation (Approach B)
 
@@ -47,8 +52,23 @@ Two alternatives were considered and rejected:
   explicitly does not want.
 
 Approach B is the only option that *structurally* guarantees the isolation
-requirement. The duplication cost (one extra validate branch, one parallel
-admin CRUD surface) is small and contained.
+requirement. The duplication cost (one parallel admin CRUD surface plus a
+unifying `validate_license` Postgres function) is small and contained.
+
+### Where the validate logic lives
+
+This Next.js app does **not** host an EA-facing validate endpoint. The EA
+binaries validate by querying Supabase directly. The schema and any
+validate-side logic live in Supabase, with migrations authored in the EA
+repo (`~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/`).
+This repo delivers migrations as SQL files in
+`docs/superpowers/plans/<date>-<topic>.sql`, which the admin applies via
+`supabase db push` from the EA repo.
+
+For trials, the validate-side surface is a new Postgres function
+`validate_license(p_license_key text, p_mt5_account bigint)` that checks
+`licenses` first, then `trial_licenses`, and returns a row with a unified
+shape so the EA's result-parsing code does not need to change.
 
 ## Data model
 
@@ -220,31 +240,83 @@ Body: `{ converted_user_id?: uuid }`. In one transaction:
 Sets `trial_leads.status = 'abandoned'`. Does not touch the license (it will
 expire naturally or has already been revoked).
 
-### `POST /api/license/validate` (modified)
+### Postgres function `validate_license` (Supabase-side, not Next.js)
 
-Existing endpoint gets one extra branch:
+The EA validates by calling Supabase directly. To keep two-table lookup
+logic out of the EA binary, the SQL deliverable ships a Postgres function
+the EA can call via `rpc()`:
 
-1. Look up `license_key` in `licenses` (existing path, unchanged). If found
-   → existing verdict logic runs unchanged.
-2. If not found, look up in `trial_licenses`:
-   - Check `status != 'revoked'`.
-   - Check `expires_at > now()`.
-   - Check `mt5_account` matches.
-   - On first success: stamp `activated_at = now()`.
-   - On every success: stamp `last_validated_at = now()`, record
-     `broker_name`, `account_type`.
-   - Return the same response shape the EA expects. The EA cannot tell its
-     license is a trial.
-3. If found in neither table → invalid key.
+```sql
+create or replace function public.validate_license(
+  p_license_key text,
+  p_mt5_account bigint
+) returns table (
+  source        text,         -- 'license' | 'trial'
+  id            bigint,
+  product       text,
+  license_key   text,
+  mt5_account   bigint,
+  status        text,         -- 'active' | 'revoked' | 'expired' (derived)
+  expires_at    timestamptz,
+  activated_at  timestamptz
+)
+language plpgsql
+security definer
+as $$
+begin
+  -- 1) Look up in real licenses first (hot path; preserves paid-precedence
+  --    during conversion overlap).
+  return query
+    select 'license'::text, l.id, l.product::text, l.license_key,
+           l.mt5_account, l.status::text, l.expires_at, l.activated_at
+    from public.licenses l
+    where l.license_key = p_license_key
+      and l.mt5_account = p_mt5_account
+    limit 1;
 
-**Lookup order rationale:** real licenses are the hot path (99% of validate
-calls). Looking them up first also guarantees that during the conversion
-overlap window — where a paid license exists alongside a not-yet-revoked
-trial — the paid license takes precedence.
+  if found then return; end if;
 
-**Key format:** trial license keys use the same product-prefix format as
-paid keys (e.g., `IMPX-...`). Distinguishing prefixes would force the EA
-binary to know about trial status, which it should not.
+  -- 2) Otherwise check trial licenses.
+  return query
+    select 'trial'::text, t.id, t.product, t.license_key, t.mt5_account,
+           case
+             when t.status = 'revoked' then 'revoked'
+             when t.expires_at < now()  then 'expired'
+             else 'active'
+           end::text,
+           t.expires_at, t.activated_at
+    from public.trial_licenses t
+    where t.license_key = p_license_key
+      and t.mt5_account = p_mt5_account
+    limit 1;
+end;
+$$;
+```
+
+Companion procedures, also delivered in the SQL:
+
+- `stamp_license_validated(p_source text, p_id bigint, p_broker_name text,
+  p_account_type text)` — writes `last_validated_at = now()`, optional
+  `activated_at = now()` (if NULL), `broker_name`, `account_type`. Branches
+  to `licenses` or `trial_licenses` based on `p_source`.
+
+**Lookup order rationale:** paid licenses are the hot path. Lookup-first
+also guarantees that during conversion overlap (paid license exists
+alongside a not-yet-revoked trial), the paid license wins.
+
+**Key format:** trial keys use the same product-prefix format as paid keys
+(e.g., `IMPX-...`). Distinguishing prefixes would force the EA binary to
+know about trial status, which it should not.
+
+**EA-side migration:** out of scope for this plan. Each EA binary gets its
+own plan in its own repo to switch from direct `SELECT FROM licenses` to
+`rpc('validate_license', ...)`. EAs not yet migrated continue to work
+against `licenses` directly — zero breakage for paid customers; they
+simply cannot validate trial keys until migrated.
+
+**RLS:** `trial_licenses` and `trial_leads` deny anon. `validate_license`
+runs with `security definer` so the EA's anon key can call it without
+needing direct table read permissions on `trial_licenses`.
 
 ## Lifecycle
 
@@ -361,18 +433,26 @@ export const convertTrialSchema = z.object({
 
 ## File-level plan (informational; concrete plan comes from writing-plans)
 
-- `db/migrations/<timestamp>_create_trial_tables.sql` — new tables, enums,
-  unique indexes, RLS policies (admin-only).
+**SQL deliverable** (committed to this repo, applied via `supabase db push`
+from the EA repo per existing repo convention):
+
+- `docs/superpowers/plans/2026-05-15-trial-tier-migration.sql` — new
+  enums, `trial_leads` table, `trial_licenses` table, unique indexes, RLS
+  policies (deny anon, admin full access), `validate_license` function,
+  `stamp_license_validated` function.
+
+**Next.js admin surface:**
+
 - `lib/types.ts` — append new types.
 - `lib/schemas.ts` — append new schemas.
 - `lib/trial-state.ts` (new) — pure status derivation helper.
 - `lib/trial-dedupe.ts` (new) — pre-insert dedupe check.
-- `app/api/admin/trials/route.ts` (new) — POST create.
-- `app/api/admin/trials/[id]/revoke/route.ts` (new).
-- `app/api/admin/trials/[id]/convert/route.ts` (new).
-- `app/api/admin/trials/[id]/abandon/route.ts` (new).
-- `app/api/license/validate/route.ts` — add trial branch after real-license
-  miss.
+- `app/api/trials/route.ts` (new) — POST create (follows existing
+  `app/api/licenses/route.ts` admin-gated pattern, not under a separate
+  `/admin/` URL prefix to match repo convention).
+- `app/api/trials/[id]/revoke/route.ts` (new).
+- `app/api/trials/[id]/convert/route.ts` (new).
+- `app/api/trials/[id]/abandon/route.ts` (new).
 - `app/admin/trials/page.tsx` (new) — list.
 - `app/admin/trials/new/page.tsx` (new) — create form.
 - `app/admin/trials/[id]/page.tsx` (new) — detail + actions.
@@ -407,12 +487,11 @@ page.
 - `POST /api/admin/trials/[id]/convert` — flips lead status, sets
   `converted_user_id`, revokes license, all in one tx.
 - `POST /api/admin/trials/[id]/abandon` — flips lead status.
-- `POST /api/license/validate` — trial branch returns expected shape for
-  valid / expired / revoked / wrong-MT5 cases.
-- `POST /api/license/validate` — real license takes precedence if same key
-  exists in both tables (guard test for lookup order).
-- `POST /api/license/validate` — broker_name and account_type updates write
-  to `trial_licenses`.
+- `validate_license` Postgres function — tested via `pnpm test:db` SQL
+  fixture script (new) that inserts known rows into both tables and asserts
+  the function's output for valid / expired / revoked / wrong-MT5 / paid-
+  precedence-during-overlap cases. Optional but recommended — pure SQL
+  unit test, no Next.js involvement.
 
 ### E2E smoke (Playwright)
 
@@ -448,3 +527,14 @@ writing this spec.
   converted); no prefill shortcut, preserving isolation.
 - **2026-05-15:** Trial license keys use same product prefix as paid keys;
   EA cannot tell the difference.
+- **2026-05-15:** Validate-side logic lives in Supabase as a `validate_license`
+  Postgres function (RPC), not in this Next.js app (no such endpoint exists
+  here). Each EA binary must be migrated separately to switch from direct
+  `SELECT FROM licenses` to `rpc('validate_license', ...)`. Migrations
+  tracked as per-EA plans in the respective EA repos. EAs not yet migrated
+  remain fully functional for paid licenses; they just cannot validate
+  trial keys for their product.
+- **2026-05-15:** API routes live at `/api/trials/...` (not
+  `/api/admin/trials/...`) to match the existing repo convention seen in
+  `/api/licenses`, `/api/subscriptions`, etc. — admin-gating happens
+  inside the route handler, not via URL prefix.
