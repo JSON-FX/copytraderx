@@ -39,6 +39,7 @@ import { ConfirmDialog } from "./confirm-dialog";
 import { formatExpiry, isExpired } from "@/lib/expiry";
 import { copyToClipboard } from "@/lib/clipboard";
 import { deriveLiveness } from "@/lib/liveness";
+import { productLabel } from "@/lib/users";
 import type { License, LivenessState } from "@/lib/types";
 
 export type LicenseRow = License & { owner_email: string | null };
@@ -191,6 +192,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: LicenseRow[
               <TableHead className="w-[180px]">Status</TableHead>
               <TableHead>License Key</TableHead>
               <TableHead className="text-right">MT5 Account</TableHead>
+              <TableHead>Subscription</TableHead>
               <TableHead>Tier</TableHead>
               <TableHead>Owner</TableHead>
               <TableHead>Expires</TableHead>
@@ -202,7 +204,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: LicenseRow[
             {rows.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={7}
+                  colSpan={8}
                   className="py-16 text-center text-muted-foreground"
                 >
                   <div className="flex flex-col items-center gap-3">
@@ -277,6 +279,19 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: LicenseRow[
                     </TableCell>
 
                     {/* Tier */}
+                    {/* Subscription — product + #id, links to user detail */}
+                    <TableCell className="py-3 text-sm">
+                      <Link
+                        href={`/admin/users/${l.user_id}`}
+                        className="inline-flex items-baseline gap-1.5 hover:underline"
+                      >
+                        <span className="font-medium">{productLabel(l.product)}</span>
+                        <span className="text-xs text-muted-foreground">
+                          #{l.subscription_id}
+                        </span>
+                      </Link>
+                    </TableCell>
+
                     <TableCell className="py-3">
                       <TierBadge tier={l.tier} />
                     </TableCell>
