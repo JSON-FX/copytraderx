@@ -32,7 +32,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { MoreHorizontal, Plus, Copy, FileX2 } from "lucide-react";
+import { MoreHorizontal, Copy, FileX2 } from "lucide-react";
 import { LivenessBadge } from "./liveness-badge";
 import { TierBadge } from "./tier-badge";
 import { ConfirmDialog } from "./confirm-dialog";
@@ -41,10 +41,12 @@ import { copyToClipboard } from "@/lib/clipboard";
 import { deriveLiveness } from "@/lib/liveness";
 import type { License, LivenessState } from "@/lib/types";
 
+export type LicenseRow = License & { owner_email: string | null };
+
 type Filter = "all" | LivenessState;
 
-export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }) {
-  const [licenses, setLicenses] = useState<License[]>(initialLicenses);
+export function LicenseTable({ initialLicenses }: { initialLicenses: LicenseRow[] }) {
+  const [licenses, setLicenses] = useState<LicenseRow[]>(initialLicenses);
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
   const [intervalMs, setIntervalMs] = useState<number>(3000);
@@ -60,7 +62,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
     try {
       const res = await fetch("/api/licenses", { cache: "no-store" });
       if (!res.ok) return;
-      const json = (await res.json()) as { licenses: License[] };
+      const json = (await res.json()) as { licenses: LicenseRow[] };
       setLicenses(json.licenses);
     } catch {
       /* silent */
@@ -105,8 +107,8 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
     return () => window.removeEventListener("storage", onStorage);
   }, []);
 
-  const [revokeTarget, setRevokeTarget] = useState<License | null>(null);
-  const [deleteTarget, setDeleteTarget] = useState<License | null>(null);
+  const [revokeTarget, setRevokeTarget] = useState<LicenseRow | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<LicenseRow | null>(null);
 
   const now = useMemo(() => new Date(), [licenses]);
 
@@ -119,7 +121,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
         if (q.length === 0) return true;
         return (
           license.license_key.toLowerCase().includes(q) ||
-          (license.customer_email ?? "").toLowerCase().includes(q)
+          (license.owner_email ?? "").toLowerCase().includes(q)
         );
       });
   }, [licenses, search, filter, now]);
@@ -179,12 +181,6 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
           </SelectContent>
         </Select>
         <div className="flex-1" />
-        <Button asChild>
-          <Link href="/admin/subscriptions/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Create subscription
-          </Link>
-        </Button>
       </div>
 
       {/* Table */}
@@ -196,7 +192,7 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
               <TableHead>License Key</TableHead>
               <TableHead className="text-right">MT5 Account</TableHead>
               <TableHead>Tier</TableHead>
-              <TableHead>Customer Email</TableHead>
+              <TableHead>Owner</TableHead>
               <TableHead>Expires</TableHead>
               {/* Actions column — narrow, no label */}
               <TableHead className="w-[52px]" />
@@ -285,9 +281,9 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
                       <TierBadge tier={l.tier} />
                     </TableCell>
 
-                    {/* Customer email */}
+                    {/* Owner email */}
                     <TableCell className="py-3 text-sm">
-                      {l.customer_email ?? (
+                      {l.owner_email ?? (
                         <span className="text-muted-foreground">—</span>
                       )}
                     </TableCell>

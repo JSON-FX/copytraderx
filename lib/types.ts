@@ -16,7 +16,6 @@ export interface License {
   tier: LicenseTier | null;
   expires_at: string | null;            // ISO 8601 or null (null = not yet activated)
   activated_at: string | null;          // ISO 8601 or null (null = never activated)
-  customer_email: string | null;
   purchase_date: string | null;
   last_validated_at: string | null;
   broker_name: string | null;

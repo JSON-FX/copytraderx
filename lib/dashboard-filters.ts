@@ -26,6 +26,10 @@ export const LOCAL_STORAGE_KEY = "dashboard.filters.v1";
 
 export const CARDS_PER_PAGE = 6;
 
+export const ADMIN_SUBS_PAGE_SIZE_OPTIONS = [10, 25, 50, 100] as const;
+export const ADMIN_SUBS_PAGE_SIZE_DEFAULT = 10;
+export type AdminSubsPageSize = (typeof ADMIN_SUBS_PAGE_SIZE_OPTIONS)[number];
+
 export function statusGroupOf(status: SubscriptionStatus): StatusGroup {
   if (status === "active") return "active";
   if (status === "pending") return "pending";

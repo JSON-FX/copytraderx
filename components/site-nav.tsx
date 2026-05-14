@@ -17,7 +17,7 @@ export function SiteNav({ pendingRequestsCount = 0 }: { pendingRequestsCount?: n
     <header className="border-b bg-background">
       <div className="mx-auto flex h-16 max-w-6xl items-center gap-3 px-6">
         <Link
-          href="/admin/licenses"
+          href="/admin/subscriptions"
           className="flex items-center gap-3 transition-opacity hover:opacity-80"
         >
           <Image
@@ -35,11 +35,11 @@ export function SiteNav({ pendingRequestsCount = 0 }: { pendingRequestsCount?: n
 
         <nav className="ml-auto flex items-center gap-5 text-sm">
           <Link
-            href="/admin/licenses"
-            className={linkClass("/admin/licenses")}
-            aria-current={pathname?.startsWith("/admin/licenses") ? "page" : undefined}
+            href="/admin/subscriptions"
+            className={linkClass("/admin/subscriptions")}
+            aria-current={pathname?.startsWith("/admin/subscriptions") ? "page" : undefined}
           >
-            Licenses
+            Subscriptions
           </Link>
           <Link
             href="/admin/users"
@@ -59,6 +59,13 @@ export function SiteNav({ pendingRequestsCount = 0 }: { pendingRequestsCount?: n
                 {pendingRequestsCount}
               </span>
             )}
+          </Link>
+          <Link
+            href="/admin/licenses"
+            className={linkClass("/admin/licenses")}
+            aria-current={pathname?.startsWith("/admin/licenses") ? "page" : undefined}
+          >
+            Licenses
           </Link>
           <Link
             href="/admin/settings"
