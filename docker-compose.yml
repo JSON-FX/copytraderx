@@ -12,19 +12,34 @@ services:
     restart: unless-stopped
     environment:
       # Server-side secrets — read at runtime. Never baked into the bundle.
-      SUPABASE_URL: https://mkfabzqlxzeidfblxzhq.supabase.co
+      SUPABASE_URL: ${SUPABASE_URL}
       SUPABASE_SERVICE_ROLE_KEY: ${SUPABASE_SERVICE_ROLE_KEY}
       # Public vars also re-exposed at runtime so middleware (which runs in
       # the Node runtime, not the bundled client) reads them.
       NEXT_PUBLIC_SUPABASE_URL: ${NEXT_PUBLIC_SUPABASE_URL}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${NEXT_PUBLIC_SUPABASE_ANON_KEY}
       NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
+    labels:
+      - "traefik.enable=true"
+
+      # ─── Dev tier ─────────────────────────────────────────────
+      #   http://copytraderx.test
+      - "traefik.http.routers.copytraderx-dev.rule=Host(`copytraderx.test`)"
+      - "traefik.http.routers.copytraderx-dev.entrypoints=web"
+      - "traefik.http.routers.copytraderx-dev.service=copytraderx"
+
+      # ─── Local-prod tier ──────────────────────────────────────
+      #   https://copytraderx.lan
+      - "traefik.http.routers.copytraderx-prod.rule=Host(`copytraderx.lan`)"
+      - "traefik.http.routers.copytraderx-prod.entrypoints=websecure"
+      - "traefik.http.routers.copytraderx-prod.tls=true"
+      - "traefik.http.routers.copytraderx-prod.service=copytraderx"
+
+      # Single backing service — Next.js standalone server on port 3000.
+      - "traefik.http.services.copytraderx.loadbalancer.server.port=3000"
     networks:
-      - lgu-network
-    expose:
-      - "3000"
+      - dev-net
 
 networks:
-  lgu-network:
+  dev-net:
     external: true
-    name: development_lgu-network
