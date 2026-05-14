@@ -53,14 +53,24 @@ function headerStatusLabel(s: HeaderStatus): string {
 }
 
 function headerStatusVariant(s: HeaderStatus):
-  | "default"
-  | "secondary"
+  | "success"
   | "outline"
-  | "destructive" {
-  if (s === "active") return "default";
-  if (s === "pending") return "secondary";
-  if (s === "rejected") return "destructive";
-  return "outline";
+  | "warning"
+  | "danger" {
+  switch (s) {
+    case "active":
+      return "success";
+    case "no-slots":
+      return "outline";
+    case "pending":
+      return "warning";
+    case "rejected":
+      return "danger";
+    case "revoked":
+      return "danger";
+    case "expired":
+      return "outline";
+  }
 }
 
 function headerDateLine(item: DashboardSubscription): string {
