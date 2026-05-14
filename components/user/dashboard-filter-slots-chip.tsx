@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -39,7 +38,6 @@ export function DashboardFilterSlotsChip({
         ) : null}
         <span className="text-muted-foreground">Slots:</span>
         <SelectValue placeholder={LABELS.any}>{LABELS[value]}</SelectValue>
-        <ChevronDown className="h-3 w-3 opacity-60" aria-hidden />
       </SelectTrigger>
       <SelectContent align="end">
         <SelectItem value="any">Any</SelectItem>

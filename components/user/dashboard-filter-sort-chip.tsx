@@ -1,6 +1,5 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -39,7 +38,6 @@ export function DashboardFilterSortChip({
         ) : null}
         <span className="text-muted-foreground">Sort:</span>
         <SelectValue placeholder={LABELS.status}>{LABELS[value]}</SelectValue>
-        <ChevronDown className="h-3 w-3 opacity-60" aria-hidden />
       </SelectTrigger>
       <SelectContent align="end">
         <SelectItem value="status">Status</SelectItem>
