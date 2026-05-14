@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { TrialTable } from "@/components/trial-table";
 import type { TrialLead, TrialLicense } from "@/lib/types";
 
@@ -14,10 +15,13 @@ export default async function TrialsPage() {
 
   if (error) {
     return (
-      <main className="mx-auto max-w-6xl px-6 py-10">
-        <h1 className="text-2xl font-semibold">Trials</h1>
-        <p className="mt-4 text-sm text-red-600">Failed to load trials: {error.message}</p>
-      </main>
+      <div className="min-h-screen">
+        <AdminSiteNav />
+        <main className="mx-auto max-w-6xl px-6 py-10">
+          <h1 className="text-2xl font-semibold">Trials</h1>
+          <p className="mt-4 text-sm text-red-600">Failed to load trials: {error.message}</p>
+        </main>
+      </div>
     );
   }
 
@@ -35,19 +39,22 @@ export default async function TrialsPage() {
     });
 
   return (
-    <main className="mx-auto max-w-6xl px-6 py-10">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">Trials</h1>
-        <Link
-          href="/admin/trials/new"
-          className="rounded-md bg-foreground px-3 py-1.5 text-sm text-background hover:opacity-90"
-        >
-          + New trial
-        </Link>
-      </div>
-      <div className="mt-6">
-        <TrialTable rows={rows} />
-      </div>
-    </main>
+    <div className="min-h-screen">
+      <AdminSiteNav />
+      <main className="mx-auto max-w-6xl px-6 py-10">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-semibold">Trials</h1>
+          <Link
+            href="/admin/trials/new"
+            className="rounded-md bg-foreground px-3 py-1.5 text-sm text-background hover:opacity-90"
+          >
+            + New trial
+          </Link>
+        </div>
+        <div className="mt-6">
+          <TrialTable rows={rows} />
+        </div>
+      </main>
+    </div>
   );
 }
