@@ -25,7 +25,6 @@ describe("createLicenseSchema", () => {
       product: "impulse",
       tier: "monthly",
       intended_account_type: "demo",
-      customer_email: "test@example.com",
       notes: "first customer",
     });
     expect(result.success).toBe(true);
@@ -126,38 +125,6 @@ describe("createLicenseSchema", () => {
       product: "impulse",
       tier: "lifetime",
       intended_account_type: "demo",
-    });
-    expect(result.success).toBe(false);
-  });
-
-  it("accepts empty/missing customer_email", () => {
-    const a = createLicenseSchema.safeParse({
-      license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
-      mt5_account: 1,
-      product: "impulse",
-      tier: "monthly",
-      intended_account_type: "demo",
-    });
-    expect(a.success).toBe(true);
-    const b = createLicenseSchema.safeParse({
-      license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
-      mt5_account: 1,
-      product: "impulse",
-      tier: "monthly",
-      intended_account_type: "live",
-      customer_email: "",
-    });
-    expect(b.success).toBe(true);
-  });
-
-  it("rejects invalid customer_email format", () => {
-    const result = createLicenseSchema.safeParse({
-      license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
-      mt5_account: 1,
-      product: "impulse",
-      tier: "monthly",
-      intended_account_type: "demo",
-      customer_email: "not-an-email",
     });
     expect(result.success).toBe(false);
   });

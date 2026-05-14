@@ -37,17 +37,6 @@ const subscriptionStatusEnum = z.enum([
   "revoked",
 ]);
 
-const optionalEmail = z
-  .string()
-  .trim()
-  .transform((v) => (v === "" ? null : v))
-  .nullable()
-  .optional()
-  .refine(
-    (v) => v == null || z.string().email().safeParse(v).success,
-    "Invalid email",
-  );
-
 const optionalNonEmpty = z
   .string()
   .trim()
@@ -65,7 +54,6 @@ export const createLicenseSchema = z
     product: productEnum,
     tier: tierEnum,
     intended_account_type: accountTypeEnum,
-    customer_email: optionalEmail,
     notes: optionalNonEmpty,
   })
   .strict()
@@ -88,7 +76,6 @@ export const updateLicenseSchema = z
     tier: tierEnum.nullable().optional(),
     intended_account_type: accountTypeEnum.nullable().optional(),
     expires_at: z.string().datetime().nullable().optional(),
-    customer_email: optionalEmail,
     notes: optionalNonEmpty,
   })
   .strict()

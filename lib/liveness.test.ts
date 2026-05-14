@@ -13,7 +13,6 @@ function makeLicense(overrides: Partial<License>): License {
     tier: "monthly",
     expires_at: "2099-01-01T00:00:00Z",
     activated_at: "2026-04-25T10:00:00Z",
-    customer_email: null,
     purchase_date: null,
     last_validated_at: null,
     broker_name: null,

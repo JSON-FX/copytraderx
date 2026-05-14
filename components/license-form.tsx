@@ -47,7 +47,6 @@ const formSchema = z
     tier: z.enum(["monthly", "quarterly", "yearly"]),
     intended_account_type: z.enum(["demo", "live"]),
     status: z.enum(["active", "revoked", "expired"]),
-    customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
     notes: z.string().optional(),
   })
   .refine(
@@ -85,7 +84,6 @@ export function LicenseForm({ mode, initial }: Props) {
     tier: (initial?.tier as LicenseTier | undefined) ?? "monthly",
     intended_account_type: (initial?.intended_account_type as "demo" | "live" | undefined) ?? "demo",
     status: (initial?.status as LicenseStatus | undefined) ?? "active",
-    customer_email: initial?.customer_email ?? "",
     notes: initial?.notes ?? "",
   };
 
@@ -119,7 +117,6 @@ export function LicenseForm({ mode, initial }: Props) {
             mt5_account: values.mt5_account,
             tier: values.tier,
             intended_account_type: values.intended_account_type,
-            customer_email: values.customer_email || null,
             notes: values.notes || null,
           }
         : {
@@ -128,7 +125,6 @@ export function LicenseForm({ mode, initial }: Props) {
             tier: values.tier,
             intended_account_type: values.intended_account_type,
             status: values.status,
-            customer_email: values.customer_email || null,
             notes: values.notes || null,
           };
 
@@ -383,26 +379,6 @@ export function LicenseForm({ mode, initial }: Props) {
           </Select>
         </div>
       )}
-
-      {/* Customer Email */}
-      <div className="space-y-1.5">
-        <Label htmlFor="customer_email" className="text-sm font-semibold">
-          Customer Email
-          <span className="ml-1.5 text-xs font-normal text-muted-foreground">optional</span>
-        </Label>
-        <Input
-          id="customer_email"
-          type="email"
-          placeholder="customer@example.com"
-          {...form.register("customer_email")}
-          aria-describedby={form.formState.errors.customer_email ? "email-error" : undefined}
-        />
-        {form.formState.errors.customer_email && (
-          <p id="email-error" className="text-xs text-destructive">
-            {form.formState.errors.customer_email.message}
-          </p>
-        )}
-      </div>
 
       {/* Notes */}
       <div className="space-y-1.5">
