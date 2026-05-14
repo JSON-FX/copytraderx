@@ -85,7 +85,7 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
   });
   const [pageSize, setPageSize] = useState<number>(ADMIN_SUBS_PAGE_SIZE_DEFAULT);
   const [page, setPage] = useState(1);
-  const [collapsed, setCollapsed] = useState<Set<string>>(new Set());
+  const [expanded, setExpanded] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     setPageSize(getAdminSubsPageSize());
@@ -107,8 +107,8 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
     [paged],
   );
 
-  function toggleCollapsed(userId: string) {
-    setCollapsed((prev) => {
+  function toggleExpanded(userId: string) {
+    setExpanded((prev) => {
       const next = new Set(prev);
       if (next.has(userId)) next.delete(userId);
       else next.add(userId);
@@ -194,7 +194,7 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
               </tr>
             )}
             {paged.groups.map((group) => {
-              const isCollapsed = collapsed.has(group.user_id);
+              const isCollapsed = !expanded.has(group.user_id);
               const counts = summarizeStatuses(group.subscriptions);
               return (
                 <GroupRows
@@ -202,7 +202,7 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
                   group={group}
                   isCollapsed={isCollapsed}
                   counts={counts}
-                  onToggle={() => toggleCollapsed(group.user_id)}
+                  onToggle={() => toggleExpanded(group.user_id)}
                 />
               );
             })}
