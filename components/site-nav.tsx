@@ -68,6 +68,13 @@ export function SiteNav({ pendingRequestsCount = 0 }: { pendingRequestsCount?: n
             Licenses
           </Link>
           <Link
+            href="/admin/trials"
+            className={linkClass("/admin/trials")}
+            aria-current={pathname?.startsWith("/admin/trials") ? "page" : undefined}
+          >
+            Trials
+          </Link>
+          <Link
             href="/admin/settings"
             className={linkClass("/admin/settings")}
             aria-current={pathname?.startsWith("/admin/settings") ? "page" : undefined}
