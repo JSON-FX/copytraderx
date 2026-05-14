@@ -1,110 +1,163 @@
 import { Badge } from "@/components/ui/badge";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { productDisplayName } from "@/lib/products";
 import { formatExpiry } from "@/lib/expiry";
-import type { DashboardSubscription } from "@/lib/types";
-import { SlotCard } from "./slot-card";
-import { CancelRequestButton } from "./cancel-request-button";
+import { SubscriptionCardSlots } from "./subscription-card-slots";
+import { ExtensionStatusLine } from "./extension-status-line";
 import { RenewDialog } from "./renew-dialog";
 import { ExtendDialog } from "./extend-dialog";
-import { ExtensionStatusLine } from "./extension-status-line";
+import { CancelRequestButton } from "./cancel-request-button";
+import type { DashboardSubscription } from "@/lib/types";
+
+type Mode = "current" | "past";
+
+type HeaderStatus =
+  | "active"
+  | "no-slots"
+  | "pending"
+  | "rejected"
+  | "expired"
+  | "revoked";
+
+function deriveHeaderStatus(item: DashboardSubscription): HeaderStatus {
+  const sub = item.subscription;
+  if (sub.status === "active") {
+    return item.liveLicense || item.demoLicense ? "active" : "no-slots";
+  }
+  return sub.status;
+}
+
+function headerStatusLabel(s: HeaderStatus): string {
+  switch (s) {
+    case "active":
+      return "Active";
+    case "no-slots":
+      return "No slots claimed";
+    case "pending":
+      return "Pending";
+    case "rejected":
+      return "Rejected";
+    case "expired":
+      return "Expired";
+    case "revoked":
+      return "Revoked";
+  }
+}
+
+function headerStatusVariant(s: HeaderStatus):
+  | "default"
+  | "secondary"
+  | "outline"
+  | "destructive" {
+  if (s === "active") return "default";
+  if (s === "pending") return "secondary";
+  if (s === "rejected") return "destructive";
+  return "outline";
+}
+
+function headerDateLine(item: DashboardSubscription): string {
+  const sub = item.subscription;
+  const tier = sub.tier; // monthly | quarterly | yearly
+  switch (sub.status) {
+    case "active":
+      return `${tier} · expires ${formatExpiry(sub.expires_at)}`;
+    case "pending":
+      return `${tier} · requested ${formatExpiry(sub.requested_at)}`;
+    case "expired":
+      return `${tier} · expired ${formatExpiry(sub.expires_at)}`;
+    case "revoked":
+      return `${tier} · expired ${formatExpiry(sub.expires_at)}`;
+    case "rejected":
+      return `${tier} · requested ${formatExpiry(sub.requested_at)}`;
+  }
+}
 
 export function SubscriptionCard({
-  data,
-  compact = false,
+  item,
+  mode,
 }: {
-  data: DashboardSubscription;
-  compact?: boolean;
+  item: DashboardSubscription;
+  mode: Mode;
 }) {
-  const sub = data.subscription;
+  const sub = item.subscription;
+  const headerStatus = deriveHeaderStatus(item);
   const productDisplay = productDisplayName(sub.product);
-  const isPending = sub.status === "pending";
-  const isActive = sub.status === "active";
-  const canRenew = sub.status === "expired" || sub.status === "revoked";
-  const hasPendingExtension = data.pendingExtension !== null;
+  const showSlots =
+    sub.status === "active" ||
+    sub.status === "revoked" ||
+    sub.status === "expired";
 
   return (
-    <div className={compact ? "space-y-3" : "rounded-lg border bg-card p-4"}>
-      {compact ? (
-        <div className="mb-3 flex justify-end">
-          <Badge
-            variant={isActive ? "default" : isPending ? "secondary" : "outline"}
-            className="whitespace-nowrap"
-          >
-            {sub.status}
-            {` · ${sub.tier}`}
-            {sub.expires_at ? ` · expires ${formatExpiry(sub.expires_at)}` : ""}
+    <Card
+      size="sm"
+      className={mode === "past" ? "bg-muted/30" : undefined}
+      data-status={sub.status}
+    >
+      <CardHeader className="border-b pb-3">
+        <CardTitle>{productDisplay}</CardTitle>
+        <CardDescription className="capitalize">
+          {headerDateLine(item)}
+        </CardDescription>
+        <div className="col-start-2 row-span-2 row-start-1 self-start justify-self-end">
+          <Badge variant={headerStatusVariant(headerStatus)}>
+            {headerStatusLabel(headerStatus)}
           </Badge>
         </div>
-      ) : (
-        <div className="mb-3 flex items-start justify-between">
-          <div>
-            <h3 className="text-base font-semibold">{productDisplay}</h3>
-            <p className="text-sm text-muted-foreground">
-              {sub.tier}
-              {sub.expires_at ? ` — expires ${formatExpiry(sub.expires_at)}` : ""}
-            </p>
+      </CardHeader>
+
+      {showSlots ? (
+        <SubscriptionCardSlots item={item} />
+      ) : sub.status === "pending" ? (
+        <CardContent className="text-xs/relaxed text-muted-foreground">
+          Waiting for admin approval. You&apos;ll be able to claim a slot once
+          it&apos;s approved.
+        </CardContent>
+      ) : sub.status === "rejected" ? (
+        <CardContent>
+          <div className="rounded-none border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
+            {sub.rejection_reason
+              ? `Rejected: ${sub.rejection_reason}`
+              : "Request rejected."}
           </div>
-          <Badge variant={isActive ? "default" : isPending ? "secondary" : "outline"}>
-            {sub.status}
-          </Badge>
-        </div>
-      )}
+        </CardContent>
+      ) : null}
 
-      {isPending ? (
-        <div className="flex items-center justify-between rounded-md border-dashed border p-3">
-          <p className="text-sm text-muted-foreground">
-            Awaiting admin approval.
-            {sub.notes ? ` Note: ${sub.notes}` : ""}
-          </p>
-          <CancelRequestButton subscriptionId={sub.id} />
+      {item.pendingExtension ? (
+        <div className="px-4">
+          <ExtensionStatusLine extension={item.pendingExtension} />
         </div>
-      ) : (
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <SlotCard
-            subscriptionId={sub.id}
-            intendedType="live"
-            productDisplay={productDisplay}
-            license={data.liveLicense}
-            canClaim={isActive}
-          />
-          <SlotCard
-            subscriptionId={sub.id}
-            intendedType="demo"
-            productDisplay={productDisplay}
-            license={data.demoLicense}
-            canClaim={isActive}
-          />
-        </div>
-      )}
+      ) : null}
 
-      {isActive ? (
-        <div className="mt-3 flex justify-end">
+      <CardFooter className="justify-end gap-2 bg-muted/30">
+        {sub.status === "active" ? (
           <ExtendDialog
             sourceSubscriptionId={sub.id}
             productDisplay={productDisplay}
             sourceTier={sub.tier}
-            disabled={hasPendingExtension}
+            disabled={item.pendingExtension !== null}
           />
-        </div>
-      ) : null}
-
-      {data.pendingExtension ? (
-        <ExtensionStatusLine extension={data.pendingExtension} />
-      ) : null}
-
-      {canRenew ? (
-        <div className="mt-3 flex justify-end">
+        ) : null}
+        {sub.status === "pending" ? (
+          <CancelRequestButton subscriptionId={sub.id} />
+        ) : null}
+        {sub.status === "expired" || sub.status === "revoked" ? (
           <RenewDialog
             sourceSubscriptionId={sub.id}
             productDisplay={productDisplay}
             sourceTier={sub.tier}
           />
-        </div>
-      ) : null}
-
-      {sub.status === "rejected" && sub.rejection_reason ? (
-        <p className="mt-3 text-sm text-destructive">Rejected: {sub.rejection_reason}</p>
-      ) : null}
-    </div>
+        ) : null}
+        {sub.status === "rejected" ? (
+          <span className="text-xs text-muted-foreground">—</span>
+        ) : null}
+      </CardFooter>
+    </Card>
   );
 }
