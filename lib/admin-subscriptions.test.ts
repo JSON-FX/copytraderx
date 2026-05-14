@@ -118,7 +118,7 @@ describe("filterRows", () => {
     mt5Row({
       id: 2,
       status: "pending",
-      product: "scalper",
+      product: "ctx-core",
       live_license: null,
     }),
   ];
@@ -139,7 +139,7 @@ describe("filterRows", () => {
 
   it("filters by product", () => {
     expect(
-      filterRows(rows, { search: "", statuses: [], products: ["scalper"] }).map(
+      filterRows(rows, { search: "", statuses: [], products: ["ctx-core"] }).map(
         (r) => r.id,
       ),
     ).toEqual([2]);
