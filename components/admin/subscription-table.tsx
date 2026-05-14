@@ -107,13 +107,6 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
     [paged],
   );
 
-  function toggleStatus(s: SubscriptionStatus) {
-    setFilter((f) => ({
-      ...f,
-      statuses: f.statuses.includes(s) ? f.statuses.filter((x) => x !== s) : [...f.statuses, s],
-    }));
-  }
-
   function toggleCollapsed(userId: string) {
     setCollapsed((prev) => {
       const next = new Set(prev);
@@ -152,7 +145,7 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
           <SelectContent>
             <SelectItem value="all">All statuses</SelectItem>
             {STATUS_OPTIONS.map((s) => (
-              <SelectItem key={s} value={s} onClick={() => toggleStatus(s)}>
+              <SelectItem key={s} value={s}>
                 {s}
               </SelectItem>
             ))}
