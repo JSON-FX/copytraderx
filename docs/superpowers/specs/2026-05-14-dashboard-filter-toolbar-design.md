@@ -209,6 +209,8 @@ Three empty-grid cases, handled distinctly to avoid misleading messages:
 
 **Modified:**
 - `components/user/dashboard-card-grid.tsx` — owns `filterState`, renders the toolbar above the grid, applies filters/sort, conditionally renders the Past section.
+- `components/ui/badge.tsx` — add `success` / `warning` / `danger` variants (§10).
+- `components/user/subscription-card.tsx` — update `headerStatusVariant` to return the new variants per the §10 mapping.
 
 **Removed:** none.
 
@@ -221,3 +223,48 @@ Three empty-grid cases, handled distinctly to avoid misleading messages:
 ## 9. Rollout
 
 Single PR, single feature branch off `main`. No flag. Revert path is `git revert` of one PR. Sanity-check on the reference test account.
+
+## 10. Bundled tweak: status badge colors
+
+Independent of the filter toolbar, the card-header status badges need a clearer color palette. Currently they all collapse onto shadcn Badge's existing variants (`default` / `secondary` / `outline` / `destructive`), which produces three near-identical outlined badges for terminal statuses and a generic dark badge for Active. Ship the new palette in the same PR as the filter toolbar.
+
+### 10.1 Target palette
+
+| Header status | Background | Text | Border | shadcn variant strategy |
+|---|---|---|---|---|
+| Active | `bg-emerald-600` (`dark:bg-emerald-600`) | white | none | New `success` variant |
+| No slots claimed | `bg-background` (white in light, page bg in dark) | `text-foreground` | `border-border` | Existing `outline` variant |
+| Pending | `bg-amber-500` (`dark:bg-amber-500`) | `text-amber-950` | none | New `warning` variant |
+| Rejected | `bg-red-600` (`dark:bg-red-600`) | white | none | New `danger` variant |
+| Revoked | `bg-red-600` (`dark:bg-red-600`) | white | none | New `danger` variant (same as Rejected) |
+| Expired | `bg-muted` | `text-muted-foreground` | none | New `muted` variant (or stays as `outline` — see §10.3) |
+
+### 10.2 Implementation approach
+
+Extend `components/ui/badge.tsx`'s `badgeVariants` (cva config) with three new variants — `success`, `warning`, `danger` — and reuse the existing `outline` variant for No-slots-claimed. Sample additions:
+
+```ts
+success: "bg-emerald-600 text-white [a]:hover:bg-emerald-600/90",
+warning: "bg-amber-500 text-amber-950 [a]:hover:bg-amber-500/90",
+danger:  "bg-red-600 text-white [a]:hover:bg-red-600/90",
+```
+
+Update `subscription-card.tsx`'s `headerStatusVariant` helper to return the new variant strings:
+
+| `HeaderStatus` | Returned variant |
+|---|---|
+| `active` | `success` |
+| `no-slots` | `outline` |
+| `pending` | `warning` |
+| `rejected` | `danger` |
+| `revoked` | `danger` |
+| `expired` | `outline` |
+
+The helper's return type updates to include the new union members.
+
+### 10.3 Notes
+
+- **Dark mode**: emerald-600, amber-500, and red-600 all read well on both light and dark backgrounds, so no `dark:` variants are required beyond the explicit `dark:bg-…` mirrors above (kept for clarity in case theme tokens change later).
+- **Expired vs Revoked**: currently both are visually identical outline badges. The new palette pushes Revoked (red) clearly apart from Expired (outline gray). This is intentional — Revoked is an admin action, Expired is passive time-out, and the colors should reflect that.
+- **No semantic change**: the badge text and `HeaderStatus` mapping in `subscription-card.tsx:deriveHeaderStatus` is unchanged. Only the color presentation is updated.
+- **Accessibility**: emerald-600 on white (and red-600 on white) both meet WCAG AA contrast for non-text UI (3:1) and AAA for the white-on-color body (≥7:1).
