@@ -43,11 +43,13 @@ export function DashboardFilterProductChip({
     // so unchecking from "all" yields "all except p" rather than "only p".
     const normalized =
       value.length === 0 ? options.map((o) => o.product) : value;
-    if (normalized.includes(p)) {
-      onChange(normalized.filter((x) => x !== p));
-    } else {
-      onChange([...normalized, p]);
-    }
+    const next = normalized.includes(p)
+      ? normalized.filter((x) => x !== p)
+      : [...normalized, p];
+    // Collapse "every option selected" back to the canonical empty array
+    // so isDefault() agrees with the visible "All" label and the toolbar's
+    // "Clear all" link doesn't appear for an effectively-default state.
+    onChange(next.length === options.length ? [] : next);
   }
   function selectAll() {
     onChange([]);
