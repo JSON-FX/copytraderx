@@ -263,3 +263,30 @@ export const rejectExtensionSchema = z
 
 export type ExtendSubscriptionRequestInput = z.infer<typeof extendSubscriptionRequestSchema>;
 export type RejectExtensionInput = z.infer<typeof rejectExtensionSchema>;
+
+// ── Trial tier schemas ───────────────────────────────────────────────────────
+
+export const createTrialSchema = z
+  .object({
+    product: productEnum,
+    mt5_account: z.number().int().positive(),
+    email: z
+      .string()
+      .trim()
+      .toLowerCase()
+      .email()
+      .max(254),
+    telegram_handle: optionalNonEmpty,
+    discord_handle: optionalNonEmpty,
+    notes: optionalNonEmpty,
+  })
+  .strict();
+
+export const convertTrialSchema = z
+  .object({
+    converted_user_id: z.string().uuid().optional(),
+  })
+  .strict();
+
+export type CreateTrialInput = z.infer<typeof createTrialSchema>;
+export type ConvertTrialInput = z.infer<typeof convertTrialSchema>;
