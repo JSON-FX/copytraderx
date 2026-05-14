@@ -1,5 +1,5 @@
 import type { Product } from "./products";
-import { PRODUCT_CODES } from "./products";
+import { PRODUCT_CODES, isProductCode } from "./products";
 import type { DashboardSubscription, SubscriptionStatus } from "./types";
 
 export type SortKey = "status" | "expires-soonest" | "recently-created";
@@ -78,13 +78,14 @@ const statusRank: Record<SubscriptionStatus, number> = {
   rejected: 4,
 };
 
+const productRank = new Map<string, number>(
+  PRODUCT_CODES.map((p, i) => [p, i]),
+);
+
 export function sortItems(
   items: DashboardSubscription[],
   sort: SortKey,
 ): DashboardSubscription[] {
-  const productRank = new Map<string, number>(
-    PRODUCT_CODES.map((p, i) => [p, i]),
-  );
   const sorted = [...items];
   if (sort === "status") {
     sorted.sort((a, b) => {
@@ -127,7 +128,7 @@ function isFilterState(value: unknown): value is FilterState {
   if (value === null || typeof value !== "object") return false;
   const v = value as Record<string, unknown>;
   if (!Array.isArray(v.products)) return false;
-  if (!v.products.every((p) => typeof p === "string" && (PRODUCT_CODES as readonly string[]).includes(p))) return false;
+  if (!v.products.every(isProductCode)) return false;
   if (!Array.isArray(v.statuses)) return false;
   if (!v.statuses.every((s) => typeof s === "string" && VALID_STATUS.includes(s as StatusGroup))) return false;
   if (typeof v.slots !== "string" || !VALID_SLOT.includes(v.slots as SlotFilter)) return false;
