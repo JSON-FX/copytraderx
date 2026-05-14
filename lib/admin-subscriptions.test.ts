@@ -1,8 +1,10 @@
 import {
   filterRows,
   groupByUser,
+  paginateGroups,
   summarizeStatuses,
   type AdminSubscriptionRow,
+  type AdminUserGroup,
 } from "./admin-subscriptions";
 
 function mkRow(
@@ -181,5 +183,59 @@ describe("filterRows", () => {
         (r) => r.id,
       ),
     ).toEqual([2]);
+  });
+});
+
+describe("paginateGroups", () => {
+  const groups: AdminUserGroup[] = Array.from({ length: 23 }, (_, i) => ({
+    user_id: `u${i + 1}`,
+    user_email: `u${i + 1}@x.com`,
+    user_full_name: null,
+    subscriptions: [
+      mkRow({ id: 1000 + i, user_id: `u${i + 1}`, user_email: `u${i + 1}@x.com` }),
+    ],
+  }));
+
+  it("returns the first N groups on page 1", () => {
+    const result = paginateGroups(groups, { page: 1, pageSize: 10 });
+    expect(result.groups.map((g) => g.user_id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `u${i + 1}`),
+    );
+    expect(result.page).toBe(1);
+    expect(result.totalPages).toBe(3);
+    expect(result.totalGroups).toBe(23);
+  });
+
+  it("returns the second page", () => {
+    const result = paginateGroups(groups, { page: 2, pageSize: 10 });
+    expect(result.groups.map((g) => g.user_id)).toEqual(
+      Array.from({ length: 10 }, (_, i) => `u${i + 11}`),
+    );
+  });
+
+  it("returns the partial last page", () => {
+    const result = paginateGroups(groups, { page: 3, pageSize: 10 });
+    expect(result.groups.map((g) => g.user_id)).toEqual(["u21", "u22", "u23"]);
+  });
+
+  it("clamps requested page above totalPages to the last page", () => {
+    const result = paginateGroups(groups, { page: 99, pageSize: 10 });
+    expect(result.page).toBe(3);
+    expect(result.groups.map((g) => g.user_id)).toEqual(["u21", "u22", "u23"]);
+  });
+
+  it("clamps requested page below 1 to page 1", () => {
+    const result = paginateGroups(groups, { page: 0, pageSize: 10 });
+    expect(result.page).toBe(1);
+  });
+
+  it("totalPages is 1 when there are zero groups", () => {
+    const result = paginateGroups([], { page: 1, pageSize: 10 });
+    expect(result).toEqual({
+      groups: [],
+      page: 1,
+      totalPages: 1,
+      totalGroups: 0,
+    });
   });
 });

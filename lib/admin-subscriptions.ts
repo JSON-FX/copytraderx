@@ -118,3 +118,27 @@ export function filterRows(
     return true;
   });
 }
+
+export interface PaginatedGroups {
+  groups: AdminUserGroup[];
+  page: number;
+  totalPages: number;
+  totalGroups: number;
+}
+
+export function paginateGroups(
+  groups: AdminUserGroup[],
+  opts: { page: number; pageSize: number },
+): PaginatedGroups {
+  const totalGroups = groups.length;
+  const totalPages = Math.max(1, Math.ceil(totalGroups / opts.pageSize));
+  const clamped = Math.min(Math.max(1, opts.page), totalPages);
+  const start = (clamped - 1) * opts.pageSize;
+  const end = start + opts.pageSize;
+  return {
+    groups: groups.slice(start, end),
+    page: clamped,
+    totalPages,
+    totalGroups,
+  };
+}
