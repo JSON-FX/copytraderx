@@ -237,3 +237,41 @@ export interface SubscriptionExtension {
   notes: string | null;
   created_at: string;
 }
+
+// ── Trial tier (isolated from app_users / subscriptions / licenses) ──────────
+
+export type TrialLeadStatus = "active" | "converted" | "abandoned";
+export type TrialLicenseStatus = "active" | "revoked";
+export type TrialDisplayStatus = "active" | "revoked" | "expired";
+
+export interface TrialLead {
+  id: number;
+  email: string;
+  telegram_handle: string | null;
+  discord_handle: string | null;
+  notes: string | null;
+  status: TrialLeadStatus;
+  converted_user_id: string | null;
+  created_at: string;
+  created_by: string | null;
+}
+
+export interface TrialLicense {
+  id: number;
+  trial_lead_id: number;
+  product: Product;
+  license_key: string;
+  mt5_account: number;
+  expires_at: string;
+  activated_at: string | null;
+  last_validated_at: string | null;
+  status: TrialLicenseStatus;
+  broker_name: string | null;
+  account_type: AccountType | null;
+  created_at: string;
+}
+
+export interface TrialRow {
+  trial_lead: TrialLead;
+  trial_license: TrialLicense;
+}
