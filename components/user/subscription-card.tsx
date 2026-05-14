@@ -1,6 +1,7 @@
 import { Badge } from "@/components/ui/badge";
 import {
   Card,
+  CardAction,
   CardContent,
   CardDescription,
   CardFooter,
@@ -105,11 +106,11 @@ export function SubscriptionCard({
         <CardDescription className="capitalize">
           {headerDateLine(item)}
         </CardDescription>
-        <div className="col-start-2 row-span-2 row-start-1 self-start justify-self-end">
+        <CardAction>
           <Badge variant={headerStatusVariant(headerStatus)}>
             {headerStatusLabel(headerStatus)}
           </Badge>
-        </div>
+        </CardAction>
       </CardHeader>
 
       {showSlots ? (
