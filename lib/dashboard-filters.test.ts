@@ -25,6 +25,7 @@ function mkSub(partial: Partial<Subscription> & { id: number }): DashboardSubscr
     rejection_reason: null,
     notes: null,
     created_at: "2026-01-01T00:00:00Z",
+    hidden_at: null,
     push_interval_seconds: 10,
     propfirm_rule_id: null,
   };
