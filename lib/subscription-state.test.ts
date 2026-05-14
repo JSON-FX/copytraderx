@@ -7,6 +7,7 @@ import {
   canRevoke,
   canExtendFrom,
   canExtendToTier,
+  canHide,
   tierRank,
 } from "./subscription-state";
 
@@ -128,5 +129,25 @@ describe("canExtendToTier", () => {
     const r = canExtendToTier(source, requested);
     expect(r.ok).toBe(ok);
     if (!r.ok) expect(r.reason).toBe("tier_downgrade_not_allowed");
+  });
+});
+
+describe("canHide", () => {
+  it.each(["expired", "revoked", "rejected"] as const)(
+    "allows hide on %s when not already hidden",
+    (status) => {
+      const r = canHide({ status, hidden_at: null });
+      expect(r.ok).toBe(true);
+    },
+  );
+  it.each(["active", "pending"] as const)("blocks hide on %s", (status) => {
+    const r = canHide({ status, hidden_at: null });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("not_hideable");
+  });
+  it("blocks when already hidden", () => {
+    const r = canHide({ status: "revoked", hidden_at: "2026-05-14T10:00:00Z" });
+    expect(r.ok).toBe(false);
+    if (!r.ok) expect(r.reason).toBe("already_hidden");
   });
 });
