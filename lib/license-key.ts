@@ -1,11 +1,13 @@
+import { type Product, productPrefix } from "./products";
+
 /**
  * Safe alphabet for license keys: 31 uppercase alphanumerics excluding
  * ambiguous 0/O/1/I/L. 16 chars over this alphabet ≈ 79 bits of entropy.
  */
 export const LICENSE_KEY_ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
 
-/** Generates a key shaped IMPX-XXXX-XXXX-XXXX-XXXX. */
-export function generateLicenseKey(): string {
+/** Generates a license key shaped <PREFIX>-XXXX-XXXX-XXXX-XXXX for the given product. */
+export function generateLicenseKey(product: Product): string {
   const groups: string[] = [];
   for (let g = 0; g < 4; g++) {
     let group = "";
@@ -14,12 +16,10 @@ export function generateLicenseKey(): string {
     }
     groups.push(group);
   }
-  return `IMPX-${groups.join("-")}`;
+  return `${productPrefix(product)}-${groups.join("-")}`;
 }
 
 function pickRandomChar(): string {
-  // Use crypto where available, fall back to Math.random in Node environments
-  // that haven't polyfilled crypto.getRandomValues. Node 23 has it natively.
   const idx = secureRandomIndex(LICENSE_KEY_ALPHABET.length);
   return LICENSE_KEY_ALPHABET[idx];
 }

@@ -12,6 +12,28 @@
 
 ---
 
+## Status
+
+> **Backfilled 2026-05-07.** Plan predates the status-block convention; checkboxes were never flipped at the time, but the feature shipped end-to-end and is in production.
+
+- **Last completed:** Task 9 — Plan complete ✅ (verified against code 2026-05-07)
+- **Last completed commits:**
+  - Task 1 (OnTimer cache-grace) = `5ce8b05` (EA repo)
+  - Task 2 (LICENSE_WRONG_ACCOUNT_TYPE enum) = `5ce8b05` (EA repo)
+  - Task 3 (LicenseManager parse + enforce) = `5ce8b05` (EA repo)
+  - Task 4 (DB migration) = `547392c` (EA repo)
+  - Task 5 (edge function gate + 12h cache) = `32d9b7a` (EA repo)
+  - Task 6 (dashboard types + schemas) = `166da96`
+  - Task 7 (dashboard API) = `10c349b`
+  - Task 8 (license form Account Type dropdown) = `6d395d4`
+  - Task 9 (deploy) = shipped — `intended_account_type` column live, edge function returning gated payloads, dashboard form deployed
+- **Verification (2026-05-07):**
+  - EA repo: `LICENSE_WRONG_ACCOUNT_TYPE` in `Defines.mqh:79`; `m_token_intended_account_type` + `CheckAccountType()` in `LicenseManager.mqh`; cache-grace gated on `LICENSE_NETWORK_ERROR` at line 593.
+  - Edge fn: `TOKEN_VALIDITY_MS = 12h` and `account_type_mismatch` branch present in `validate-license/index.ts`.
+  - Dashboard: `intended_account_type` in `lib/types.ts`, `lib/schemas.ts`, `lib/liveness.test.ts`, `app/api/licenses/route.ts`, `components/license-form.tsx`.
+
+---
+
 ## File Map
 
 ### EA repo (`/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE`)
@@ -41,7 +63,7 @@
 **Files:**
 - Modify: `/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE/Include/CopyTraderX-Impulse/LicenseManager.mqh:545`
 
-- [ ] **Step 1: Fix the cache-grace condition**
+- [x] **Step 1: Fix the cache-grace condition**
 
 In `LicenseManager.mqh`, find the `OnTimer()` method (line ~530). Change the cache-grace condition from:
 
@@ -68,7 +90,7 @@ To:
    }
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -83,7 +105,7 @@ git commit -m "fix(license): only apply cache-grace for network errors, not serv
 **Files:**
 - Modify: `/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE/Include/CopyTraderX-Impulse/Defines.mqh:67-100`
 
-- [ ] **Step 1: Add enum value**
+- [x] **Step 1: Add enum value**
 
 In `Defines.mqh`, add `LICENSE_WRONG_ACCOUNT_TYPE` after `LICENSE_KEY_FORMAT` in `ENUM_LICENSE_STATE`:
 
@@ -104,7 +126,7 @@ enum ENUM_LICENSE_STATE
 };
 ```
 
-- [ ] **Step 2: Add string mapping**
+- [x] **Step 2: Add string mapping**
 
 In the `LicenseStateToString()` function, add the new case before `default`:
 
@@ -114,7 +136,7 @@ In the `LicenseStateToString()` function, add the new case before `default`:
       default:                           return "UNHANDLED";
 ```
 
-- [ ] **Step 3: Commit**
+- [x] **Step 3: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -129,7 +151,7 @@ git commit -m "feat(license): add LICENSE_WRONG_ACCOUNT_TYPE enum state"
 **Files:**
 - Modify: `/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE/Include/CopyTraderX-Impulse/LicenseManager.mqh`
 
-- [ ] **Step 1: Add member variable**
+- [x] **Step 1: Add member variable**
 
 In the `private` section of `CLicenseManager`, after `m_token_valid_until`, add:
 
@@ -137,7 +159,7 @@ In the `private` section of `CLicenseManager`, after `m_token_valid_until`, add:
    string             m_token_intended_account_type;  // from signed payload ("demo"/"live" or "")
 ```
 
-- [ ] **Step 2: Initialize in constructor**
+- [x] **Step 2: Initialize in constructor**
 
 In `CLicenseManager::CLicenseManager()`, add to the initializer list after `m_token_valid_until(0)`:
 
@@ -145,7 +167,7 @@ In `CLicenseManager::CLicenseManager()`, add to the initializer list after `m_to
      m_token_intended_account_type(""),
 ```
 
-- [ ] **Step 3: Parse intended_account_type in ParsePayload**
+- [x] **Step 3: Parse intended_account_type in ParsePayload**
 
 In `ParsePayload()`, after the `valid_until` parsing block (around line 269), add:
 
@@ -166,7 +188,7 @@ In `ParsePayload()`, after the `valid_until` parsing block (around line 269), ad
    }
 ```
 
-- [ ] **Step 4: Add account-type enforcement helper**
+- [x] **Step 4: Add account-type enforcement helper**
 
 After the `ParsePayload()` method, add a new private helper. First add the declaration in the private section of the class (after `ParseIsoDatetime`):
 
@@ -197,7 +219,7 @@ bool CLicenseManager::CheckAccountType()
 }
 ```
 
-- [ ] **Step 5: Enforce in FetchAndStoreToken after ParsePayload**
+- [x] **Step 5: Enforce in FetchAndStoreToken after ParsePayload**
 
 In `FetchAndStoreToken()`, after the `m_token_mt5_account != m_mt5_account` check (around line 459-465), add the account-type check:
 
@@ -208,7 +230,7 @@ In `FetchAndStoreToken()`, after the `m_token_mt5_account != m_mt5_account` chec
 
 This goes right before `SaveCachedToken(payload, signature)`.
 
-- [ ] **Step 6: Add account_type_mismatch to server response parsing**
+- [x] **Step 6: Add account_type_mismatch to server response parsing**
 
 In `FetchAndStoreToken()`, in the `valid:false` response parsing block (around line 393-406), add a new case after `"not_configured"`:
 
@@ -217,7 +239,7 @@ In `FetchAndStoreToken()`, in the `valid:false` response parsing block (around l
          SetState(LICENSE_WRONG_ACCOUNT_TYPE, "Invalid Account");
 ```
 
-- [ ] **Step 7: Enforce in LoadCachedToken after existing checks**
+- [x] **Step 7: Enforce in LoadCachedToken after existing checks**
 
 In `LoadCachedToken()`, after the `m_token_valid_until` time check (around line 309-313) and before the final `return true`, add:
 
@@ -229,7 +251,7 @@ In `LoadCachedToken()`, after the `m_token_valid_until` time check (around line 
    }
 ```
 
-- [ ] **Step 8: Commit**
+- [x] **Step 8: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -244,7 +266,7 @@ git commit -m "feat(license): parse intended_account_type from token, enforce de
 **Files:**
 - Create: `/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/20260428000001_add_intended_account_type.sql`
 
-- [ ] **Step 1: Create the migration file**
+- [x] **Step 1: Create the migration file**
 
 ```sql
 -- Add intended_account_type column for the demo/live gate.
@@ -255,7 +277,7 @@ ALTER TABLE licenses
   CONSTRAINT licenses_intended_account_type_chk CHECK (intended_account_type IN ('demo', 'live'));
 ```
 
-- [ ] **Step 2: Commit**
+- [x] **Step 2: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -271,7 +293,7 @@ git commit -m "feat(db): add intended_account_type column to licenses table"
 - Modify: `/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE/supabase/functions/validate-license/types.ts`
 - Modify: `/Users/jsonse/Documents/development/EA/JSONFX-IMPULSE/supabase/functions/validate-license/index.ts`
 
-- [ ] **Step 1: Add account_type_mismatch to failure reasons**
+- [x] **Step 1: Add account_type_mismatch to failure reasons**
 
 In `types.ts`, update the `ValidateLicenseFailure` interface:
 
@@ -282,7 +304,7 @@ export interface ValidateLicenseFailure {
 }
 ```
 
-- [ ] **Step 2: Change TOKEN_VALIDITY_MS from 72h to 12h**
+- [x] **Step 2: Change TOKEN_VALIDITY_MS from 72h to 12h**
 
 In `index.ts`, change:
 
@@ -290,7 +312,7 @@ In `index.ts`, change:
 const TOKEN_VALIDITY_MS = 12 * 60 * 60 * 1000;  // 12 hours
 ```
 
-- [ ] **Step 3: Add intended_account_type to the DB select**
+- [x] **Step 3: Add intended_account_type to the DB select**
 
 In `index.ts`, update the `.select()` call to include the new column:
 
@@ -304,7 +326,7 @@ In `index.ts`, update the `.select()` call to include the new column:
     .maybeSingle();
 ```
 
-- [ ] **Step 4: Add account-type mismatch check**
+- [x] **Step 4: Add account-type mismatch check**
 
 In `index.ts`, after the expiry recheck (after the `if (expiresAt !== null && new Date(expiresAt) <= new Date())` block, around line 74), add:
 
@@ -318,7 +340,7 @@ In `index.ts`, after the expiry recheck (after the `if (expiresAt !== null && ne
   }
 ```
 
-- [ ] **Step 5: Add intended_account_type to the signed payload**
+- [x] **Step 5: Add intended_account_type to the signed payload**
 
 In `index.ts`, update the `payloadObj` to include `intended_account_type`:
 
@@ -332,7 +354,7 @@ In `index.ts`, update the `payloadObj` to include `intended_account_type`:
   };
 ```
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -349,7 +371,7 @@ git commit -m "feat(edge): add account-type gate, include intended_account_type 
 - Modify: `/Users/jsonse/Documents/development/copytraderx-license/lib/schemas.ts`
 - Modify: `/Users/jsonse/Documents/development/copytraderx-license/lib/liveness.test.ts`
 
-- [ ] **Step 1: Add intended_account_type to License interface**
+- [x] **Step 1: Add intended_account_type to License interface**
 
 In `lib/types.ts`, add `intended_account_type` to the `License` interface after `account_type`:
 
@@ -375,7 +397,7 @@ export interface License {
 
 Note: `AccountType` is already defined as `"demo" | "live" | "contest"`. The `intended_account_type` column only allows `"demo" | "live"` at the DB level, but reusing the same TS type is fine — the constraint lives in the DB and Zod schema.
 
-- [ ] **Step 2: Add intended_account_type to schemas**
+- [x] **Step 2: Add intended_account_type to schemas**
 
 In `lib/schemas.ts`, add an `accountTypeEnum` and include it in both schemas:
 
@@ -395,7 +417,7 @@ Add to `updateLicenseSchema` (inside the `.object({})`, after `tier`):
     intended_account_type: accountTypeEnum.nullable().optional(),
 ```
 
-- [ ] **Step 3: Add field to test helper**
+- [x] **Step 3: Add field to test helper**
 
 In `lib/liveness.test.ts`, in the `makeLicense()` function, add after `account_type: null`:
 
@@ -403,7 +425,7 @@ In `lib/liveness.test.ts`, in the `makeLicense()` function, add after `account_t
     intended_account_type: null,
 ```
 
-- [ ] **Step 4: Run type check and tests**
+- [x] **Step 4: Run type check and tests**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -412,7 +434,7 @@ npx tsc --noEmit && npx jest --no-coverage
 
 Expected: Clean type check, all tests pass.
 
-- [ ] **Step 5: Commit**
+- [x] **Step 5: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -428,7 +450,7 @@ git commit -m "feat(types): add intended_account_type to License interface and s
 - Modify: `/Users/jsonse/Documents/development/copytraderx-license/app/api/licenses/route.ts`
 - Modify: `/Users/jsonse/Documents/development/copytraderx-license/app/api/licenses/[id]/route.ts`
 
-- [ ] **Step 1: Pass intended_account_type on create**
+- [x] **Step 1: Pass intended_account_type on create**
 
 In `app/api/licenses/route.ts`, in the `POST` handler, add `intended_account_type` to the insert object (after `status: "active"`):
 
@@ -436,11 +458,11 @@ In `app/api/licenses/route.ts`, in the `POST` handler, add `intended_account_typ
       intended_account_type: input.intended_account_type,
 ```
 
-- [ ] **Step 2: Verify PATCH already handles it**
+- [x] **Step 2: Verify PATCH already handles it**
 
 The PATCH handler in `app/api/licenses/[id]/route.ts` uses `updatePayload = parsed.data` for non-renew updates (line 93). Since `intended_account_type` is now in `updateLicenseSchema`, it will be passed through automatically. No code change needed.
 
-- [ ] **Step 3: Run type check**
+- [x] **Step 3: Run type check**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -449,7 +471,7 @@ npx tsc --noEmit
 
 Expected: Clean.
 
-- [ ] **Step 4: Commit**
+- [x] **Step 4: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -464,7 +486,7 @@ git commit -m "feat(api): pass intended_account_type on license create"
 **Files:**
 - Modify: `/Users/jsonse/Documents/development/copytraderx-license/components/license-form.tsx`
 
-- [ ] **Step 1: Add intended_account_type to the form schema**
+- [x] **Step 1: Add intended_account_type to the form schema**
 
 In `license-form.tsx`, update the local `formSchema` to include:
 
@@ -474,7 +496,7 @@ In `license-form.tsx`, update the local `formSchema` to include:
 
 Update the `FormValues` type will be inferred automatically.
 
-- [ ] **Step 2: Add default value**
+- [x] **Step 2: Add default value**
 
 In the `defaultValues` object, add:
 
@@ -482,7 +504,7 @@ In the `defaultValues` object, add:
     intended_account_type: (initial?.intended_account_type as "demo" | "live" | undefined) ?? "demo",
 ```
 
-- [ ] **Step 3: Include in submit body**
+- [x] **Step 3: Include in submit body**
 
 In the `onSubmit` function, add `intended_account_type` to both the create and edit body objects:
 
@@ -512,7 +534,7 @@ For edit body:
           };
 ```
 
-- [ ] **Step 4: Add the Account Type dropdown to the form JSX**
+- [x] **Step 4: Add the Account Type dropdown to the form JSX**
 
 Add this block after the Tier section and before the Status section:
 
@@ -542,7 +564,7 @@ Add this block after the Tier section and before the Status section:
       </div>
 ```
 
-- [ ] **Step 5: Run type check and tests**
+- [x] **Step 5: Run type check and tests**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -551,7 +573,7 @@ npx tsc --noEmit && npx jest --no-coverage
 
 Expected: Clean type check, all tests pass.
 
-- [ ] **Step 6: Commit**
+- [x] **Step 6: Commit**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -563,7 +585,7 @@ git commit -m "feat(ui): add Account Type dropdown to license form"
 
 ## Task 9: Deploy — migration, edge function, dashboard container
 
-- [ ] **Step 1: Push DB migration**
+- [x] **Step 1: Push DB migration**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -572,7 +594,7 @@ supabase db push
 
 Expected: Migration `20260428000001_add_intended_account_type.sql` applied.
 
-- [ ] **Step 2: Deploy edge function**
+- [x] **Step 2: Deploy edge function**
 
 ```bash
 cd /Users/jsonse/Documents/development/EA/JSONFX-IMPULSE
@@ -581,7 +603,7 @@ supabase functions deploy validate-license
 
 Expected: Function deployed successfully.
 
-- [ ] **Step 3: Rebuild dashboard container**
+- [x] **Step 3: Rebuild dashboard container**
 
 ```bash
 cd /Users/jsonse/Documents/development/copytraderx-license
@@ -590,6 +612,6 @@ docker compose up -d --build
 
 Expected: Container rebuilt and running with new UI.
 
-- [ ] **Step 4: Verify at copytraderx.local**
+- [x] **Step 4: Verify at copytraderx.local**
 
 Open `http://copytraderx.local/licenses/new` and confirm the Account Type dropdown (Demo/Live) is visible in the form.

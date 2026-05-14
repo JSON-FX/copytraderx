@@ -6,6 +6,9 @@ function makeLicense(overrides: Partial<License>): License {
     id: 1,
     license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
     mt5_account: 12345,
+    product: "impulse",
+    subscription_id: 1,
+    user_id: "00000000-0000-0000-0000-000000000001",
     status: "active",
     tier: "monthly",
     expires_at: "2099-01-01T00:00:00Z",
@@ -18,8 +21,6 @@ function makeLicense(overrides: Partial<License>): License {
     intended_account_type: null,
     notes: null,
     created_at: "2026-04-20T00:00:00Z",
-    push_interval_seconds: 10,
-    propfirm_rule_id: null,
     ...overrides,
   };
 }

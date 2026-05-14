@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -24,29 +24,39 @@ import { ConfirmDialog } from "./confirm-dialog";
 import { generateLicenseKey } from "@/lib/license-key";
 import { calculateExpiresAt, formatExpiry } from "@/lib/expiry";
 import { copyToClipboard } from "@/lib/clipboard";
-import { LICENSE_KEY_PATTERN } from "@/lib/schemas";
-import type { License, LicenseTier, LicenseStatus, PropfirmRule } from "@/lib/types";
+import { isValidLicenseKey } from "@/lib/schemas";
+import { PRODUCTS, type Product } from "@/lib/products";
+import type { License, LicenseTier, LicenseStatus } from "@/lib/types";
 
 // ---------------------------------------------------------------------------
 // Schema
 // ---------------------------------------------------------------------------
 
-const formSchema = z.object({
-  license_key: z
-    .string()
-    .regex(LICENSE_KEY_PATTERN, "Must match IMPX-XXXX-XXXX-XXXX-XXXX"),
-  mt5_account: z.coerce
-    .number()
-    .int("Must be a whole number")
-    .positive("Must be a positive integer"),
-  tier: z.enum(["monthly", "quarterly", "yearly"]),
-  intended_account_type: z.enum(["demo", "live"]),
-  status: z.enum(["active", "revoked", "expired"]),
-  customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
-  notes: z.string().optional(),
-  push_interval_seconds: z.number().int().min(3).max(60).default(10),
-  propfirm_rule_id: z.number().int().positive().nullable().default(null),
-});
+const productEnum = z.enum(
+  PRODUCTS.map((p) => p.code) as [Product, ...Product[]],
+);
+
+const formSchema = z
+  .object({
+    license_key: z.string(),
+    product: productEnum,
+    mt5_account: z.coerce
+      .number()
+      .int("Must be a whole number")
+      .positive("Must be a positive integer"),
+    tier: z.enum(["monthly", "quarterly", "yearly"]),
+    intended_account_type: z.enum(["demo", "live"]),
+    status: z.enum(["active", "revoked", "expired"]),
+    customer_email: z.string().email("Invalid email address").or(z.literal("")).optional(),
+    notes: z.string().optional(),
+  })
+  .refine(
+    (v) => isValidLicenseKey(v.license_key, v.product),
+    {
+      message: "License key prefix must match the selected product",
+      path: ["license_key"],
+    },
+  );
 
 type FormValues = z.infer<typeof formSchema>;
 
@@ -66,22 +76,17 @@ interface Props {
 export function LicenseForm({ mode, initial }: Props) {
   const router = useRouter();
   const [showDelete, setShowDelete] = useState(false);
-  const [rules, setRules] = useState<PropfirmRule[]>([]);
 
-  useEffect(() => {
-    fetch("/api/propfirm-rules").then((r) => r.json()).then(setRules).catch(() => {});
-  }, []);
-
+  const defaultProduct: Product = initial?.product ?? "impulse";
   const defaultValues: FormValues = {
-    license_key: initial?.license_key ?? generateLicenseKey(),
+    license_key: initial?.license_key ?? generateLicenseKey(defaultProduct),
+    product: defaultProduct,
     mt5_account: initial?.mt5_account ?? (0 as unknown as number),
     tier: (initial?.tier as LicenseTier | undefined) ?? "monthly",
     intended_account_type: (initial?.intended_account_type as "demo" | "live" | undefined) ?? "demo",
     status: (initial?.status as LicenseStatus | undefined) ?? "active",
     customer_email: initial?.customer_email ?? "",
     notes: initial?.notes ?? "",
-    push_interval_seconds: initial?.push_interval_seconds ?? 10,
-    propfirm_rule_id: initial?.propfirm_rule_id ?? null,
   };
 
   const form = useForm<FormValues>({
@@ -110,23 +115,21 @@ export function LicenseForm({ mode, initial }: Props) {
       mode === "create"
         ? {
             license_key: values.license_key,
+            product: values.product,
             mt5_account: values.mt5_account,
             tier: values.tier,
             intended_account_type: values.intended_account_type,
             customer_email: values.customer_email || null,
             notes: values.notes || null,
-            push_interval_seconds: values.push_interval_seconds,
-            propfirm_rule_id: values.propfirm_rule_id,
           }
         : {
+            // product is intentionally omitted — immutable on a license.
             mt5_account: values.mt5_account,
             tier: values.tier,
             intended_account_type: values.intended_account_type,
             status: values.status,
             customer_email: values.customer_email || null,
             notes: values.notes || null,
-            push_interval_seconds: values.push_interval_seconds,
-            propfirm_rule_id: values.propfirm_rule_id,
           };
 
     const res = await fetch(path, {
@@ -146,7 +149,7 @@ export function LicenseForm({ mode, initial }: Props) {
     }
 
     toast.success(mode === "create" ? "License created" : "License updated");
-    router.push("/licenses");
+    router.push("/admin/licenses");
     router.refresh();
   }
 
@@ -162,7 +165,7 @@ export function LicenseForm({ mode, initial }: Props) {
       return;
     }
     toast.success("License deleted");
-    router.push("/licenses");
+    router.push("/admin/licenses");
     router.refresh();
   }
 
@@ -171,7 +174,17 @@ export function LicenseForm({ mode, initial }: Props) {
   // -------------------------------------------------------------------------
 
   function regenerateKey() {
-    form.setValue("license_key", generateLicenseKey(), { shouldDirty: true });
+    const product = form.getValues("product");
+    form.setValue("license_key", generateLicenseKey(product), { shouldDirty: true });
+  }
+
+  function onProductChange(next: Product) {
+    form.setValue("product", next, { shouldDirty: true });
+    if (mode === "create") {
+      // Regenerate the key with the new prefix; the regex refine will fail
+      // otherwise.
+      form.setValue("license_key", generateLicenseKey(next), { shouldDirty: true });
+    }
   }
 
   async function copyKey() {
@@ -200,6 +213,32 @@ export function LicenseForm({ mode, initial }: Props) {
 
   return (
     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-5 max-w-xl">
+
+      {/* Product */}
+      <div className="space-y-1.5">
+        <Label htmlFor="product" className="text-sm font-semibold">
+          Product
+        </Label>
+        <Select
+          value={form.watch("product")}
+          onValueChange={(v) => onProductChange(v as Product)}
+          disabled={mode === "edit"}
+        >
+          <SelectTrigger id="product">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {PRODUCTS.map((p) => (
+              <SelectItem key={p.code} value={p.code}>{p.displayName}</SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          {mode === "edit"
+            ? "Product is fixed for the life of a license."
+            : "Picks the EA this key activates. Changing it regenerates the key with the matching prefix."}
+        </p>
+      </div>
 
       {/* License Key */}
       <div className="space-y-1.5">
@@ -379,59 +418,12 @@ export function LicenseForm({ mode, initial }: Props) {
         />
       </div>
 
-      {/* EA Push Interval */}
-      <div className="space-y-1.5">
-        <Label htmlFor="push_interval_seconds" className="text-sm font-semibold">
-          EA push interval (seconds)
-        </Label>
-        <Select
-          value={String(form.watch("push_interval_seconds") ?? 10)}
-          onValueChange={(v) =>
-            form.setValue("push_interval_seconds", Number(v), { shouldDirty: true })
-          }
-        >
-          <SelectTrigger id="push_interval_seconds">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {[3, 5, 10, 30, 60].map((n) => (
-              <SelectItem key={n} value={String(n)}>{n}s</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-        <p className="text-xs text-muted-foreground">How often this account&apos;s EA publishes to Supabase.</p>
-      </div>
-
-      {/* Propfirm Rule */}
-      <div className="space-y-1.5">
-        <Label htmlFor="propfirm_rule_id" className="text-sm font-semibold">
-          Propfirm rule
-          <span className="ml-1.5 text-xs font-normal text-muted-foreground">optional</span>
-        </Label>
-        <Select
-          value={form.watch("propfirm_rule_id") === null ? "none" : String(form.watch("propfirm_rule_id"))}
-          onValueChange={(v) =>
-            form.setValue("propfirm_rule_id", v === "none" ? null : Number(v), { shouldDirty: true })
-          }
-        >
-          <SelectTrigger id="propfirm_rule_id">
-            <SelectValue placeholder="No challenge" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="none">No challenge</SelectItem>
-            {rules.map((r) => (
-              <SelectItem key={r.id} value={String(r.id)}>{r.name}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-
       {/* Action buttons */}
       <div className="flex items-center gap-2 pt-1">
         <Button
           type="button"
           variant="outline"
-          onClick={() => router.push("/licenses")}
+          onClick={() => router.push("/admin/licenses")}
           disabled={isSubmitting}
         >
           Cancel

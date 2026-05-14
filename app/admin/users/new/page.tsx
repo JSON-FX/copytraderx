@@ -1,0 +1,26 @@
+import Link from "next/link";
+import { AdminSiteNav } from "@/components/admin/admin-site-nav";
+import { UserForm } from "@/components/admin/user-form";
+
+export default function NewUserPage() {
+  return (
+    <div className="min-h-screen">
+      <AdminSiteNav />
+      <main className="mx-auto max-w-2xl px-6 py-8">
+        <div className="mb-6">
+          <Link
+            href="/admin/users"
+            className="text-xs text-muted-foreground hover:text-foreground"
+          >
+            ← Back to users
+          </Link>
+          <h1 className="mt-2 text-2xl font-semibold">New user</h1>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Choose to email an invite link or generate a password to copy and hand-deliver.
+          </p>
+        </div>
+        <UserForm mode="create" />
+      </main>
+    </div>
+  );
+}

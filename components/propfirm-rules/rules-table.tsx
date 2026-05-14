@@ -22,7 +22,7 @@ export function RulesTable({ rules }: { rules: PropfirmRule[] }) {
       <TableBody>
         {rules.map((r) => (
           <TableRow key={r.id} className="cursor-pointer hover:bg-muted/50">
-            <TableCell><Link href={`/propfirm-rules/${r.id}`} className="hover:underline">{r.name}</Link></TableCell>
+            <TableCell><Link href={`/admin/propfirm-rules/${r.id}`} className="hover:underline">{r.name}</Link></TableCell>
             <TableCell className="text-right tabular-nums">${r.account_size.toLocaleString()}</TableCell>
             <TableCell className="text-right tabular-nums">{r.max_daily_loss}{r.daily_loss_type === "percent" ? "%" : "$"}</TableCell>
             <TableCell className="text-right tabular-nums">{r.max_total_loss}{r.total_loss_type === "percent" ? "%" : "$"}</TableCell>

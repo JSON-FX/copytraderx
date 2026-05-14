@@ -180,9 +180,9 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
         </Select>
         <div className="flex-1" />
         <Button asChild>
-          <Link href="/licenses/new">
+          <Link href="/admin/subscriptions/new">
             <Plus className="mr-2 h-4 w-4" />
-            New License
+            Create subscription
           </Link>
         </Button>
       </div>
@@ -318,10 +318,10 @@ export function LicenseTable({ initialLicenses }: { initialLicenses: License[] }
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuItem asChild>
-                            <Link href={`/licenses/${l.id}/journal`}>View journal</Link>
+                            <Link href={`/admin/licenses/${l.id}/journal`}>View journal</Link>
                           </DropdownMenuItem>
                           <DropdownMenuItem asChild>
-                            <Link href={`/licenses/${l.id}`}>Edit</Link>
+                            <Link href={`/admin/licenses/${l.id}`}>Edit</Link>
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem

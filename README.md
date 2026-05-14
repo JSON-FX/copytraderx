@@ -92,3 +92,37 @@ Action menu → **Revoke**. Confirms first. Sets `status='revoked'`. The EA refu
 ## Deleting
 
 Action menu → **Delete**. Permanent. Requires typing `DELETE` to confirm. Use Revoke instead unless you really mean it.
+
+## Subscription expiry
+
+Production runs a daily Supabase pg_cron job (`subscriptions-expire-daily`) at
+00:00 UTC that flips `subscriptions.status` from `active` to `expired` once
+`expires_at` has passed. The trigger from migration `20260506000005` cascades
+the status change to child licenses.
+
+For local development or manual testing, run:
+
+```bash
+pnpm expire:subs
+```
+
+This connects via the service role key and applies the same SQL.
+
+> Note: pg_cron requires the extension to be enabled on the Supabase project
+> (Database → Extensions → pg_cron). The expiry migration is committed in the
+> EA repo at `supabase/migrations/20260508000002_install_expiry_cron.sql` and
+> applies once the extension is on.
+
+## End-to-end tests
+
+E2E tests live in `e2e/` and are run with Playwright.
+
+```bash
+cp .env.test.example .env.test
+# fill in test Supabase project credentials — NEVER use production values
+pnpm e2e
+```
+
+The suite seeds a known admin + user before each run via `e2e/helpers/seed.ts`.
+The seed helper refuses to run unless the Supabase URL contains `test`, `stag`,
+or `local`.

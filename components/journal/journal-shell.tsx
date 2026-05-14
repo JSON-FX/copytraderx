@@ -24,11 +24,12 @@ interface Props {
   initialDeals: Deal[];
   initialOrders: OrderRow[];
   rule: PropfirmRule | null;
+  pushIntervalSeconds: number;
 }
 
 export function JournalShell(props: Props) {
   const { license } = props;
-  const pushIntervalMs = license.push_interval_seconds * 1000;
+  const pushIntervalMs = props.pushIntervalSeconds * 1000;
   const acct = license.mt5_account;
 
   const snapshot = useJournalPoll<AccountSnapshotCurrent | null>({
@@ -64,7 +65,7 @@ export function JournalShell(props: Props) {
 
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-6 py-6">
-      <JournalHeader license={license} pushedAt={snapshot.data?.pushed_at ?? null} />
+      <JournalHeader license={license} pushedAt={snapshot.data?.pushed_at ?? null} pushIntervalSeconds={props.pushIntervalSeconds} />
       <LiveAccountPanel snapshot={snapshot.data} />
       <Tabs defaultValue="overview">
         <TabsList>

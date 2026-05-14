@@ -2,13 +2,27 @@ import {
   createLicenseSchema,
   updateLicenseSchema,
   renewActionSchema,
+  createSubscriptionRequestSchema,
+  renewSubscriptionRequestSchema,
+  approveSubscriptionSchema,
+  rejectSubscriptionSchema,
+  isValidLicenseKey,
+  createUserSchema,
+  updateUserSchema,
+  claimSlotSchema,
+  adminCreateSubscriptionSchema,
+  revokeSubscriptionSchema,
+  updateSubscriptionPolicySchema,
+  reattachLicenseSchema,
+  extendSubscriptionRequestSchema,
 } from "./schemas";
 
 describe("createLicenseSchema", () => {
-  it("accepts a valid monthly license", () => {
+  it("accepts a valid impulse license", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 12345678,
+      product: "impulse",
       tier: "monthly",
       intended_account_type: "demo",
       customer_email: "test@example.com",
@@ -17,11 +31,57 @@ describe("createLicenseSchema", () => {
     expect(result.success).toBe(true);
   });
 
-  it("rejects malformed license_key (wrong prefix)", () => {
+  it("accepts a valid ctx-live license", () => {
+    const result = createLicenseSchema.safeParse({
+      license_key: "CTXL-AAAA-BBBB-CCCC-DDDD",
+      mt5_account: 12345678,
+      product: "ctx-live",
+      tier: "monthly",
+      intended_account_type: "live",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects license_key whose prefix mismatches product (IMPX with ctx-live)", () => {
+    const result = createLicenseSchema.safeParse({
+      license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
+      mt5_account: 12345678,
+      product: "ctx-live",
+      tier: "monthly",
+      intended_account_type: "demo",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects license_key with body characters outside the safe alphabet", () => {
+    const result = createLicenseSchema.safeParse({
+      license_key: "IMPX-AAAA-BBBB-CCC0-DDDD", // contains '0'
+      mt5_account: 12345678,
+      product: "impulse",
+      tier: "monthly",
+      intended_account_type: "demo",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects malformed license_key (wrong shape)", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "WRONG-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 12345678,
+      product: "impulse",
       tier: "monthly",
+      intended_account_type: "demo",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects unknown product", () => {
+    const result = createLicenseSchema.safeParse({
+      license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
+      mt5_account: 12345678,
+      product: "ctx-banana",
+      tier: "monthly",
+      intended_account_type: "demo",
     });
     expect(result.success).toBe(false);
   });
@@ -30,7 +90,9 @@ describe("createLicenseSchema", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 0,
+      product: "impulse",
       tier: "monthly",
+      intended_account_type: "demo",
     });
     expect(result.success).toBe(false);
   });
@@ -39,7 +101,9 @@ describe("createLicenseSchema", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: -5,
+      product: "impulse",
       tier: "monthly",
+      intended_account_type: "demo",
     });
     expect(result.success).toBe(false);
   });
@@ -48,7 +112,9 @@ describe("createLicenseSchema", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 1,
+      product: "impulse",
       tier: "weekly",
+      intended_account_type: "demo",
     });
     expect(result.success).toBe(false);
   });
@@ -57,7 +123,9 @@ describe("createLicenseSchema", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 12345678,
+      product: "impulse",
       tier: "lifetime",
+      intended_account_type: "demo",
     });
     expect(result.success).toBe(false);
   });
@@ -66,6 +134,7 @@ describe("createLicenseSchema", () => {
     const a = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 1,
+      product: "impulse",
       tier: "monthly",
       intended_account_type: "demo",
     });
@@ -73,6 +142,7 @@ describe("createLicenseSchema", () => {
     const b = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 1,
+      product: "impulse",
       tier: "monthly",
       intended_account_type: "live",
       customer_email: "",
@@ -84,10 +154,36 @@ describe("createLicenseSchema", () => {
     const result = createLicenseSchema.safeParse({
       license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
       mt5_account: 1,
+      product: "impulse",
       tier: "monthly",
+      intended_account_type: "demo",
       customer_email: "not-an-email",
     });
     expect(result.success).toBe(false);
+  });
+
+  it("rejects push_interval_seconds (moved to subscriptions)", () => {
+    const r = createLicenseSchema.safeParse({
+      license_key: "IMPX-AAAA-AAAA-AAAA-AAAA",
+      mt5_account: 1,
+      product: "impulse",
+      tier: "monthly",
+      intended_account_type: "live",
+      push_interval_seconds: 10,
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe("isValidLicenseKey", () => {
+  it("matches IMPX for impulse", () => {
+    expect(isValidLicenseKey("IMPX-AAAA-BBBB-CCCC-DDDD", "impulse")).toBe(true);
+  });
+  it("rejects IMPX when product is ctx-live", () => {
+    expect(isValidLicenseKey("IMPX-AAAA-BBBB-CCCC-DDDD", "ctx-live")).toBe(false);
+  });
+  it("matches CTXP for ctx-prop-passer", () => {
+    expect(isValidLicenseKey("CTXP-AAAA-BBBB-CCCC-DDDD", "ctx-prop-passer")).toBe(true);
   });
 });
 
@@ -128,5 +224,314 @@ describe("renewActionSchema", () => {
       tier: "lifetime",
     });
     expect(result.success).toBe(false);
+  });
+});
+
+describe("createSubscriptionRequestSchema", () => {
+  it("accepts each of the 5 products", () => {
+    for (const product of [
+      "impulse",
+      "ctx-core",
+      "ctx-live",
+      "ctx-prop-passer",
+      "ctx-prop-funded",
+    ] as const) {
+      const result = createSubscriptionRequestSchema.safeParse({
+        product,
+        tier: "monthly",
+      });
+      expect(result.success).toBe(true);
+    }
+  });
+
+  it("rejects unknown product", () => {
+    const result = createSubscriptionRequestSchema.safeParse({
+      product: "ctx-banana",
+      tier: "monthly",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects unknown tier", () => {
+    const result = createSubscriptionRequestSchema.safeParse({
+      product: "impulse",
+      tier: "lifetime",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("renewSubscriptionRequestSchema", () => {
+  it("accepts a renew with positive source_subscription_id", () => {
+    const result = renewSubscriptionRequestSchema.safeParse({
+      source_subscription_id: 42,
+      tier: "yearly",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects renew with non-positive source_subscription_id", () => {
+    const result = renewSubscriptionRequestSchema.safeParse({
+      source_subscription_id: 0,
+      tier: "yearly",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("approveSubscriptionSchema", () => {
+  it("accepts the approve action", () => {
+    const result = approveSubscriptionSchema.safeParse({ action: "approve" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects unknown action literal", () => {
+    const result = approveSubscriptionSchema.safeParse({ action: "approve-now" });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("rejectSubscriptionSchema", () => {
+  it("accepts a non-empty rejection_reason", () => {
+    const result = rejectSubscriptionSchema.safeParse({
+      action: "reject",
+      rejection_reason: "duplicate request",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects empty rejection_reason", () => {
+    const result = rejectSubscriptionSchema.safeParse({
+      action: "reject",
+      rejection_reason: "",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("createUserSchema", () => {
+  it("accepts a minimal valid input (email + role only)", () => {
+    const result = createUserSchema.safeParse({
+      email: "user@example.com",
+      role: "user",
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts an input with an initial subscription", () => {
+    const result = createUserSchema.safeParse({
+      email: "user@example.com",
+      full_name: "User Name",
+      role: "user",
+      initial_subscription: { product: "impulse", tier: "monthly" },
+    });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects a bad email", () => {
+    const result = createUserSchema.safeParse({
+      email: "not-an-email",
+      role: "user",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an unknown role", () => {
+    const result = createUserSchema.safeParse({
+      email: "u@example.com",
+      role: "superuser",
+    });
+    expect(result.success).toBe(false);
+  });
+
+  it("rejects an initial_subscription with a bad product", () => {
+    const result = createUserSchema.safeParse({
+      email: "u@example.com",
+      role: "user",
+      initial_subscription: { product: "xyz", tier: "monthly" },
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("updateUserSchema", () => {
+  it("accepts a role-only update", () => {
+    const result = updateUserSchema.safeParse({ role: "admin" });
+    expect(result.success).toBe(true);
+  });
+
+  it("accepts a full_name update", () => {
+    const result = updateUserSchema.safeParse({ full_name: "Real Name" });
+    expect(result.success).toBe(true);
+  });
+
+  it("rejects an empty body", () => {
+    const result = updateUserSchema.safeParse({});
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("claimSlotSchema", () => {
+  it("accepts a valid claim", () => {
+    const result = claimSlotSchema.safeParse({
+      subscription_id: 42,
+      mt5_account: 1234567,
+      intended_account_type: "live",
+    });
+    expect(result.success).toBe(true);
+  });
+  it("rejects mt5_account <= 0", () => {
+    const result = claimSlotSchema.safeParse({
+      subscription_id: 42,
+      mt5_account: 0,
+      intended_account_type: "demo",
+    });
+    expect(result.success).toBe(false);
+  });
+  it("rejects intended_account_type='contest'", () => {
+    const result = claimSlotSchema.safeParse({
+      subscription_id: 42,
+      mt5_account: 1234567,
+      intended_account_type: "contest",
+    });
+    expect(result.success).toBe(false);
+  });
+});
+
+describe("adminCreateSubscriptionSchema", () => {
+  it("accepts a fully populated body", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "11111111-1111-1111-1111-111111111111",
+      product: "ctx-live",
+      tier: "monthly",
+      push_interval_seconds: 10,
+      propfirm_rule_id: 5,
+      notes: "VIP client",
+      send_grant_email: true,
+    });
+    expect(r.success).toBe(true);
+  });
+  it("defaults push_interval_seconds=10 and send_grant_email=true", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "11111111-1111-1111-1111-111111111111",
+      product: "impulse",
+      tier: "yearly",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) {
+      expect(r.data.push_interval_seconds).toBe(10);
+      expect(r.data.send_grant_email).toBe(true);
+      expect(r.data.propfirm_rule_id).toBeNull();
+      expect(r.data.notes).toBeNull();
+    }
+  });
+  it("rejects bad uuid", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "not-a-uuid",
+      product: "impulse",
+      tier: "monthly",
+    });
+    expect(r.success).toBe(false);
+  });
+  it("rejects unknown product", () => {
+    const r = adminCreateSubscriptionSchema.safeParse({
+      user_id: "11111111-1111-1111-1111-111111111111",
+      product: "nope",
+      tier: "monthly",
+    });
+    expect(r.success).toBe(false);
+  });
+});
+
+describe("revokeSubscriptionSchema", () => {
+  it("accepts an empty object", () => {
+    expect(revokeSubscriptionSchema.safeParse({}).success).toBe(true);
+  });
+  it("rejects extra fields", () => {
+    expect(revokeSubscriptionSchema.safeParse({ foo: 1 }).success).toBe(false);
+  });
+});
+
+describe("updateSubscriptionPolicySchema", () => {
+  it("accepts push_interval only", () => {
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ push_interval_seconds: 30 }).success,
+    ).toBe(true);
+  });
+  it("accepts propfirm_rule_id null", () => {
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ propfirm_rule_id: null }).success,
+    ).toBe(true);
+  });
+  it("rejects empty body", () => {
+    expect(updateSubscriptionPolicySchema.safeParse({}).success).toBe(false);
+  });
+  it("rejects out-of-range push interval", () => {
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ push_interval_seconds: 0 }).success,
+    ).toBe(false);
+    expect(
+      updateSubscriptionPolicySchema.safeParse({ push_interval_seconds: 9999 }).success,
+    ).toBe(false);
+  });
+});
+
+describe("reattachLicenseSchema", () => {
+  it("accepts a uuid", () => {
+    expect(
+      reattachLicenseSchema.safeParse({
+        target_user_id: "22222222-2222-2222-2222-222222222222",
+      }).success,
+    ).toBe(true);
+  });
+  it("rejects bad uuid", () => {
+    expect(
+      reattachLicenseSchema.safeParse({ target_user_id: "abc" }).success,
+    ).toBe(false);
+  });
+});
+
+describe("extendSubscriptionRequestSchema", () => {
+  test("accepts valid body", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "yearly",
+    });
+    expect(r.success).toBe(true);
+  });
+
+  test("rejects non-positive subscription_id", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 0,
+      requested_tier: "monthly",
+    });
+    expect(r.success).toBe(false);
+  });
+
+  test("rejects unknown tier", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "weekly",
+    });
+    expect(r.success).toBe(false);
+  });
+
+  test("accepts optional notes", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "monthly",
+      notes: "thanks",
+    });
+    expect(r.success).toBe(true);
+  });
+
+  test("strips empty-string notes to null", () => {
+    const r = extendSubscriptionRequestSchema.safeParse({
+      subscription_id: 1,
+      requested_tier: "monthly",
+      notes: "",
+    });
+    expect(r.success).toBe(true);
+    if (r.success) expect(r.data.notes).toBeNull();
   });
 });

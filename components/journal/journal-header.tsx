@@ -12,9 +12,10 @@ import type { License } from "@/lib/types";
 interface Props {
   license: License;
   pushedAt: string | null;
+  pushIntervalSeconds: number;
 }
 
-export function JournalHeader({ license, pushedAt }: Props) {
+export function JournalHeader({ license, pushedAt, pushIntervalSeconds }: Props) {
   const livenessState = deriveLiveness(license, new Date());
   const displayStatus =
     license.status === "revoked"
@@ -25,7 +26,7 @@ export function JournalHeader({ license, pushedAt }: Props) {
 
   return (
     <div className="border-b pb-4">
-      <Link href="/licenses" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
+      <Link href="/admin/licenses" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
         <ArrowLeft className="h-4 w-4" /> Licenses
       </Link>
       <div className="mt-2 flex items-baseline justify-between gap-3">
@@ -42,7 +43,7 @@ export function JournalHeader({ license, pushedAt }: Props) {
             <span className="rounded bg-muted px-2 py-0.5 text-xs uppercase">{license.account_type}</span>
           )}
           <LivenessBadge state={livenessState} />
-          <DataAgeIndicator pushedAt={pushedAt} pushIntervalSeconds={license.push_interval_seconds} />
+          <DataAgeIndicator pushedAt={pushedAt} pushIntervalSeconds={pushIntervalSeconds} />
         </div>
       </div>
     </div>
