@@ -1,4 +1,5 @@
 import {
+  filterRows,
   groupByUser,
   summarizeStatuses,
   type AdminSubscriptionRow,
@@ -81,5 +82,104 @@ describe("summarizeStatuses", () => {
       expired: 0,
       revoked: 0,
     });
+  });
+});
+
+function mt5Row(
+  overrides: Partial<AdminSubscriptionRow> & { id: number },
+): AdminSubscriptionRow {
+  return mkRow({
+    user_id: "u",
+    user_email: "alex@trader.com",
+    user_full_name: "Alex Trader",
+    ...overrides,
+  });
+}
+
+describe("filterRows", () => {
+  const rows: AdminSubscriptionRow[] = [
+    mt5Row({
+      id: 1,
+      status: "active",
+      product: "impulse",
+      live_license: {
+        id: 10,
+        license_key: "IMPX-AAAA-BBBB-CCCC-DDDD",
+        mt5_account: 531290109,
+        broker_name: "FTMO",
+        intended_account_type: "live",
+        status: "active",
+        last_validated_at: null,
+        activated_at: "2026-01-01T00:00:00Z",
+      },
+    }),
+    mt5Row({
+      id: 2,
+      status: "pending",
+      product: "scalper",
+      live_license: null,
+    }),
+  ];
+
+  it("returns all rows when the filter is empty", () => {
+    expect(
+      filterRows(rows, { search: "", statuses: [], products: [] }).map((r) => r.id),
+    ).toEqual([1, 2]);
+  });
+
+  it("filters by status", () => {
+    expect(
+      filterRows(rows, { search: "", statuses: ["active"], products: [] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([1]);
+  });
+
+  it("filters by product", () => {
+    expect(
+      filterRows(rows, { search: "", statuses: [], products: ["scalper"] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([2]);
+  });
+
+  it("matches search against email", () => {
+    expect(
+      filterRows(rows, { search: "alex@", statuses: [], products: [] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([1, 2]);
+  });
+
+  it("matches search against license key (case-insensitive)", () => {
+    expect(
+      filterRows(rows, { search: "impx", statuses: [], products: [] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([1]);
+  });
+
+  it("matches search against MT5 account number", () => {
+    expect(
+      filterRows(rows, { search: "531290109", statuses: [], products: [] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([1]);
+  });
+
+  it("matches search against full_name", () => {
+    expect(
+      filterRows(rows, { search: "Trader", statuses: [], products: [] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([1, 2]);
+  });
+
+  it("AND-combines status and search", () => {
+    expect(
+      filterRows(rows, { search: "alex@", statuses: ["pending"], products: [] }).map(
+        (r) => r.id,
+      ),
+    ).toEqual([2]);
   });
 });

@@ -77,3 +77,44 @@ export function summarizeStatuses(
   }
   return counts;
 }
+
+export interface AdminSubsFilterState {
+  search: string;
+  statuses: SubscriptionStatus[];
+  products: Product[];
+}
+
+function matchesSearch(row: AdminSubscriptionRow, q: string): boolean {
+  if (q.length === 0) return true;
+  const needle = q.toLowerCase();
+  const haystacks: string[] = [
+    row.user_email,
+    row.user_full_name ?? "",
+    row.product,
+    row.tier,
+    row.status,
+    row.live_license?.license_key ?? "",
+    row.demo_license?.license_key ?? "",
+    row.live_license ? String(row.live_license.mt5_account) : "",
+    row.demo_license ? String(row.demo_license.mt5_account) : "",
+    row.live_license?.broker_name ?? "",
+    row.demo_license?.broker_name ?? "",
+  ];
+  return haystacks.some((h) => h.toLowerCase().includes(needle));
+}
+
+export function filterRows(
+  rows: AdminSubscriptionRow[],
+  state: AdminSubsFilterState,
+): AdminSubscriptionRow[] {
+  return rows.filter((row) => {
+    if (state.statuses.length > 0 && !state.statuses.includes(row.status)) {
+      return false;
+    }
+    if (state.products.length > 0 && !state.products.includes(row.product)) {
+      return false;
+    }
+    if (!matchesSearch(row, state.search.trim())) return false;
+    return true;
+  });
+}
