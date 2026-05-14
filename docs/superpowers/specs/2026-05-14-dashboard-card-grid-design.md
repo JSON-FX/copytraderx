@@ -29,7 +29,7 @@ The reference account (json.alanano@gmail.com) shows this clearly: Impulse and C
 | Renew button | Stays on `revoked` and `expired` past cards. **Not** on `rejected` (backend rejects: `canRenewFrom` returns `not_renewable` for rejected; rejected users must use Request New License). |
 | Sorting (Current) | status (active → pending) → product canonical order → `created_at` desc — same as today within scope. |
 | Sorting (Past) | `created_at` desc — terminal states don't need status-sort within section. |
-| Sub-level status badge | Shown in the card header. Values: `Active`, `No slots claimed`, `Pending`, `Rejected`, `Expired`, `Revoked`. |
+| Sub-level status badge | Shown in the card header. Values: `Active`, `No slots claimed`, `Pending`, `Rejected`, `Expired`, `Revoked`. Render the badge text directly (don't rely on a `capitalize` class — "No slots claimed" is multi-word). |
 | Slot-level status | Inline within the slot row only when it diverges from the sub (e.g., active sub with a revoked license). No separate badge per slot. |
 | Extension-pending indicator | Renders as an inline notice between the slots and the action footer of the affected card. Replaces `ExtensionStatusLine`'s table-cell rendering with a card-fit equivalent. |
 | Rejected reason | Renders as a red-tinted block in the card body. |
@@ -108,11 +108,11 @@ Each card is a flex column. Header → optional slot list / pending message / re
 
 ### 5.1 Header (always)
 
-- Left: EA display name (`productDisplayName(sub.product)`) in semibold; below it, `tier · expires/requested/expired <date>` in muted small text. Date label varies by status:
+- Left: EA display name (`productDisplayName(sub.product)`) in semibold; below it, `tier · <label> <date>` in muted small text. Date label varies by status:
   - active / empty-active → `expires <formatExpiry(expires_at)>`
   - pending → `requested <formatExpiry(created_at)>`
   - expired / revoked → `expired <formatExpiry(expires_at)>`
-  - rejected → `rejected <formatExpiry(updated_at)>` (admin set rejection date)
+  - rejected → `requested <formatExpiry(created_at)>` (the `Subscription` row has no rejection timestamp; `created_at` is the closest signal)
 - Right: sub-level `StatusBadge`. Values map:
   - `active` + ≥1 license → "Active"
   - `active` + 0 licenses → "No slots claimed"
@@ -178,7 +178,7 @@ Implementation detail: since the banner needs to toggle the `<details>`, lift th
 ## 8. Empty states
 
 - Zero items total → existing empty hint stays unchanged.
-- Zero current, non-zero past → main grid hidden; past section rendered **expanded by default** (otherwise the user lands on a blank page). Banner present.
+- Zero current, non-zero past → main grid replaced with a small inline note (e.g., *"No active subscriptions."*); past section rendered **expanded by default** (otherwise the user lands on a blank page). Banner present.
 - Zero past, non-zero current → past section + banner not rendered.
 
 ## 9. Responsive behavior
