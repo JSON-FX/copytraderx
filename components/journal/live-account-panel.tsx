@@ -1,37 +1,77 @@
 "use client";
 
-import { StatCard } from "./stat-card";
-import { Progress } from "@/components/ui/progress";
-import type { AccountSnapshotCurrent } from "@/lib/types";
+import { useMemo } from "react";
+import type { AccountSnapshotCurrent, AccountSnapshotDaily } from "@/lib/types";
+import { KpiCard } from "./kpi-card";
+import { AccountMetadataStrip } from "./account-metadata-strip";
+import { fmtCash, fmtPct } from "@/lib/journal/format-pnl";
+import { usePnlDisplay } from "./preferences/journal-chrome-context";
 
-function fmt(n: number, currency: string): string {
-  return new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 2 }).format(n);
+interface Props {
+  snapshot: AccountSnapshotCurrent | null;
+  daily: AccountSnapshotDaily[];
+  baseline: number;
 }
 
-export function LiveAccountPanel({ snapshot }: { snapshot: AccountSnapshotCurrent | null }) {
-  if (!snapshot) {
-    return (
-      <div className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">
-        Waiting for first EA push…
-      </div>
-    );
-  }
-  const tone = snapshot.floating_pnl > 0 ? "positive" : snapshot.floating_pnl < 0 ? "negative" : "default";
+export function LiveAccountPanel({ snapshot, daily, baseline }: Props) {
+  const { mode } = usePnlDisplay();
+  const currency = snapshot?.currency ?? "USD";
+  const balance = snapshot?.balance ?? 0;
+  const equity = snapshot?.equity ?? 0;
+  const floating = snapshot?.floating_pnl ?? 0;
+
+  const cumulativeReturn = useMemo(() => {
+    if (baseline <= 0 || daily.length === 0) return null;
+    const last = daily[daily.length - 1].balance_close;
+    return { pct: ((last - baseline) / baseline) * 100, cash: last - baseline };
+  }, [daily, baseline]);
+
+  const drawdownPct = snapshot?.drawdown_pct ?? 0;
+  const drawdownCash = baseline > 0 ? (baseline * drawdownPct) / 100 : 0;
+
+  const equitySeries = useMemo(() => daily.map((d) => d.equity_close), [daily]);
+  const balanceSeries = useMemo(() => daily.map((d) => d.balance_close), [daily]);
+  const drawdownSeries = useMemo(() => daily.map((d) => Math.max(0, baseline - d.balance_close)), [daily, baseline]);
+
+  const showPct = mode === "percent" && baseline > 0;
+
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <StatCard label="Balance" value={fmt(snapshot.balance, snapshot.currency)} />
-        <StatCard label="Equity" value={fmt(snapshot.equity, snapshot.currency)} />
-        <StatCard label="Floating P/L" value={fmt(snapshot.floating_pnl, snapshot.currency)} tone={tone} />
-        <StatCard label="Drawdown" value={`${snapshot.drawdown_pct.toFixed(2)}%`} tone={snapshot.drawdown_pct > 0 ? "negative" : "default"} />
+        <KpiCard
+          featured
+          label="Net Return"
+          tone={cumulativeReturn === null ? "neutral" : cumulativeReturn.pct > 0 ? "positive" : cumulativeReturn.pct < 0 ? "negative" : "neutral"}
+          value={cumulativeReturn === null ? "—" : showPct ? fmtPct(cumulativeReturn.pct) : fmtCash(cumulativeReturn.cash, currency)}
+          sub={cumulativeReturn === null ? "no daily history yet" : showPct
+            ? `since start · ${fmtCash(cumulativeReturn.cash, currency)}`
+            : `since start · ${fmtPct(cumulativeReturn.pct)}`}
+          series={balanceSeries}
+          seriesTone={cumulativeReturn && cumulativeReturn.pct < 0 ? "negative" : "positive"}
+        />
+        <KpiCard
+          label="Equity"
+          value={fmtCash(equity, currency)}
+          sub={`balance ${fmtCash(balance, currency)}`}
+          series={equitySeries}
+          seriesTone="neutral"
+        />
+        <KpiCard
+          label="Floating P/L"
+          tone={floating > 0 ? "positive" : floating < 0 ? "negative" : "neutral"}
+          value={showPct ? fmtPct(baseline > 0 ? (floating / baseline) * 100 : 0) : fmtCash(floating, currency)}
+          sub={`${fmtCash(floating, currency)}`}
+        />
+        <KpiCard
+          label="Drawdown"
+          tone={drawdownPct > 0 ? "negative" : "neutral"}
+          value={showPct ? fmtPct(drawdownPct) : fmtCash(drawdownCash, currency)}
+          sub={`peak → trough · ${fmtCash(drawdownCash, currency)}`}
+          series={drawdownSeries}
+          seriesTone="negative"
+        />
       </div>
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4 text-xs text-muted-foreground tabular-nums">
-        <div>Margin: <span className="text-foreground">{fmt(snapshot.margin, snapshot.currency)}</span></div>
-        <div>Free: <span className="text-foreground">{fmt(snapshot.free_margin, snapshot.currency)}</span></div>
-        <div>Margin Level: <span className="text-foreground">{snapshot.margin_level === null ? "—" : `${snapshot.margin_level.toFixed(0)}%`}</span></div>
-        <div>Leverage: <span className="text-foreground">1:{snapshot.leverage}</span></div>
-      </div>
-      <Progress value={Math.min(100, snapshot.drawdown_pct)} aria-label="Drawdown" />
+      <AccountMetadataStrip snapshot={snapshot} />
     </div>
   );
 }
