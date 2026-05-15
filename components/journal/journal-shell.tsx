@@ -70,10 +70,13 @@ function Inner(props: Props) {
     initialData: props.initialOrders, pushIntervalMs, fixedIntervalMs: 30_000,
     deps: [days],
   });
+  // Daily snapshots are always fetched all-time so the headline KPI cards
+  // (Net Return, Max Drawdown, equity sparkline) stay stable across Range
+  // changes. Range only scopes the high-volume tables (deals, orders).
+  // The volume here is small — ~365 rows per year per account.
   const daily = useJournalPoll<AccountSnapshotDaily[]>({
-    fetcher: () => fetchJson<AccountSnapshotDaily[]>(`/api/journal/${acct}/snapshots-daily?days=${days}`),
+    fetcher: () => fetchJson<AccountSnapshotDaily[]>(`/api/journal/${acct}/snapshots-daily?days=0`),
     initialData: props.initialDaily, pushIntervalMs, fixedIntervalMs: 5 * 60_000,
-    deps: [days],
   });
 
   const currency = snapshot.data?.currency ?? "USD";
