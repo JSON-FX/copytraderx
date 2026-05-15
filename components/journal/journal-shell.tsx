@@ -94,7 +94,7 @@ function Inner(props: Props) {
           <TabsTrigger value="objectives">Objectives</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <OverviewTab positions={positions.data} currency={currency} />
+          <OverviewTab license={license} rule={props.rule} snapshot={snapshot.data} daily={daily.data} positions={positions.data} deals={deals.data} currency={currency} baseline={baseline} />
         </TabsContent>
         <TabsContent value="trades"><TradesTab deals={deals.data} currency={currency} baseline={baseline} /></TabsContent>
         <TabsContent value="calendar"><CalendarTab deals={deals.data} currency={currency} baseline={baseline} /></TabsContent>
