@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import type { AccountSnapshotCurrent, Deal } from "@/lib/types";
+import type { AccountSnapshotCurrent, AccountSnapshotDaily, Deal } from "@/lib/types";
 import type { BaselineSource } from "@/lib/journal/baseline";
 import { KpiCard } from "./kpi-card";
 import { AccountMetadataStrip } from "./account-metadata-strip";
@@ -12,6 +12,7 @@ import { usePnlDisplay } from "./preferences/journal-chrome-context";
 interface Props {
   snapshot: AccountSnapshotCurrent | null;
   deals: Deal[];
+  daily: AccountSnapshotDaily[];
   baseline: number;
   baselineSource: BaselineSource;
 }
@@ -22,7 +23,7 @@ const BASELINE_SOURCE_LABEL: Record<Exclude<BaselineSource, null>, string> = {
   current: "current balance (no history yet)",
 };
 
-export function LiveAccountPanel({ snapshot, deals, baseline, baselineSource }: Props) {
+export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSource }: Props) {
   const { mode } = usePnlDisplay();
   const currency = snapshot?.currency ?? "USD";
   const balance = snapshot?.balance ?? 0;
@@ -33,6 +34,18 @@ export function LiveAccountPanel({ snapshot, deals, baseline, baselineSource }: 
 
   const cumPnlSeries = useMemo(() => trade.curve.map((p) => p.cumPnl), [trade.curve]);
   const drawdownSeries = useMemo(() => trade.curve.map((p) => p.drawdown), [trade.curve]);
+  const balanceSeries = useMemo(() => daily.map((d) => d.balance_close), [daily]);
+
+  // Account profit = current balance vs baseline, including everything that
+  // changes balance (trades, fees, deposits, withdrawals). The complement to
+  // Net Return, which isolates trade-only P/L.
+  const accountProfit = useMemo(() => {
+    if (baseline <= 0) return null;
+    const liveBalance = snapshot?.balance ?? (daily.length > 0 ? daily[daily.length - 1].balance_close : null);
+    if (liveBalance === null) return null;
+    const cash = liveBalance - baseline;
+    return { cash, pct: (cash / baseline) * 100 };
+  }, [snapshot, daily, baseline]);
 
   const showPct = mode === "percent" && baseline > 0;
   const fmtAmount = (cash: number) => showPct ? fmtPct((cash / baseline) * 100) : fmtCash(cash, currency);
@@ -41,6 +54,10 @@ export function LiveAccountPanel({ snapshot, deals, baseline, baselineSource }: 
 
   const netReturnTooltip = baselineSource
     ? `Baseline ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). Net Return and Max Drawdown are computed from the trade ledger (profit + commission + swap, summed chronologically) — deposits and withdrawals do not affect these numbers.`
+    : `Baseline unavailable — waiting for first daily snapshot.`;
+
+  const accountProfitTooltip = baselineSource
+    ? `Current balance ${fmtCash(balance, currency)} vs baseline ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). Reflects every balance event on the account — trades, fees, deposits, and withdrawals. Diverges from Net Return when the account has had deposits or withdrawals.`
     : `Baseline unavailable — waiting for first daily snapshot.`;
 
   return (
@@ -59,19 +76,23 @@ export function LiveAccountPanel({ snapshot, deals, baseline, baselineSource }: 
           tooltip={netReturnTooltip}
         />
         <KpiCard
-          label="Equity"
-          value={fmtCash(equity, currency)}
-          sub={`balance ${fmtCash(balance, currency)}`}
-          series={cumPnlSeries}
-          seriesTone="neutral"
-          tooltip="Current account equity (live broker value). The sparkline shows your cumulative trade P/L progression."
+          label="Account Profit"
+          tone={accountProfit === null ? "neutral" : accountProfit.cash > 0 ? "positive" : accountProfit.cash < 0 ? "negative" : "neutral"}
+          value={accountProfit === null ? "—" : fmtAmount(accountProfit.cash)}
+          sub={accountProfit === null ? "no daily history yet" : showPct
+            ? `since start · ${fmtCash(accountProfit.cash, currency)}`
+            : `since start · ${fmtPct(accountProfit.pct)}`}
+          series={balanceSeries}
+          seriesTone={accountProfit && accountProfit.cash < 0 ? "negative" : "positive"}
+          tooltip={accountProfitTooltip}
         />
         <KpiCard
-          label="Floating P/L"
-          tone={floating > 0 ? "positive" : floating < 0 ? "negative" : "neutral"}
-          value={showPct ? fmtPct(baseline > 0 ? (floating / baseline) * 100 : 0) : fmtCash(floating, currency)}
-          sub={`${fmtCash(floating, currency)}`}
-          tooltip="P/L on all currently open positions. Updates live as prices move."
+          label="Equity"
+          value={fmtCash(equity, currency)}
+          sub={`balance ${fmtCash(balance, currency)} · floating ${fmtCash(floating, currency)}`}
+          series={balanceSeries}
+          seriesTone="neutral"
+          tooltip="Current account equity (live broker value, including open-position P/L). Sparkline is your daily balance history."
         />
         <KpiCard
           label="Max Drawdown"
