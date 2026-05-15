@@ -6,6 +6,7 @@ import {
 } from "@/lib/journal/queries";
 import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { JournalShell } from "@/components/journal/journal-shell";
+import { resolveBaseline } from "@/lib/journal/baseline";
 import type { License, PropfirmRule } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,8 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
     ruleId ? loadPropfirmRule(ruleId) : Promise.resolve(null),
   ]);
 
+  const baseline = resolveBaseline(rule, daily, snapshot);
+
   return (
     <>
       <AdminSiteNav />
@@ -65,6 +68,8 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
         initialOrders={orders}
         rule={rule}
         pushIntervalSeconds={pushIntervalSeconds}
+        baseline={baseline}
+        initialPnlDisplay="percent"
       />
     </>
   );

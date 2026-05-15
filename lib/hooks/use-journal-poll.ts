@@ -8,9 +8,10 @@ interface Options<T> {
   initialData: T;
   pushIntervalMs: number;       // EA push interval (cap)
   fixedIntervalMs?: number;     // override config; e.g. deals poll fixed at 30s
+  deps?: ReadonlyArray<unknown>; // refetch when these change (e.g. range days)
 }
 
-export function useJournalPoll<T>({ fetcher, initialData, pushIntervalMs, fixedIntervalMs }: Options<T>) {
+export function useJournalPoll<T>({ fetcher, initialData, pushIntervalMs, fixedIntervalMs, deps }: Options<T>) {
   const [data, setData] = useState<T>(initialData);
   const [error, setError] = useState<unknown>(null);
   const [consecutiveFailures, setConsecutiveFailures] = useState(0);
@@ -78,6 +79,18 @@ export function useJournalPoll<T>({ fetcher, initialData, pushIntervalMs, fixedI
       window.removeEventListener("storage", onStorage);
     };
   }, [tick, computeInterval, consecutiveFailures]);
+
+  // Refetch when deps change (e.g. range days). Skip the first mount since the
+  // schedule loop's initial setTimeout already handles the first fetch.
+  const isFirstDepsMount = useRef(true);
+  useEffect(() => {
+    if (isFirstDepsMount.current) {
+      isFirstDepsMount.current = false;
+      return;
+    }
+    void tick();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [JSON.stringify(deps ?? [])]);
 
   return { data, error, consecutiveFailures, refetch: tick };
 }

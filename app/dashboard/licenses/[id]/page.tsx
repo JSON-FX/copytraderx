@@ -9,6 +9,8 @@ import {
   getOrders,
 } from "@/lib/journal/queries";
 import { JournalShell } from "@/components/journal/journal-shell";
+import { resolveBaseline } from "@/lib/journal/baseline";
+import { getPnlDisplay } from "@/lib/preferences/server";
 import type { License, PropfirmRule } from "@/lib/types";
 
 export const dynamic = "force-dynamic";
@@ -71,6 +73,9 @@ export default async function UserJournalPage({
     ruleId ? loadPropfirmRule(ruleId) : Promise.resolve(null),
   ]);
 
+  const baseline = resolveBaseline(rule, daily, snapshot);
+  const pnlDisplay = await getPnlDisplay(user.id);
+
   return (
     <JournalShell
       license={license}
@@ -81,6 +86,8 @@ export default async function UserJournalPage({
       initialOrders={orders}
       rule={rule}
       pushIntervalSeconds={pushIntervalSeconds}
+      baseline={baseline}
+      initialPnlDisplay={pnlDisplay}
     />
   );
 }
