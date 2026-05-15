@@ -124,7 +124,7 @@ export function TradeCalendar({ deals, currency, baseline, onDayClick }: Props) 
                       : cell.netPnl < 0 ? "text-red-700 dark:text-red-300" : "")}>
                       {showPct ? fmtPct((cell.netPnl / baseline) * 100) : fmtCash(cell.netPnl, currency)}
                     </div>
-                    <div className="text-[10px] text-muted-foreground">{cell.tradeCount}t</div>
+                    <div className="text-[10px] text-muted-foreground">{cell.tradeCount} trade{cell.tradeCount === 1 ? "" : "s"}</div>
                   </>
                 )}
               </button>
