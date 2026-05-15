@@ -31,12 +31,12 @@ export function JournalHeader({ license, pushedAt, pushIntervalSeconds }: Props)
       </Link>
       <div className="mt-2 flex items-baseline justify-between gap-3">
         <div>
-          <h1 className="text-xl font-semibold tracking-tight">MT5 #{license.mt5_account}</h1>
+          <h1 className="text-2xl font-bold tracking-tight">MT5 · #{license.mt5_account}</h1>
           <p className="text-xs text-muted-foreground">
-            {license.broker_name ?? "broker unknown"} · {license.license_key}
+            {license.broker_name ?? "broker unknown"} · <code className="rounded bg-muted px-1.5 py-0.5 font-mono text-[11px]">{license.license_key}</code>
           </p>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5">
           <StatusBadge status={displayStatus} />
           <TierBadge tier={license.tier} />
           {license.account_type && (
