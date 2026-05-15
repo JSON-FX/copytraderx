@@ -36,18 +36,6 @@ export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSou
   const drawdownSeries = useMemo(() => trade.curve.map((p) => p.drawdown), [trade.curve]);
   const balanceSeries = useMemo(() => daily.map((d) => d.balance_close), [daily]);
 
-  // Account profit = current balance vs baseline (initial funded amount).
-  // For propfirm accounts the baseline is rule.account_size; otherwise it's
-  // the earliest balance on record. Reflects every balance event on the
-  // account — trades, fees, deposits, withdrawals.
-  const accountProfit = useMemo(() => {
-    if (baseline <= 0) return null;
-    const liveBalance = snapshot?.balance ?? (daily.length > 0 ? daily[daily.length - 1].balance_close : null);
-    if (liveBalance === null) return null;
-    const cash = liveBalance - baseline;
-    return { cash, pct: (cash / baseline) * 100 };
-  }, [snapshot, daily, baseline]);
-
   const showPct = mode === "percent" && baseline > 0;
   const fmtAmount = (cash: number) => showPct ? fmtPct((cash / baseline) * 100) : fmtCash(cash, currency);
 
@@ -57,13 +45,9 @@ export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSou
     ? `Baseline ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). Net Return and Max Drawdown are computed from the trade ledger (profit + commission + swap, summed chronologically) — deposits and withdrawals do not affect these numbers.`
     : `Baseline unavailable — waiting for first daily snapshot.`;
 
-  const accountProfitTooltip = baselineSource
-    ? `Current balance ${fmtCash(balance, currency)} vs initial deposit ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). Reflects every balance event — trades, fees, deposits, and withdrawals. Diverges from Net Return when the account has had deposits or withdrawals.`
-    : `Initial deposit unavailable — waiting for first daily snapshot.`;
-
   return (
     <div className="space-y-3">
-      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <KpiCard
           featured
           label="Net Return"
@@ -75,17 +59,6 @@ export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSou
           series={cumPnlSeries}
           seriesTone={trade.netPnl < 0 ? "negative" : "positive"}
           tooltip={netReturnTooltip}
-        />
-        <KpiCard
-          label="Account Profit"
-          tone={accountProfit === null ? "neutral" : accountProfit.cash > 0 ? "positive" : accountProfit.cash < 0 ? "negative" : "neutral"}
-          value={accountProfit === null ? "—" : fmtAmount(accountProfit.cash)}
-          sub={accountProfit === null ? "no daily history yet" : showPct
-            ? `vs deposit ${fmtCash(baseline, currency)} · ${fmtCash(accountProfit.cash, currency)}`
-            : `vs deposit ${fmtCash(baseline, currency)} · ${fmtPct(accountProfit.pct)}`}
-          series={balanceSeries}
-          seriesTone={accountProfit && accountProfit.cash < 0 ? "negative" : "positive"}
-          tooltip={accountProfitTooltip}
         />
         <KpiCard
           label="Equity"
