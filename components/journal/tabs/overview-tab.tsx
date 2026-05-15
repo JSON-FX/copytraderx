@@ -7,6 +7,8 @@ import { ChallengeMini } from "../challenge-mini";
 import { RecentTrades } from "../recent-trades";
 import { PositionsTable } from "../tables/positions-table";
 import { aggregateCalendar } from "@/lib/journal/calendar-aggregate";
+import { fmtPctOrCash } from "@/lib/journal/format-pnl";
+import { usePnlDisplay } from "../preferences/journal-chrome-context";
 
 interface Props {
   license: License;
@@ -20,6 +22,7 @@ interface Props {
 }
 
 export function OverviewTab({ license, rule, snapshot, daily, positions, deals, currency, baseline }: Props) {
+  const { mode } = usePnlDisplay();
   const series = useMemo(() => daily.map((d) => d.balance_close), [daily]);
   const winRatePct = useMemo(() => {
     if (deals.length === 0) return 0;
@@ -61,7 +64,7 @@ export function OverviewTab({ license, rule, snapshot, daily, positions, deals, 
               Open Positions · <span className="text-foreground">{positions.length}</span>
             </h4>
             <span className="text-[11px] text-muted-foreground">
-              Floating {baseline > 0 ? `${((snapshot?.floating_pnl ?? 0) / baseline * 100).toFixed(2)}%` : `${(snapshot?.floating_pnl ?? 0).toFixed(2)}`}
+              Floating {fmtPctOrCash(snapshot?.floating_pnl ?? 0, mode, baseline, currency)}
             </span>
           </div>
           <PositionsTable positions={positions} currency={currency} baseline={baseline} />

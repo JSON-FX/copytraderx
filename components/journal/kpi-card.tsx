@@ -40,7 +40,7 @@ export function KpiCard({
       </div>
       {hasStrip && (
         <div className="border-t border-border/60 bg-gradient-to-b from-transparent to-muted/30">
-          <Sparkline values={series} tone={seriesTone ?? tone === "neutral" ? "neutral" : seriesTone ?? tone} height={44} />
+          <Sparkline values={series} tone={seriesTone ?? tone} height={44} />
         </div>
       )}
     </div>

@@ -57,6 +57,12 @@ supabase db push
 
 Restart this container afterwards if the change affects what the UI displays.
 
+### Pending app migrations
+
+Some app features require schema changes that must be applied before deploying:
+
+- `docs/superpowers/plans/2026-05-15-user-preferences-migration.sql` — creates `user_preferences` table for the `%/$` display preference. **Required for the user journal redesign.**
+
 ## Architecture
 
 - **Frontend:** Next.js 16 App Router, React 19, Tailwind v4, shadcn/ui (Radix-based variant)
