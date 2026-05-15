@@ -36,19 +36,38 @@ export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSou
   const drawdownSeries = useMemo(() => trade.curve.map((p) => p.drawdown), [trade.curve]);
   const balanceSeries = useMemo(() => daily.map((d) => d.balance_close), [daily]);
 
-  // Account profit = current balance vs baseline, including everything that
-  // changes balance (trades, fees, deposits, withdrawals). The complement to
+  // Deposit baseline = the earliest balance we have on record for this
+  // account. This represents the user's actual cash-in, not the propfirm
+  // rule's account_size (which is the *target* for Objectives but may differ
+  // from what was deposited). Used exclusively by the Account Profit card.
+  const depositBaseline = useMemo(() => {
+    if (daily.length === 0) return snapshot?.balance ?? 0;
+    let earliest = daily[0];
+    for (const d of daily) {
+      if (d.trade_date < earliest.trade_date) earliest = d;
+    }
+    return earliest.balance_close;
+  }, [daily, snapshot]);
+
+  // Account profit = current balance vs deposit baseline. Reflects every
+  // balance event (trades, fees, deposits, withdrawals). Complement to
   // Net Return, which isolates trade-only P/L.
   const accountProfit = useMemo(() => {
-    if (baseline <= 0) return null;
+    if (depositBaseline <= 0) return null;
     const liveBalance = snapshot?.balance ?? (daily.length > 0 ? daily[daily.length - 1].balance_close : null);
     if (liveBalance === null) return null;
-    const cash = liveBalance - baseline;
-    return { cash, pct: (cash / baseline) * 100 };
-  }, [snapshot, daily, baseline]);
+    const cash = liveBalance - depositBaseline;
+    return { cash, pct: (cash / depositBaseline) * 100 };
+  }, [snapshot, daily, depositBaseline]);
 
   const showPct = mode === "percent" && baseline > 0;
   const fmtAmount = (cash: number) => showPct ? fmtPct((cash / baseline) * 100) : fmtCash(cash, currency);
+
+  // Account Profit uses its own deposit baseline, independent of the
+  // page-level baseline (which may be a propfirm rule).
+  const showAcctPct = mode === "percent" && depositBaseline > 0;
+  const fmtAcctAmount = (cash: number) =>
+    showAcctPct ? fmtPct((cash / depositBaseline) * 100) : fmtCash(cash, currency);
 
   const hasTradeHistory = trade.curve.length > 0;
 
@@ -56,9 +75,9 @@ export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSou
     ? `Baseline ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). Net Return and Max Drawdown are computed from the trade ledger (profit + commission + swap, summed chronologically) — deposits and withdrawals do not affect these numbers.`
     : `Baseline unavailable — waiting for first daily snapshot.`;
 
-  const accountProfitTooltip = baselineSource
-    ? `Current balance ${fmtCash(balance, currency)} vs baseline ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). Reflects every balance event on the account — trades, fees, deposits, and withdrawals. Diverges from Net Return when the account has had deposits or withdrawals.`
-    : `Baseline unavailable — waiting for first daily snapshot.`;
+  const accountProfitTooltip = depositBaseline > 0
+    ? `Current balance ${fmtCash(balance, currency)} vs initial deposit ${fmtCash(depositBaseline, currency)} (earliest balance on record for this account). Reflects every balance event — trades, fees, deposits, and withdrawals. Diverges from Net Return when the account has had deposits or withdrawals.`
+    : `Initial deposit unavailable — waiting for first daily snapshot.`;
 
   return (
     <div className="space-y-3">
@@ -78,10 +97,10 @@ export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSou
         <KpiCard
           label="Account Profit"
           tone={accountProfit === null ? "neutral" : accountProfit.cash > 0 ? "positive" : accountProfit.cash < 0 ? "negative" : "neutral"}
-          value={accountProfit === null ? "—" : fmtAmount(accountProfit.cash)}
-          sub={accountProfit === null ? "no daily history yet" : showPct
-            ? `since start · ${fmtCash(accountProfit.cash, currency)}`
-            : `since start · ${fmtPct(accountProfit.pct)}`}
+          value={accountProfit === null ? "—" : fmtAcctAmount(accountProfit.cash)}
+          sub={accountProfit === null ? "no daily history yet" : showAcctPct
+            ? `vs deposit ${fmtCash(depositBaseline, currency)} · ${fmtCash(accountProfit.cash, currency)}`
+            : `vs deposit ${fmtCash(depositBaseline, currency)} · ${fmtPct(accountProfit.pct)}`}
           series={balanceSeries}
           seriesTone={accountProfit && accountProfit.cash < 0 ? "negative" : "positive"}
           tooltip={accountProfitTooltip}
