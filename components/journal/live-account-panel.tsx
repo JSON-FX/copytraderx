@@ -2,6 +2,7 @@
 
 import { useMemo } from "react";
 import type { AccountSnapshotCurrent, AccountSnapshotDaily } from "@/lib/types";
+import type { BaselineSource } from "@/lib/journal/baseline";
 import { KpiCard } from "./kpi-card";
 import { AccountMetadataStrip } from "./account-metadata-strip";
 import { fmtCash, fmtPct } from "@/lib/journal/format-pnl";
@@ -11,9 +12,16 @@ interface Props {
   snapshot: AccountSnapshotCurrent | null;
   daily: AccountSnapshotDaily[];
   baseline: number;
+  baselineSource: BaselineSource;
 }
 
-export function LiveAccountPanel({ snapshot, daily, baseline }: Props) {
+const BASELINE_SOURCE_LABEL: Record<Exclude<BaselineSource, null>, string> = {
+  rule: "propfirm rule account size",
+  first_daily: "earliest daily snapshot",
+  current: "current balance (no history yet)",
+};
+
+export function LiveAccountPanel({ snapshot, daily, baseline, baselineSource }: Props) {
   const { mode } = usePnlDisplay();
   const currency = snapshot?.currency ?? "USD";
   const balance = snapshot?.balance ?? 0;
@@ -26,14 +34,49 @@ export function LiveAccountPanel({ snapshot, daily, baseline }: Props) {
     return { pct: ((last - baseline) / baseline) * 100, cash: last - baseline };
   }, [daily, baseline]);
 
-  const drawdownPct = snapshot?.drawdown_pct ?? 0;
-  const drawdownCash = baseline > 0 ? (baseline * drawdownPct) / 100 : 0;
+  // Max drawdown = the largest peak-to-trough decline observed in the daily series.
+  // `currentDrawdown*` = how far the live balance is below the all-time peak right now.
+  const { maxDrawdownPct, maxDrawdownCash, currentDrawdownPct, currentDrawdownCash, drawdownFromPeakSeries } = useMemo(() => {
+    if (daily.length === 0) {
+      return {
+        maxDrawdownPct: 0, maxDrawdownCash: 0,
+        currentDrawdownPct: 0, currentDrawdownCash: 0,
+        drawdownFromPeakSeries: [] as number[],
+      };
+    }
+    let peak = daily[0].balance_close;
+    let maxDDCash = 0;
+    let maxDDPct = 0;
+    const series: number[] = [];
+    for (const d of daily) {
+      if (d.balance_close > peak) peak = d.balance_close;
+      const ddCash = peak - d.balance_close;
+      series.push(ddCash);
+      const ddPct = peak > 0 ? (ddCash / peak) * 100 : 0;
+      if (ddPct > maxDDPct) { maxDDPct = ddPct; maxDDCash = ddCash; }
+    }
+    // Current drawdown vs all-time peak using the live snapshot balance, falling back to last daily.
+    const live = snapshot?.balance ?? daily[daily.length - 1].balance_close;
+    const allTimePeak = Math.max(peak, live);
+    const curCash = Math.max(0, allTimePeak - live);
+    const curPct = allTimePeak > 0 ? (curCash / allTimePeak) * 100 : 0;
+    return {
+      maxDrawdownPct: maxDDPct,
+      maxDrawdownCash: maxDDCash,
+      currentDrawdownPct: curPct,
+      currentDrawdownCash: curCash,
+      drawdownFromPeakSeries: series,
+    };
+  }, [daily, snapshot]);
 
   const equitySeries = useMemo(() => daily.map((d) => d.equity_close), [daily]);
   const balanceSeries = useMemo(() => daily.map((d) => d.balance_close), [daily]);
-  const drawdownSeries = useMemo(() => daily.map((d) => Math.max(0, baseline - d.balance_close)), [daily, baseline]);
 
   const showPct = mode === "percent" && baseline > 0;
+
+  const netReturnTooltip = baselineSource
+    ? `Baseline ${fmtCash(baseline, currency)} (${BASELINE_SOURCE_LABEL[baselineSource]}). All % values on this page are calculated against this number.`
+    : `Baseline unavailable — waiting for first daily snapshot.`;
 
   return (
     <div className="space-y-3">
@@ -48,6 +91,7 @@ export function LiveAccountPanel({ snapshot, daily, baseline }: Props) {
             : `since start · ${fmtPct(cumulativeReturn.pct)}`}
           series={balanceSeries}
           seriesTone={cumulativeReturn && cumulativeReturn.pct < 0 ? "negative" : "positive"}
+          tooltip={netReturnTooltip}
         />
         <KpiCard
           label="Equity"
@@ -61,14 +105,16 @@ export function LiveAccountPanel({ snapshot, daily, baseline }: Props) {
           tone={floating > 0 ? "positive" : floating < 0 ? "negative" : "neutral"}
           value={showPct ? fmtPct(baseline > 0 ? (floating / baseline) * 100 : 0) : fmtCash(floating, currency)}
           sub={`${fmtCash(floating, currency)}`}
+          tooltip="P/L on all currently open positions. Updates live as prices move."
         />
         <KpiCard
-          label="Drawdown"
-          tone={drawdownPct > 0 ? "negative" : "neutral"}
-          value={showPct ? fmtPct(drawdownPct) : fmtCash(drawdownCash, currency)}
-          sub={`peak → trough · ${fmtCash(drawdownCash, currency)}`}
-          series={drawdownSeries}
+          label="Max Drawdown"
+          tone={maxDrawdownPct > 0 ? "negative" : "neutral"}
+          value={showPct ? fmtPct(-maxDrawdownPct) : fmtCash(-maxDrawdownCash, currency)}
+          sub={`current ${showPct ? fmtPct(-currentDrawdownPct) : fmtCash(-currentDrawdownCash, currency)}`}
+          series={drawdownFromPeakSeries}
           seriesTone="negative"
+          tooltip="Largest peak-to-trough decline ever observed on this account. The subline shows how far below the all-time peak you are right now."
         />
       </div>
       <AccountMetadataStrip snapshot={snapshot} />

@@ -11,6 +11,8 @@ interface Props {
   seriesTone?: SparklineTone;
   className?: string;
   featured?: boolean;
+  /** Browser-native tooltip text shown when hovering the card. */
+  tooltip?: string;
 }
 
 const VALUE_TONE = {
@@ -20,11 +22,12 @@ const VALUE_TONE = {
 } as const;
 
 export function KpiCard({
-  label, value, sub, tone = "neutral", series, seriesTone, className, featured,
+  label, value, sub, tone = "neutral", series, seriesTone, className, featured, tooltip,
 }: Props) {
   const hasStrip = Array.isArray(series) && series.length >= 2;
   return (
     <div
+      title={tooltip}
       className={cn(
         "flex flex-col overflow-hidden rounded-xl border bg-card",
         featured && "bg-gradient-to-br from-muted/40 to-card",

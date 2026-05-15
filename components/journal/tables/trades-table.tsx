@@ -39,7 +39,10 @@ export function TradesTable({ deals, currency, baseline }: { deals: Deal[]; curr
     <div className="space-y-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         <h3 className="text-sm font-semibold">Closed Trades</h3>
-        <div className="text-xs text-muted-foreground tabular-nums">
+        <div
+          className="text-xs text-muted-foreground tabular-nums"
+          title="Sum of gross profit on the filtered deals (commissions and swaps not included). May not match the balance delta in the Net Return card, which reflects every balance event recorded in the account."
+        >
           {result.summary.count} trades · net <span className={cn(
             result.summary.netCash > 0 && "text-emerald-600 dark:text-emerald-400 font-semibold",
             result.summary.netCash < 0 && "text-red-600 dark:text-red-400 font-semibold",
