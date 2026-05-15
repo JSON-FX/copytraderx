@@ -23,7 +23,11 @@ export function applyTradeFilters(input: Deal[], state: TableState): TradeFilter
 
   const wins = rows.reduce((a, d) => a + (d.profit > 0 ? 1 : 0), 0);
   const losses = rows.reduce((a, d) => a + (d.profit < 0 ? 1 : 0), 0);
-  const netCash = rows.reduce((a, d) => a + d.profit, 0);
+  // Net cash includes fees (commission + swap) so the summary line matches the
+  // trade-equity calculation used by the KPI cards. Wins/losses counts stay
+  // based on gross `profit` — a trade's "win" status reflects setup quality,
+  // not whether fees nudged it across zero.
+  const netCash = rows.reduce((a, d) => a + d.profit + d.commission + d.swap, 0);
   const total = rows.length;
 
   const [key, dir] = state.sort.split(/_(?=asc$|desc$)/) as [string, "asc" | "desc"];

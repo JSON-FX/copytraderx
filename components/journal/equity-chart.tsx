@@ -3,26 +3,28 @@
 import { Area, AreaChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import { useTheme } from "next-themes";
 import { useMemo } from "react";
-import type { AccountSnapshotDaily } from "@/lib/types";
+import { format, parseISO } from "date-fns";
+import type { Deal } from "@/lib/types";
 import { fmtCash, fmtPct } from "@/lib/journal/format-pnl";
+import { computeTradeEquity } from "@/lib/journal/trade-equity";
 import { usePnlDisplay } from "./preferences/journal-chrome-context";
 
-export function EquityChart({ data, currency, baseline }: { data: AccountSnapshotDaily[]; currency: string; baseline: number }) {
+export function EquityChart({ deals, currency, baseline }: { deals: Deal[]; currency: string; baseline: number }) {
   const { resolvedTheme } = useTheme();
   const { mode } = usePnlDisplay();
   const showPct = mode === "percent" && baseline > 0;
 
-  const series = useMemo(() => data.map((d) => ({
-    date: d.trade_date,
-    delta: d.balance_close - baseline,
-    deltaPct: baseline > 0 ? ((d.balance_close - baseline) / baseline) * 100 : 0,
-    value: showPct
-      ? (baseline > 0 ? ((d.balance_close - baseline) / baseline) * 100 : 0)
-      : d.balance_close - baseline,
-  })), [data, baseline, showPct]);
+  const trade = useMemo(() => computeTradeEquity(deals), [deals]);
 
-  if (data.length === 0) {
-    return <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No equity history yet.</p>;
+  const series = useMemo(() => trade.curve.map((p) => ({
+    date: format(parseISO(p.ts), "MMM dd"),
+    value: showPct
+      ? (baseline > 0 ? (p.cumPnl / baseline) * 100 : 0)
+      : p.cumPnl,
+  })), [trade.curve, baseline, showPct]);
+
+  if (trade.curve.length === 0) {
+    return <p className="rounded-lg border border-dashed p-6 text-center text-sm text-muted-foreground">No closed trades yet.</p>;
   }
 
   const posStroke = resolvedTheme === "dark" ? "rgb(110, 231, 183)" : "rgb(5, 150, 105)";
@@ -40,7 +42,7 @@ export function EquityChart({ data, currency, baseline }: { data: AccountSnapsho
               <stop offset="100%" stopColor={posStroke} stopOpacity={0}/>
             </linearGradient>
           </defs>
-          <XAxis dataKey="date" tick={{ fontSize: 11 }} />
+          <XAxis dataKey="date" tick={{ fontSize: 11 }} minTickGap={32} />
           <YAxis tick={{ fontSize: 11 }} domain={["auto", "auto"]} tickFormatter={(v) => formatY(v as number)} width={70} />
           <ReferenceLine y={0} stroke="#94a3b8" strokeDasharray="3 3" />
           <Tooltip

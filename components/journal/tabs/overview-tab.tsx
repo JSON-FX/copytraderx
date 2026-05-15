@@ -7,6 +7,7 @@ import { ChallengeMini } from "../challenge-mini";
 import { RecentTrades } from "../recent-trades";
 import { PositionsTable } from "../tables/positions-table";
 import { aggregateCalendar } from "@/lib/journal/calendar-aggregate";
+import { computeTradeEquity } from "@/lib/journal/trade-equity";
 import { fmtPctOrCash } from "@/lib/journal/format-pnl";
 import { usePnlDisplay } from "../preferences/journal-chrome-context";
 
@@ -23,14 +24,14 @@ interface Props {
 
 export function OverviewTab({ license, rule, snapshot, daily, positions, deals, currency, baseline }: Props) {
   const { mode } = usePnlDisplay();
-  const series = useMemo(() => daily.map((d) => d.balance_close), [daily]);
+  const trade = useMemo(() => computeTradeEquity(deals), [deals]);
+  const series = useMemo(() => trade.curve.map((p) => p.cumPnl), [trade.curve]);
   const winRatePct = useMemo(() => {
     if (deals.length === 0) return 0;
     return (deals.filter((d) => d.profit > 0).length / deals.length) * 100;
   }, [deals]);
   const { cumulativePct, cumulativeCash, bestDay, worstDay } = useMemo(() => {
-    const last = daily.at(-1)?.balance_close ?? baseline;
-    const cumCash = last - baseline;
+    const cumCash = trade.netPnl;
     const cumPct = baseline > 0 ? (cumCash / baseline) * 100 : 0;
     let best = 0, worst = 0;
     for (const cell of aggregateCalendar(deals).values()) {
@@ -38,7 +39,7 @@ export function OverviewTab({ license, rule, snapshot, daily, positions, deals, 
       if (cell.netPnl < worst) worst = cell.netPnl;
     }
     return { cumulativePct: cumPct, cumulativeCash: cumCash, bestDay: best, worstDay: worst };
-  }, [daily, deals, baseline]);
+  }, [trade.netPnl, deals, baseline]);
 
   return (
     <section className="space-y-4">

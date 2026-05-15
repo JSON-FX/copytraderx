@@ -3,6 +3,7 @@
 import { useMemo } from "react";
 import { computeTradeStats } from "@/lib/journal/trade-stats";
 import { computeStreaks } from "@/lib/journal/streaks";
+import { computeTradeEquity } from "@/lib/journal/trade-equity";
 import { StreaksTable } from "../streaks-table";
 import { EquityChart } from "../equity-chart";
 import { PnlHistogram } from "../pnl-histogram";
@@ -11,21 +12,30 @@ import { usePnlDisplay } from "../preferences/journal-chrome-context";
 import type { AccountSnapshotDaily, Deal } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
-export function PerformanceTab({ deals, daily, currency, baseline }: {
+export function PerformanceTab({ deals, daily: _daily, currency, baseline }: {
   deals: Deal[]; daily: AccountSnapshotDaily[]; currency: string; baseline: number;
 }) {
   const { mode } = usePnlDisplay();
   const stats = useMemo(() => computeTradeStats(deals), [deals]);
   const streaks = useMemo(() => computeStreaks(deals), [deals]);
+  const trade = useMemo(() => computeTradeEquity(deals), [deals]);
   const showPct = mode === "percent" && baseline > 0;
+
+  // Net Return on the Performance tab matches the KPI card: includes fees.
+  // computeTradeStats.netProfit is gross (no fees) and used elsewhere for
+  // win-rate context, so we surface the fees-inclusive number from
+  // computeTradeEquity here.
+  const netWithFees = trade.netPnl;
 
   return (
     <section className="space-y-5">
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile featured label="Net Return"
-          tone={stats.netProfit > 0 ? "pos" : stats.netProfit < 0 ? "neg" : "neutral"}
-          value={fmtPctOrCash(stats.netProfit, mode, baseline, currency)}
-          sub={showPct ? `${fmtCash(stats.netProfit, currency)} cash` : `${fmtPct(baseline > 0 ? (stats.netProfit/baseline)*100 : 0)}`} />
+          tone={netWithFees > 0 ? "pos" : netWithFees < 0 ? "neg" : "neutral"}
+          value={fmtPctOrCash(netWithFees, mode, baseline, currency)}
+          sub={showPct
+            ? `${fmtCash(netWithFees, currency)} net of ${fmtCash(-trade.totalFees, currency)} fees`
+            : `${fmtPct(baseline > 0 ? (netWithFees / baseline) * 100 : 0)} · net of ${fmtCash(-trade.totalFees, currency)} fees`} />
         <StatTile label="Win Rate" value={`${(stats.winRate * 100).toFixed(1)}%`}
           sub={`${stats.wins} win${stats.wins === 1 ? "" : "s"} / ${stats.totalTrades} trade${stats.totalTrades === 1 ? "" : "s"}`} />
         <StatTile label="Profit Factor"
@@ -34,7 +44,7 @@ export function PerformanceTab({ deals, daily, currency, baseline }: {
         <StatTile label="Expected Payoff"
           tone={stats.expectedPayoff > 0 ? "pos" : stats.expectedPayoff < 0 ? "neg" : "neutral"}
           value={fmtPctOrCash(stats.expectedPayoff, mode, baseline, currency)}
-          sub="avg P/L per trade" />
+          sub="avg gross P/L per trade" />
       </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatTile label="Avg Win" tone="pos" value={fmtPctOrCash(stats.avgWin, mode, baseline, currency)} sub={fmtCash(stats.avgWin, currency)} />
@@ -47,15 +57,15 @@ export function PerformanceTab({ deals, daily, currency, baseline }: {
         <div className="mb-2 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-semibold">Equity Curve</h3>
-            <p className="text-xs text-muted-foreground">cumulative return since start · daily</p>
+            <p className="text-xs text-muted-foreground">cumulative trade P/L (profit + commission + swap)</p>
           </div>
         </div>
-        <EquityChart data={daily} currency={currency} baseline={baseline} />
+        <EquityChart deals={deals} currency={currency} baseline={baseline} />
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <StreaksTable streaks={streaks} />
-        <PnlHistogram values={deals.map((d) => d.profit)} baseline={baseline} currency={currency} showPct={showPct} />
+        <PnlHistogram values={deals.map((d) => d.profit + d.commission + d.swap)} baseline={baseline} currency={currency} showPct={showPct} />
       </div>
     </section>
   );
