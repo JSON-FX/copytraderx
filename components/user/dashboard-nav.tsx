@@ -34,6 +34,9 @@ export function DashboardNav({ userEmail }: { userEmail: string }) {
           <span className="hidden text-sm text-muted-foreground sm:inline">
             {userEmail}
           </span>
+          <Button asChild variant="ghost" size="sm">
+            <Link href="/dashboard/settings">Settings</Link>
+          </Button>
           <ThemeToggle />
           <Button variant="ghost" size="sm" onClick={logout}>
             Sign out
