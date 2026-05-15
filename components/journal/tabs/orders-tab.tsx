@@ -1,4 +1,4 @@
-import { OrdersTable } from "../orders-table";
+import { OrdersTable } from "../tables/orders-table";
 import type { OrderRow } from "@/lib/types";
 
 export function OrdersTab({ orders }: { orders: OrderRow[] }) {
