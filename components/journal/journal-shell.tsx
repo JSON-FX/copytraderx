@@ -88,13 +88,13 @@ function Inner(props: Props) {
       <LiveAccountPanel snapshot={snapshot.data} deals={deals.data} daily={daily.data} baseline={baseline} baselineSource={props.baseline.source} />
       <JournalToolbar pushedAt={snapshot.data?.pushed_at ?? null} />
       <Tabs defaultValue="overview">
-        <TabsList>
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="trades">Trades {deals.data.length ? <CountPill n={deals.data.length} /> : null}</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="performance">Performance</TabsTrigger>
-          <TabsTrigger value="orders">Orders {orders.data.length ? <CountPill n={orders.data.length} /> : null}</TabsTrigger>
-          <TabsTrigger value="objectives">Objectives</TabsTrigger>
+        <TabsList className="h-11 w-fit gap-1 rounded-lg p-1">
+          <TabsTrigger value="overview" className={TAB_CLS}>Overview</TabsTrigger>
+          <TabsTrigger value="trades" className={TAB_CLS}>Trades {deals.data.length ? <CountPill n={deals.data.length} /> : null}</TabsTrigger>
+          <TabsTrigger value="calendar" className={TAB_CLS}>Calendar</TabsTrigger>
+          <TabsTrigger value="performance" className={TAB_CLS}>Performance</TabsTrigger>
+          <TabsTrigger value="orders" className={TAB_CLS}>Orders {orders.data.length ? <CountPill n={orders.data.length} /> : null}</TabsTrigger>
+          <TabsTrigger value="objectives" className={TAB_CLS}>Objectives</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
           <OverviewTab license={license} rule={props.rule} snapshot={snapshot.data} daily={daily.data} positions={positions.data} deals={deals.data} currency={currency} baseline={baseline} />
@@ -111,6 +111,8 @@ function Inner(props: Props) {
   );
 }
 
+const TAB_CLS = "h-9 flex-none gap-1.5 rounded-md px-4 text-sm font-medium data-[state=active]:font-semibold data-[state=active]:shadow-sm";
+
 function CountPill({ n }: { n: number }) {
-  return <span className="ml-1 rounded bg-muted px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-muted-foreground">{n}</span>;
+  return <span className="rounded-full bg-foreground/10 px-2 py-0.5 text-[11px] font-bold tabular-nums text-muted-foreground">{n}</span>;
 }
