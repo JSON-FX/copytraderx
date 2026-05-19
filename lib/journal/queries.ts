@@ -83,6 +83,34 @@ export async function getOrders(mt5_account: number, days = 0): Promise<OrderRow
   return (data ?? []) as OrderRow[];
 }
 
+export async function getDealsByRange(
+  mt5_account: number,
+  from: string | null,
+  to: string | null,
+): Promise<Deal[]> {
+  const sb = getSupabaseAdmin();
+  let q = sb.from("deals").select("*").eq("mt5_account", mt5_account);
+  if (from) q = q.gte("close_time", from);
+  if (to) q = q.lte("close_time", to);
+  const { data, error } = await q.order("close_time", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as Deal[];
+}
+
+export async function getOrdersByRange(
+  mt5_account: number,
+  from: string | null,
+  to: string | null,
+): Promise<OrderRow[]> {
+  const sb = getSupabaseAdmin();
+  let q = sb.from("orders").select("*").eq("mt5_account", mt5_account);
+  if (from) q = q.gte("time_setup", from);
+  if (to) q = q.lte("time_setup", to);
+  const { data, error } = await q.order("time_setup", { ascending: false });
+  if (error) throw error;
+  return (data ?? []) as OrderRow[];
+}
+
 export async function listPropfirmRules(): Promise<PropfirmRule[]> {
   const sb = getSupabaseAdmin();
   const { data, error } = await sb

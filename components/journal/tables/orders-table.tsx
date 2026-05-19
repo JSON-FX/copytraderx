@@ -9,12 +9,13 @@ import { useTableState, type SortValue } from "@/components/journal/filters/use-
 import { ToggleChip, SelectChip } from "@/components/journal/filters/filter-chip";
 import { FilterSearch } from "@/components/journal/filters/filter-search";
 import { Pagination } from "@/components/journal/filters/pagination";
+import { ExportDialog } from "@/components/journal/export-dialog";
 import { SidePill } from "./side-pill";
 import { StatePill } from "./state-pill";
 import { RowRailCell } from "./row-rail";
 import { cn } from "@/lib/utils";
 
-export function OrdersTable({ orders }: { orders: OrderRow[] }) {
+export function OrdersTable({ orders, mt5Account }: { orders: OrderRow[]; mt5Account: number }) {
   const { state, setSort, setPage, setSize, setFilter, setSearch } =
     useTableState({ defaultSort: "setup_desc" as SortValue, defaultSize: 25 });
 
@@ -55,6 +56,7 @@ export function OrdersTable({ orders }: { orders: OrderRow[] }) {
         <SelectChip label="Symbol" value={state.filters.symbol ?? null} options={symbolOptions}
           onChange={(v) => setFilter("symbol", v)} />
         <FilterSearch value={state.search} onChange={setSearch} placeholder="Search ticket, symbol…" className="ml-auto" />
+        <ExportDialog kind="orders" mt5Account={mt5Account} />
       </div>
 
       <div className="overflow-x-auto">

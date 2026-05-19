@@ -9,12 +9,15 @@ import { useTableState, type SortValue } from "@/components/journal/filters/use-
 import { ToggleChip, SelectChip } from "@/components/journal/filters/filter-chip";
 import { FilterSearch } from "@/components/journal/filters/filter-search";
 import { Pagination } from "@/components/journal/filters/pagination";
+import { ExportDialog } from "@/components/journal/export-dialog";
 import { SidePill } from "./side-pill";
 import { RowRailCell } from "./row-rail";
 import { usePnlDisplay } from "@/components/journal/preferences/journal-chrome-context";
 import { cn } from "@/lib/utils";
 
-export function TradesTable({ deals, currency, baseline }: { deals: Deal[]; currency: string; baseline: number }) {
+export function TradesTable({ deals, currency, baseline, mt5Account }: {
+  deals: Deal[]; currency: string; baseline: number; mt5Account: number;
+}) {
   const { mode } = usePnlDisplay();
   const { state, setSort, setPage, setSize, setFilter, setSearch } =
     useTableState({ defaultSort: "closed_desc" as SortValue, defaultSize: 25 });
@@ -67,6 +70,7 @@ export function TradesTable({ deals, currency, baseline }: { deals: Deal[]; curr
           options={[{ value: "buy", label: "Buy" }, { value: "sell", label: "Sell" }]}
           onChange={(v) => setFilter("side", v)} />
         <FilterSearch value={state.search} onChange={setSearch} placeholder="Search ticket, symbol…" className="ml-auto" />
+        <ExportDialog kind="trades" mt5Account={mt5Account} />
       </div>
 
       <div className="overflow-x-auto">
