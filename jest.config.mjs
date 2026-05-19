@@ -16,6 +16,7 @@ const config = {
       preset: "ts-jest",
       testEnvironment: "jsdom",
       testMatch: ["**/*.test.tsx"],
+      setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
       moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/$1",
         "^server-only$": "<rootDir>/jest-mocks/server-only.js",
