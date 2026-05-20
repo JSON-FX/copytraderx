@@ -85,7 +85,15 @@ function Inner(props: Props) {
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-6 py-6">
       <JournalHeader license={license} pushedAt={snapshot.data?.pushed_at ?? null} pushIntervalSeconds={props.pushIntervalSeconds} />
-      <LiveAccountPanel snapshot={snapshot.data} deals={deals.data} daily={daily.data} baseline={baseline} baselineSource={props.baseline.source} />
+      <LiveAccountPanel
+          snapshot={snapshot.data}
+          deals={deals.data}
+          daily={daily.data}
+          baseline={baseline}
+          baselineSource={props.baseline.source}
+          product={license.product}
+          rule={props.rule}
+        />
       <JournalToolbar pushedAt={snapshot.data?.pushed_at ?? null} />
       <Tabs defaultValue="overview">
         <TabsList className="h-11 w-fit gap-1 rounded-lg p-1">
