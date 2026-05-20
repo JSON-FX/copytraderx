@@ -1,4 +1,4 @@
-import { decideListTarget } from "./propfirm-rules-auth";
+import { decideListTarget, decideOwnerAccess } from "./propfirm-rules-auth";
 
 const CALLER = "aaaaaaaa-0000-0000-0000-000000000001";
 const OTHER  = "bbbbbbbb-0000-0000-0000-000000000002";
@@ -57,6 +57,30 @@ describe("decideListTarget", () => {
       expect(decideListTarget(CALLER, "admin", OTHER)).toEqual({
         kind: "ok", targetUserId: OTHER,
       });
+    });
+  });
+});
+
+describe("decideOwnerAccess", () => {
+  describe("caller owns the rule", () => {
+    it("returns ok when ruleUserId matches callerId (any role)", () => {
+      expect(decideOwnerAccess(CALLER, CALLER, null)).toEqual({ kind: "ok" });
+      expect(decideOwnerAccess(CALLER, CALLER, "user")).toEqual({ kind: "ok" });
+      expect(decideOwnerAccess(CALLER, CALLER, "admin")).toEqual({ kind: "ok" });
+    });
+  });
+
+  describe("caller does not own the rule", () => {
+    it("returns not_found for a regular user accessing another user's rule", () => {
+      expect(decideOwnerAccess(OTHER, CALLER, "user")).toEqual({ kind: "not_found" });
+    });
+
+    it("returns not_found when callerRole is null", () => {
+      expect(decideOwnerAccess(OTHER, CALLER, null)).toEqual({ kind: "not_found" });
+    });
+
+    it("returns ok for an admin accessing another user's rule", () => {
+      expect(decideOwnerAccess(OTHER, CALLER, "admin")).toEqual({ kind: "ok" });
     });
   });
 });

@@ -1,5 +1,26 @@
 import type { Role } from "./role";
 
+export type OwnerAccessResult =
+  | { kind: "ok" }
+  | { kind: "not_found" };
+
+/**
+ * Decide whether a caller may access a specific propfirm rule.
+ *
+ * - Owner → ok.
+ * - Admin (non-owner) → ok.
+ * - Non-owner, non-admin → not_found (404 not 403, to avoid leaking ID existence).
+ */
+export function decideOwnerAccess(
+  ruleUserId: string,
+  callerId: string,
+  callerRole: Role | null,
+): OwnerAccessResult {
+  if (ruleUserId === callerId) return { kind: "ok" };
+  if (callerRole === "admin")  return { kind: "ok" };
+  return { kind: "not_found" };
+}
+
 export type ListTargetResult =
   | { kind: "ok"; targetUserId: string }
   | { kind: "error"; status: 401 | 403; code: "unauthenticated" | "forbidden" };
