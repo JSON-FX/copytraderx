@@ -41,9 +41,11 @@ export function OverviewTab({ license, rule, snapshot, daily, positions, deals, 
     return { cumulativePct: cumPct, cumulativeCash: cumCash, bestDay: best, worstDay: worst };
   }, [trade.netPnl, deals, baseline]);
 
+  const isPasser = license.product === "ctx-prop-passer";
+
   return (
     <section className="space-y-4">
-      <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
+      {isPasser ? (
         <OverviewHero
           cumulativePct={cumulativePct}
           cumulativeCash={cumulativeCash}
@@ -54,8 +56,21 @@ export function OverviewTab({ license, rule, snapshot, daily, positions, deals, 
           bestDay={bestDay}
           worstDay={worstDay}
         />
-        <ChallengeMini rule={rule} snapshot={snapshot} daily={daily} baseline={baseline} currency={currency} licenseId={license.id} />
-      </div>
+      ) : (
+        <div className="grid gap-4 md:grid-cols-[1.4fr_1fr]">
+          <OverviewHero
+            cumulativePct={cumulativePct}
+            cumulativeCash={cumulativeCash}
+            currency={currency}
+            baseline={baseline}
+            series={series}
+            winRatePct={winRatePct}
+            bestDay={bestDay}
+            worstDay={worstDay}
+          />
+          <ChallengeMini rule={rule} snapshot={snapshot} daily={daily} baseline={baseline} currency={currency} licenseId={license.id} />
+        </div>
+      )}
 
       <div className="grid gap-4 md:grid-cols-2">
         <RecentTrades deals={deals} currency={currency} baseline={baseline} />
