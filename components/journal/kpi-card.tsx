@@ -2,10 +2,11 @@
 import { cn } from "@/lib/utils";
 import { Sparkline, type SparklineTone } from "./sparkline";
 
-export type CardTone = "positive" | "negative" | "neutral" | "warn" | "danger";
+export type CardTone = "positive" | "negative" | "neutral" | "warn";
+export type SubTone = "positive" | "negative" | "neutral";
 
 export interface KpiProgressBar {
-  /** 0-100 visible fill. Caller clamps. */
+  /** 0-100 visible fill; clamped by the component. */
   fill: number;
   tone: "ok" | "warn" | "bad" | "neutral";
 }
@@ -16,7 +17,7 @@ interface Props {
   sub?: React.ReactNode;
   tone?: CardTone;
   /** Optional tone applied to the sub line only (independent of `tone`). */
-  subTone?: "positive" | "negative" | "neutral";
+  subTone?: SubTone;
   series?: number[];
   seriesTone?: SparklineTone;
   /** Inline progress bar rendered below `sub`. */
@@ -34,7 +35,6 @@ const VALUE_TONE: Record<CardTone, string> = {
   negative: "text-red-600 dark:text-red-400",
   neutral:  "text-foreground",
   warn:     "text-amber-600 dark:text-amber-400",
-  danger:   "text-red-600 dark:text-red-400",
 };
 
 const SUB_TONE = {
@@ -50,12 +50,18 @@ const BAR_TONE = {
   neutral: "bg-foreground/40",
 } as const;
 
+function toSparklineTone(t: CardTone): SparklineTone {
+  if (t === "warn") return "negative";
+  if (t === "positive" || t === "negative") return t;
+  return "neutral";
+}
+
 export function KpiCard({
   label, value, sub, tone = "neutral", subTone, series, seriesTone,
   progressBar, className, featured, tooltip, empty,
 }: Props) {
   const hasStrip = Array.isArray(series) && series.length >= 2;
-  const subClass = subTone ? SUB_TONE[subTone] : "text-muted-foreground";
+  const subClass = SUB_TONE[subTone ?? "neutral"];
   return (
     <div
       title={tooltip}
@@ -85,7 +91,7 @@ export function KpiCard({
       </div>
       {hasStrip && (
         <div className="border-t border-border/60 bg-gradient-to-b from-transparent to-muted/30">
-          <Sparkline values={series} tone={seriesTone ?? (tone === "warn" || tone === "danger" ? "negative" : tone === "neutral" ? "neutral" : tone)} height={44} />
+          <Sparkline values={series} tone={seriesTone ?? toSparklineTone(tone)} height={44} />
         </div>
       )}
     </div>
