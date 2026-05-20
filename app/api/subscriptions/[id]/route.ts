@@ -4,6 +4,7 @@ import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { canCancel } from "@/lib/subscription-state";
 import { extractRole } from "@/lib/role";
 import { updateSubscriptionPolicySchema } from "@/lib/schemas";
+import { decideSubscriptionPatch } from "@/lib/propfirm-rules-auth";
 
 export async function DELETE(
   _req: Request,
@@ -68,9 +69,6 @@ export async function PATCH(
   const ssr = await getSupabaseSSR();
   const { data: { user } } = await ssr.auth.getUser();
   if (!user) return NextResponse.json({ error: "unauthenticated" }, { status: 401 });
-  if (extractRole({ user }) !== "admin") {
-    return NextResponse.json({ error: "forbidden" }, { status: 403 });
-  }
 
   let body: unknown;
   try { body = await req.json(); } catch {
@@ -84,11 +82,36 @@ export async function PATCH(
   const sb = getSupabaseAdmin();
   const { data: sub, error: fetchErr } = await sb
     .from("subscriptions")
-    .select("id")
+    .select("id, user_id")
     .eq("id", id)
     .maybeSingle();
   if (fetchErr) return NextResponse.json({ error: "lookup_failed", details: fetchErr.message }, { status: 500 });
-  if (!sub) return NextResponse.json({ error: "not_found" }, { status: 404 });
+
+  // Pre-fetch the rule when propfirm_rule_id is being set to a non-null value.
+  const ruleRequired =
+    parsed.data.propfirm_rule_id !== undefined &&
+    parsed.data.propfirm_rule_id !== null;
+  let rule: { user_id: string } | null = null;
+  if (ruleRequired) {
+    const { data: fetchedRule } = await sb
+      .from("propfirm_rules")
+      .select("user_id")
+      .eq("id", parsed.data.propfirm_rule_id as number)
+      .maybeSingle();
+    rule = fetchedRule;
+  }
+
+  const decision = decideSubscriptionPatch({
+    callerId: user.id,
+    callerRole: extractRole({ user }),
+    subscription: sub,
+    body: parsed.data,
+    rule,
+    ruleRequired,
+  });
+  if (decision.kind === "error") {
+    return NextResponse.json({ error: decision.code }, { status: decision.status });
+  }
 
   const { data: updated, error } = await sb
     .from("subscriptions")
