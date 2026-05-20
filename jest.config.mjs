@@ -14,12 +14,13 @@ const config = {
     {
       displayName: "jsdom",
       preset: "ts-jest",
-      testEnvironment: "jsdom",
+      testEnvironment: "<rootDir>/jest-mocks/jsdom-with-fetch.js",
       testMatch: ["**/*.test.tsx"],
       setupFilesAfterEnv: ["<rootDir>/jest.setup.ts"],
       moduleNameMapper: {
         "^@/(.*)$": "<rootDir>/$1",
         "^server-only$": "<rootDir>/jest-mocks/server-only.js",
+        "^next/navigation$": "<rootDir>/jest-mocks/next-navigation.js",
       },
     },
   ],
