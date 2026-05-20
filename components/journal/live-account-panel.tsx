@@ -1,8 +1,10 @@
 "use client";
 
 import { useMemo } from "react";
-import type { AccountSnapshotCurrent, AccountSnapshotDaily, Deal } from "@/lib/types";
+import type { AccountSnapshotCurrent, AccountSnapshotDaily, Deal, PropfirmRule } from "@/lib/types";
 import type { BaselineSource } from "@/lib/journal/baseline";
+import type { Product } from "@/lib/products";
+import { PasserHeadlineCards } from "./passer-headline-cards";
 import { KpiCard } from "./kpi-card";
 import { AccountMetadataStrip } from "./account-metadata-strip";
 import { fmtCash, fmtPct } from "@/lib/journal/format-pnl";
@@ -15,6 +17,8 @@ interface Props {
   daily: AccountSnapshotDaily[];
   baseline: number;
   baselineSource: BaselineSource;
+  product: Product;
+  rule: PropfirmRule | null;
 }
 
 const BASELINE_SOURCE_LABEL: Record<Exclude<BaselineSource, null>, string> = {
@@ -23,7 +27,11 @@ const BASELINE_SOURCE_LABEL: Record<Exclude<BaselineSource, null>, string> = {
   current: "current balance (no history yet)",
 };
 
-export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSource }: Props) {
+export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSource, product, rule }: Props) {
+  if (product === "ctx-prop-passer") {
+    return <PasserHeadlineCards snapshot={snapshot} daily={daily} deals={deals} rule={rule} baseline={baseline} />;
+  }
+
   const { mode } = usePnlDisplay();
   const currency = snapshot?.currency ?? "USD";
   const balance = snapshot?.balance ?? 0;

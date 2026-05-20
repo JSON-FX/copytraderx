@@ -35,7 +35,8 @@ export function PasserHeadlineCards({ snapshot, daily, deals, rule, baseline }: 
     ? (rule.target_type === "percent" ? rule.profit_target : (rule.profit_target / rule.account_size) * 100)
     : 0;
 
-  const cards = buildPasserCards(objectives, snapshot, baseline, currency, mode, profitTargetPct);
+  const displayMode = mode === "dollar" ? "cash" : mode;
+  const cards = buildPasserCards(objectives, snapshot, baseline, currency, displayMode, profitTargetPct);
 
   return (
     <div className="space-y-3">
