@@ -29,6 +29,7 @@ async function fetchUserAndSubs(id: string): Promise<{
   const { data: rules } = await sb
     .from("propfirm_rules")
     .select("id, name")
+    .eq("user_id", id)
     .order("name");
   return { user: user as AppUser, subscriptions: (subs ?? []) as Subscription[], rules: rules ?? [] };
 }
