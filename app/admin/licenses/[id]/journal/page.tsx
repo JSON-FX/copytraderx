@@ -2,7 +2,7 @@ import { notFound } from "next/navigation";
 import { getSupabaseAdmin } from "@/lib/supabase/server";
 import {
   getAccountSnapshotCurrent, getAccountSnapshotsDaily, getDeals,
-  getOpenPositions, getOrders,
+  getOpenPositions, getOrders, listPropfirmRules,
 } from "@/lib/journal/queries";
 import { AdminSiteNav } from "@/components/admin/admin-site-nav";
 import { JournalShell } from "@/components/journal/journal-shell";
@@ -56,6 +56,10 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
 
   const baseline = resolveBaseline(rule, daily, snapshot);
 
+  const ownerRules = license.product === "ctx-prop-passer"
+    ? await listPropfirmRules(license.user_id)
+    : [];
+
   return (
     <>
       <AdminSiteNav />
@@ -70,6 +74,10 @@ export default async function JournalPage({ params }: { params: Promise<{ id: st
         pushIntervalSeconds={pushIntervalSeconds}
         baseline={baseline}
         initialPnlDisplay="percent"
+        ownerRules={ownerRules}
+        subscriptionId={license.subscription_id}
+        licenseId={license.id}
+        ownerUserId={license.user_id}
       />
     </>
   );

@@ -19,6 +19,10 @@ interface Props {
   baselineSource: BaselineSource;
   product: Product;
   rule: PropfirmRule | null;
+  ownerRules: PropfirmRule[];
+  subscriptionId: number;
+  licenseId: number;
+  ownerUserId: string;
 }
 
 const BASELINE_SOURCE_LABEL: Record<Exclude<BaselineSource, null>, string> = {
@@ -27,9 +31,9 @@ const BASELINE_SOURCE_LABEL: Record<Exclude<BaselineSource, null>, string> = {
   current: "current balance (no history yet)",
 };
 
-export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSource, product, rule }: Props) {
+export function LiveAccountPanel({ snapshot, deals, daily, baseline, baselineSource, product, rule, ownerRules, subscriptionId, licenseId, ownerUserId }: Props) {
   if (product === "ctx-prop-passer") {
-    return <PasserHeadlineCards snapshot={snapshot} daily={daily} deals={deals} rule={rule} baseline={baseline} />;
+    return <PasserHeadlineCards snapshot={snapshot} daily={daily} deals={deals} rule={rule} baseline={baseline} ownerRules={ownerRules} subscriptionId={subscriptionId} licenseId={licenseId} ownerUserId={ownerUserId} />;
   }
 
   const { mode } = usePnlDisplay();

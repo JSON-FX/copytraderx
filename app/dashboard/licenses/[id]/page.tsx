@@ -7,6 +7,7 @@ import {
   getDeals,
   getOpenPositions,
   getOrders,
+  listPropfirmRules,
 } from "@/lib/journal/queries";
 import { JournalShell } from "@/components/journal/journal-shell";
 import { resolveBaseline } from "@/lib/journal/baseline";
@@ -76,6 +77,10 @@ export default async function UserJournalPage({
   const baseline = resolveBaseline(rule, daily, snapshot);
   const pnlDisplay = await getPnlDisplay(user.id);
 
+  const ownerRules = license.product === "ctx-prop-passer"
+    ? await listPropfirmRules(license.user_id)
+    : [];
+
   return (
     <JournalShell
       license={license}
@@ -88,6 +93,10 @@ export default async function UserJournalPage({
       pushIntervalSeconds={pushIntervalSeconds}
       baseline={baseline}
       initialPnlDisplay={pnlDisplay}
+      ownerRules={ownerRules}
+      subscriptionId={license.subscription_id}
+      licenseId={license.id}
+      ownerUserId={license.user_id}
     />
   );
 }

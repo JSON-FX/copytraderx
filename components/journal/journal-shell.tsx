@@ -31,6 +31,10 @@ interface Props {
   pushIntervalSeconds: number;
   baseline: BaselineResult;
   initialPnlDisplay: PnlDisplay;
+  ownerRules: PropfirmRule[];
+  subscriptionId: number;
+  licenseId: number;
+  ownerUserId: string;
 }
 
 export function JournalShell(props: Props) {
@@ -93,6 +97,10 @@ function Inner(props: Props) {
           baselineSource={props.baseline.source}
           product={license.product}
           rule={props.rule}
+          ownerRules={props.ownerRules}
+          subscriptionId={props.subscriptionId}
+          licenseId={props.licenseId}
+          ownerUserId={props.ownerUserId}
         />
       <JournalToolbar pushedAt={snapshot.data?.pushed_at ?? null} />
       <Tabs defaultValue="overview">

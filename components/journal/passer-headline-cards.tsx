@@ -8,6 +8,7 @@ import { computeTradeEquity } from "@/lib/journal/trade-equity";
 import { KpiCard } from "./kpi-card";
 import { AccountMetadataStrip } from "./account-metadata-strip";
 import { usePnlDisplay } from "./preferences/journal-chrome-context";
+import { RuleAssignPicker } from "./rule-assign-picker";
 
 interface Props {
   snapshot: AccountSnapshotCurrent | null;
@@ -15,9 +16,13 @@ interface Props {
   deals: Deal[];
   rule: PropfirmRule | null;
   baseline: number;
+  ownerRules: PropfirmRule[];
+  subscriptionId: number;
+  licenseId: number;
+  ownerUserId: string;
 }
 
-export function PasserHeadlineCards({ snapshot, daily, deals, rule, baseline }: Props) {
+export function PasserHeadlineCards({ snapshot, daily, deals, rule, baseline, ownerRules, subscriptionId, licenseId, ownerUserId }: Props) {
   const { mode } = usePnlDisplay();
   const currency = snapshot?.currency ?? "USD";
   const todayUtc = new Date().toISOString().slice(0, 10);
@@ -41,18 +46,34 @@ export function PasserHeadlineCards({ snapshot, daily, deals, rule, baseline }: 
   return (
     <div className="space-y-3">
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-        <KpiCard
-          featured
-          label={cards.progress.label}
-          value={cards.progress.value}
-          sub={cards.progress.sub}
-          tone={cards.progress.tone}
-          subTone={cards.progress.subTone}
-          progressBar={cards.progress.progressBar}
-          empty={cards.progress.empty}
-          series={cumPnlSeries}
-          seriesTone={cards.progress.tone === "negative" ? "negative" : "positive"}
-        />
+        {cards.progress.empty ? (
+          <div className="flex flex-col overflow-hidden rounded-xl border border-dashed bg-muted/20 px-4 py-3">
+            <div className="text-[10.5px] font-semibold uppercase tracking-wider text-muted-foreground">
+              Challenge Progress
+            </div>
+            <div className="mt-2">
+              <RuleAssignPicker
+                subscriptionId={subscriptionId}
+                userRules={ownerRules}
+                ownerUserId={ownerUserId}
+                returnTo={`/dashboard/licenses/${licenseId}`}
+              />
+            </div>
+          </div>
+        ) : (
+          <KpiCard
+            featured
+            label={cards.progress.label}
+            value={cards.progress.value}
+            sub={cards.progress.sub}
+            tone={cards.progress.tone}
+            subTone={cards.progress.subTone}
+            progressBar={cards.progress.progressBar}
+            empty={cards.progress.empty}
+            series={cumPnlSeries}
+            seriesTone={cards.progress.tone === "negative" ? "negative" : "positive"}
+          />
+        )}
         <KpiCard
           label={cards.equity.label}
           value={cards.equity.value}

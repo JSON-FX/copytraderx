@@ -31,7 +31,7 @@ describe("PasserHeadlineCards", () => {
       { mt5_account: 1, trade_date: "2026-05-19", balance_close: 10_307, equity_close: 10_307, daily_pnl: 307 },
     ];
     render(wrap(
-      <PasserHeadlineCards snapshot={snap} daily={daily} deals={[]} rule={RULE} baseline={10_000} />
+      <PasserHeadlineCards snapshot={snap} daily={daily} deals={[]} rule={RULE} baseline={10_000} ownerRules={[]} subscriptionId={1} licenseId={1} ownerUserId="user-a" />
     ));
 
     expect(screen.getByText(/Challenge Progress/i)).toBeInTheDocument();
@@ -45,10 +45,10 @@ describe("PasserHeadlineCards", () => {
   it("renders empty Progress + Buffer when rule is null", () => {
     const snap = SNAP();
     render(wrap(
-      <PasserHeadlineCards snapshot={snap} daily={[]} deals={[]} rule={null} baseline={10_000} />
+      <PasserHeadlineCards snapshot={snap} daily={[]} deals={[]} rule={null} baseline={10_000} ownerRules={[]} subscriptionId={1} licenseId={1} ownerUserId="user-a" />
     ));
 
-    expect(screen.getByText(/Assign challenge rule/i)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /create your first rule/i })).toBeInTheDocument();
     expect(screen.getByText(/No limits configured/i)).toBeInTheDocument();
     // Equity still renders even without a rule. The AccountMetadataStrip
     // below the cards also shows $10,000.00 (free_margin), so use getAllBy.
