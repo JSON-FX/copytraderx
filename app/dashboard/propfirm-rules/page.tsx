@@ -15,11 +15,23 @@ export default async function UserPropfirmRulesPage() {
   const rules = await listPropfirmRules(user.id);
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Propfirm Rules</h1>
-        <Button asChild><Link href="/dashboard/propfirm-rules/new">New rule</Link></Button>
-      </div>
+    <div className="space-y-5">
+      <header className="flex flex-wrap items-end justify-between gap-3 border-b pb-4">
+        <div>
+          <div className="text-[10.5px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+            Dashboard
+          </div>
+          <h1 className="mt-1 font-serif text-[26px] font-medium leading-tight tracking-tight">
+            Propfirm Rules
+          </h1>
+          <p className="mt-1 text-[13px] text-muted-foreground">
+            Reusable challenge setups you can assign to any of your subscriptions.
+          </p>
+        </div>
+        <Button asChild>
+          <Link href="/dashboard/propfirm-rules/new">New rule</Link>
+        </Button>
+      </header>
       <RulesTable rules={rules} basePath="/dashboard/propfirm-rules" />
     </div>
   );
