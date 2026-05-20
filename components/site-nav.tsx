@@ -82,9 +82,9 @@ export function SiteNav({ pendingRequestsCount = 0 }: { pendingRequestsCount?: n
             Settings
           </Link>
           <Link
-            href="/admin/propfirm-rules"
-            className={linkClass("/admin/propfirm-rules")}
-            aria-current={pathname?.startsWith("/admin/propfirm-rules") ? "page" : undefined}
+            href="/dashboard/propfirm-rules"
+            className={linkClass("/dashboard/propfirm-rules")}
+            aria-current={pathname?.startsWith("/dashboard/propfirm-rules") ? "page" : undefined}
           >
             Propfirm Rules
           </Link>
