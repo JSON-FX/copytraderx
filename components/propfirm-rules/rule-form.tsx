@@ -11,7 +11,7 @@ import { propfirmRuleSchema, type PropfirmRuleInput } from "@/lib/schemas";
 import type { PropfirmRule } from "@/lib/types";
 import { toast } from "sonner";
 
-export function RuleForm({ initial }: { initial?: PropfirmRule }) {
+export function RuleForm({ initial, basePath, returnTo }: { initial?: PropfirmRule; basePath: string; returnTo?: string }) {
   const router = useRouter();
   const form = useForm<PropfirmRuleInput>({
     resolver: zodResolver(propfirmRuleSchema),
@@ -33,7 +33,7 @@ export function RuleForm({ initial }: { initial?: PropfirmRule }) {
     });
     if (!res.ok) { toast.error("Failed to save rule"); return; }
     toast.success(initial ? "Rule updated" : "Rule created");
-    router.push("/admin/propfirm-rules"); router.refresh();
+    router.push(returnTo ?? basePath); router.refresh();
   }
 
   async function onDelete() {
@@ -42,7 +42,7 @@ export function RuleForm({ initial }: { initial?: PropfirmRule }) {
     const res = await fetch(`/api/propfirm-rules/${initial.id}`, { method: "DELETE" });
     if (!res.ok) { toast.error("Delete failed"); return; }
     toast.success("Rule deleted");
-    router.push("/admin/propfirm-rules"); router.refresh();
+    router.push(basePath); router.refresh();
   }
 
   return (
