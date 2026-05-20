@@ -26,8 +26,7 @@ export default async function EditUserRulePage({ params }: PageProps) {
   if (rule.user_id !== user.id && !isAdmin) notFound();
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 space-y-4">
-      <h1 className="text-xl font-semibold">Edit rule: {rule.name}</h1>
+    <div className="px-6 py-8">
       <RuleForm initial={rule} basePath="/dashboard/propfirm-rules" />
     </div>
   );

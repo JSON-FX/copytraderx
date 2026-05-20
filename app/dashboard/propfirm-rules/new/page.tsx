@@ -14,8 +14,7 @@ export default async function NewUserRulePage({ searchParams }: PageProps) {
   const { return_to } = await searchParams;
 
   return (
-    <div className="mx-auto max-w-6xl px-6 py-6 space-y-4">
-      <h1 className="text-xl font-semibold">New propfirm rule</h1>
+    <div className="px-6 py-8">
       <RuleForm basePath="/dashboard/propfirm-rules" returnTo={return_to} />
     </div>
   );
