@@ -50,6 +50,8 @@ describe("PasserHeadlineCards", () => {
 
     expect(screen.getByText(/Assign challenge rule/i)).toBeInTheDocument();
     expect(screen.getByText(/No limits configured/i)).toBeInTheDocument();
-    expect(screen.getByText(/\$10,000\.00/)).toBeInTheDocument();
+    // Equity still renders even without a rule. The AccountMetadataStrip
+    // below the cards also shows $10,000.00 (free_margin), so use getAllBy.
+    expect(screen.getAllByText(/\$10,000\.00/).length).toBeGreaterThan(0);
   });
 });
