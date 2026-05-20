@@ -1,23 +1,10 @@
-import { notFound } from "next/navigation";
-import { RuleForm } from "@/components/propfirm-rules/rule-form";
-import { AdminSiteNav } from "@/components/admin/admin-site-nav";
-import { getPropfirmRule } from "@/lib/journal/queries";
+import { redirect } from "next/navigation";
 
-export const dynamic = "force-dynamic";
+interface PageProps {
+  params: Promise<{ id: string }>;
+}
 
-export default async function EditRulePage({ params }: { params: Promise<{ id: string }> }) {
+export default async function AdminPropfirmRulesEditRedirect({ params }: PageProps) {
   const { id } = await params;
-  const n = Number(id);
-  if (!Number.isFinite(n)) notFound();
-  const rule = await getPropfirmRule(n);
-  if (!rule) notFound();
-  return (
-    <>
-      <AdminSiteNav />
-      <div className="mx-auto max-w-6xl px-6 py-6 space-y-4">
-        <h1 className="text-xl font-semibold">Edit rule: {rule.name}</h1>
-        <RuleForm initial={rule} />
-      </div>
-    </>
-  );
+  redirect(`/dashboard/propfirm-rules/${encodeURIComponent(id)}`);
 }
