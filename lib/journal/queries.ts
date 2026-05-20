@@ -111,11 +111,12 @@ export async function getOrdersByRange(
   return (data ?? []) as OrderRow[];
 }
 
-export async function listPropfirmRules(): Promise<PropfirmRule[]> {
+export async function listPropfirmRules(userId: string): Promise<PropfirmRule[]> {
   const sb = getSupabaseAdmin();
   const { data, error } = await sb
     .from("propfirm_rules")
     .select("*")
+    .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) throw error;
   return (data ?? []) as PropfirmRule[];

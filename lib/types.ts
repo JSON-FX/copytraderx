@@ -179,6 +179,7 @@ export type DailyLossCalc = "balance" | "equity";
 
 export interface PropfirmRule {
   id: number;
+  user_id: string;
   name: string;
   account_size: number;
   max_daily_loss: number;

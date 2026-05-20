@@ -2,7 +2,7 @@ import { evaluateObjectives } from "./objectives";
 import type { AccountSnapshotCurrent, AccountSnapshotDaily, PropfirmRule } from "@/lib/types";
 
 const RULE: PropfirmRule = {
-  id: 1, name: "100k Phase 1",
+  id: 1, user_id: "00000000-0000-0000-0000-000000000001", name: "100k Phase 1",
   account_size: 100_000,
   max_daily_loss: 5,           // 5% of balance/equity
   daily_loss_type: "percent",
