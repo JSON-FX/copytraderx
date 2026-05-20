@@ -76,6 +76,11 @@ export function SubscriptionPolicyForm({
             ))}
           </SelectContent>
         </Select>
+        {rules.length === 0 && (
+          <p className="text-[11px] text-muted-foreground">
+            User has no rules yet — ask them to create one in their dashboard.
+          </p>
+        )}
       </div>
       <div className="col-span-2">
         <Button type="submit" size="sm" disabled={isPending}>
