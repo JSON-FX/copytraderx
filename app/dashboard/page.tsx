@@ -1,34 +1,34 @@
 import { redirect } from "next/navigation";
+import { cookies } from "next/headers";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
-import { getDashboardData } from "@/lib/dashboard-data";
-import { DashboardCardGrid } from "@/components/user/dashboard-card-grid";
-import { RequestLicenseDialog } from "@/components/user/request-license-dialog";
+import { getSidebarData } from "@/lib/sidebar-data";
 
 export default async function DashboardPage() {
   const sb = await getSupabaseSSR();
-  const {
-    data: { user },
-  } = await sb.auth.getUser();
+  const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect("/login");
 
-  const items = await getDashboardData(user.id);
+  const cookieStore = await cookies();
+  const activeIdRaw = cookieStore.get("ctx.activeAccountId")?.value;
+
+  if (activeIdRaw) {
+    redirect(`/dashboard/${activeIdRaw}`);
+  }
+
+  const sidebar = await getSidebarData(user.id);
+  const firstAccount = sidebar.active[0]?.liveSlot ?? sidebar.active[0]?.demoSlot;
+  if (firstAccount) {
+    redirect(`/dashboard/${firstAccount.licenseId}`);
+  }
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h1 className="text-2xl font-semibold">My subscriptions</h1>
-        <RequestLicenseDialog />
+    <div className="flex min-h-[60vh] items-center justify-center">
+      <div className="text-center">
+        <h2 className="text-lg font-semibold">Select an account to get started</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Use the account switcher in the sidebar to choose an account, or request a new license from your admin.
+        </p>
       </div>
-
-      {items.length === 0 ? (
-        <div className="rounded-lg border border-dashed p-8 text-center">
-          <p className="text-sm text-muted-foreground">
-            You don&apos;t have any subscriptions yet. Click &quot;Request New License&quot; to get started, or contact your admin.
-          </p>
-        </div>
-      ) : (
-        <DashboardCardGrid items={items} />
-      )}
     </div>
   );
 }
