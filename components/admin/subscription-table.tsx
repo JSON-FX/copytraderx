@@ -12,7 +12,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DashboardPagination } from "@/components/user/dashboard-pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import {
   ADMIN_SUBS_PAGE_SIZE_DEFAULT,
   ADMIN_SUBS_PAGE_SIZE_OPTIONS,
@@ -218,7 +218,7 @@ export function SubscriptionTable({ rows }: { rows: AdminSubscriptionRow[] }) {
                 subsOnPage === 1 ? "" : "s"
               } on this page`}
         </span>
-        <DashboardPagination
+        <PaginationControls
           page={paged.page}
           totalPages={paged.totalPages}
           onChange={setPage}

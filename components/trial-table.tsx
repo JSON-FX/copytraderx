@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { DashboardPagination } from "@/components/user/dashboard-pagination";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import { deriveTrialDisplayStatus } from "@/lib/trial-state";
 import { PRODUCTS, type Product } from "@/lib/products";
 import type { TrialLead, TrialLicense, TrialDisplayStatus } from "@/lib/types";
@@ -189,7 +189,7 @@ export function TrialTable({ rows }: { rows: TrialRowDisplay[] }) {
         </Table>
       </div>
 
-      <DashboardPagination
+      <PaginationControls
         page={safePage}
         totalPages={totalPages}
         onChange={setPage}

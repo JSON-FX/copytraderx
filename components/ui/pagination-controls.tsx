@@ -19,7 +19,7 @@ interface Props {
   onPageSizeChange?: (size: number) => void;
 }
 
-export function DashboardPagination({
+export function PaginationControls({
   page,
   totalPages,
   onChange,
