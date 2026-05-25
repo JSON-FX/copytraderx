@@ -1,6 +1,7 @@
 // components/sidebar/app-sidebar.tsx
 "use client";
 
+import { useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
@@ -14,16 +15,31 @@ import { SidebarNavItem } from "./sidebar-nav-item";
 import { cn } from "@/lib/utils";
 import type { SidebarData } from "@/lib/sidebar-data";
 
+function extractAccountIdFromPath(pathname: string): number | null {
+  const match = pathname.match(/^\/dashboard\/(\d+)/);
+  return match ? Number(match[1]) : null;
+}
+
 interface Props {
   sidebarData: SidebarData;
   activeLicenseId: number | null;
   userEmail: string;
 }
 
-export function AppSidebar({ sidebarData, activeLicenseId, userEmail }: Props) {
+export function AppSidebar({ sidebarData, activeLicenseId: serverActiveLicenseId, userEmail }: Props) {
+  const pathname = usePathname();
+  const pathAccountId = extractAccountIdFromPath(pathname);
+  const activeLicenseId = pathAccountId ?? serverActiveLicenseId;
   const hasAccount = activeLicenseId !== null;
   const accountPrefix = hasAccount ? `/dashboard/${activeLicenseId}` : "#";
-  const pathname = usePathname();
+
+  useEffect(() => {
+    if (pathAccountId !== null) {
+      const id = String(pathAccountId);
+      localStorage.setItem("ctx.activeAccountId", id);
+      document.cookie = `ctx.activeAccountId=${id};path=/;max-age=${60 * 60 * 24 * 365};SameSite=Lax`;
+    }
+  }, [pathAccountId]);
 
   return (
     <>
