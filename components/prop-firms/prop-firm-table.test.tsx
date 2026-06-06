@@ -37,4 +37,9 @@ describe("PropFirmTable", () => {
     render(<PropFirmTable rows={[row({ accountSize: null })]} mode="percent" />);
     expect(screen.getByText("-$302.27")).toBeInTheDocument();
   });
+
+  it("shows positive P&L with a leading plus in percent mode", () => {
+    render(<PropFirmTable rows={[row({ pnl: 302.27 })]} mode="percent" />);
+    expect(screen.getByText("+3.02%")).toBeInTheDocument();
+  });
 });

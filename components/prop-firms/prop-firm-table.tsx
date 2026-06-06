@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { fmtPctOrCash, type PnlDisplay } from "@/lib/journal/format-pnl";
+import { fmtCash, fmtPctOrCash, type PnlDisplay } from "@/lib/journal/format-pnl";
 import { cn } from "@/lib/utils";
 import type { PropFirmRow, PropFirmStatus } from "@/lib/prop-firm-data";
 
@@ -66,10 +66,13 @@ export function PropFirmTable({ rows, mode }: { rows: PropFirmRow[]; mode: PnlDi
                   {STATUS_LABEL[row.status]}
                 </span>
               </td>
-              <td className={cn("px-4 py-3 text-right font-semibold tabular-nums",
-                row.pnl > 0 && "text-emerald-600 dark:text-emerald-400",
-                row.pnl < 0 && "text-red-600 dark:text-red-400",
-              )}>
+              <td
+                title={`${fmtCash(row.pnl, row.currency)} cash`}
+                className={cn("px-4 py-3 text-right font-semibold tabular-nums",
+                  row.pnl > 0 && "text-emerald-600 dark:text-emerald-400",
+                  row.pnl < 0 && "text-red-600 dark:text-red-400",
+                )}
+              >
                 {fmtPctOrCash(row.pnl, mode, row.accountSize ?? 0, row.currency)}
               </td>
               <td className={cn("px-4 py-3 text-right tabular-nums",

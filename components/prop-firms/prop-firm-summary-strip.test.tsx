@@ -29,4 +29,9 @@ describe("PropFirmSummaryStrip", () => {
     render(<PropFirmSummaryStrip data={overview({ totalAccountSize: 0 })} mode="percent" />);
     expect(screen.getByText("-$302.27")).toBeInTheDocument();
   });
+
+  it("shows positive Total P&L with a leading plus in percent mode", () => {
+    render(<PropFirmSummaryStrip data={overview({ totalPnl: 302.27 })} mode="percent" />);
+    expect(screen.getByText("+3.02%")).toBeInTheDocument();
+  });
 });

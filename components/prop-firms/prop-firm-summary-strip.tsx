@@ -8,6 +8,8 @@ export function PropFirmSummaryStrip({ data, mode }: { data: PropFirmOverview; m
       <KpiCard
         label="Total P&L"
         tone={data.totalPnl > 0 ? "positive" : data.totalPnl < 0 ? "negative" : "neutral"}
+        // totalPnl is summed across accounts without FX conversion; the USD
+        // fallback (when no account sizes exist) assumes single-currency users.
         value={fmtPctOrCash(data.totalPnl, mode, data.totalAccountSize, "USD")}
         sub="active + funded accounts"
       />
