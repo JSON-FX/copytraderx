@@ -13,7 +13,7 @@ const RANGES: { label: string; value: RangeDays }[] = [
 ];
 
 export function JournalToolbar({ pushedAt }: { pushedAt: string | null }) {
-  const { mode, setMode, source } = usePnlDisplay();
+  const { mode, setMode } = usePnlDisplay();
   const { range, setRange } = useRangeScope();
 
   return (
@@ -24,8 +24,7 @@ export function JournalToolbar({ pushedAt }: { pushedAt: string | null }) {
           <SegmentButton on={mode === "percent"} onClick={() => setMode("percent")}>%</SegmentButton>
           <SegmentButton on={mode === "dollar"} onClick={() => setMode("dollar")}>$</SegmentButton>
         </Segment>
-        {source === "override" && <span className="text-[10px] uppercase tracking-wider text-amber-600 dark:text-amber-400">overridden</span>}
-        <Divider />
+<Divider />
         <span className="font-medium">Range:</span>
         <Segment>
           {RANGES.map((r) => (

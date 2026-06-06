@@ -1,6 +1,10 @@
 import { render, screen } from "@testing-library/react";
 import { PasserHeadlineCards } from "./passer-headline-cards";
 import { JournalChromeProvider } from "./preferences/journal-chrome-context";
+
+jest.mock("@/app/dashboard/settings/actions", () => ({
+  updatePnlDisplay: jest.fn().mockResolvedValue({ ok: true }),
+}));
 import type { AccountSnapshotCurrent, AccountSnapshotDaily, PropfirmRule } from "@/lib/types";
 
 const RULE: PropfirmRule = {
