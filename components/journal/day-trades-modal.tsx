@@ -13,6 +13,7 @@ import { FilterSearch } from "@/components/journal/filters/filter-search";
 import { Pagination } from "@/components/journal/filters/pagination";
 import { Th, computePips } from "@/components/journal/tables/trades-table";
 import { SidePill } from "@/components/journal/tables/side-pill";
+import { RowRailCell } from "@/components/journal/tables/row-rail";
 import { usePnlDisplay } from "@/components/journal/preferences/journal-chrome-context";
 import { cn } from "@/lib/utils";
 
@@ -93,7 +94,7 @@ export function DayTradesModal({ date, deals, currency, baseline, journalHref, o
         </div>
 
         {/* ── Trades table (scrollable) ── */}
-        <div className="max-h-[55vh] overflow-y-auto overflow-x-auto rounded-sm ring-1 ring-border/50">
+        <div className="max-h-[55vh] overflow-y-auto overflow-x-auto rounded-sm ring-1 ring-border/50 bg-popover">
           <table className="w-full text-sm">
             <thead className="sticky top-0 z-10 bg-popover">
               <tr className="border-b text-[11px] uppercase tracking-wider text-muted-foreground">
@@ -119,19 +120,16 @@ export function DayTradesModal({ date, deals, currency, baseline, journalHref, o
               ) : (
                 result.rows.map((d) => {
                   const pips = computePips(d);
-                  // Thin left-rail color on each row: buy = emerald, sell = red.
-                  const railClass =
-                    d.side === "buy"
-                      ? "border-l-2 border-l-emerald-500/50"
-                      : "border-l-2 border-l-red-500/50";
                   return (
                     <tr
                       key={d.ticket}
-                      className={cn("border-b hover:bg-muted/40 transition-colors duration-75", railClass)}
+                      className={cn("border-b hover:bg-muted/40 transition-colors duration-75")}
                     >
-                      <td className="px-2 py-2 text-xs tabular-nums text-muted-foreground">
-                        {format(parseISO(d.close_time), "HH:mm:ss")}
-                      </td>
+                      <RowRailCell variant={d.side}>
+                        <span className="text-xs tabular-nums text-muted-foreground">
+                          {format(parseISO(d.close_time), "HH:mm:ss")}
+                        </span>
+                      </RowRailCell>
                       <td className="px-2 py-2 font-semibold">{d.symbol}</td>
                       <td className="px-2 py-2">
                         <SidePill variant={d.side}>{d.side}</SidePill>
