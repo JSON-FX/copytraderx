@@ -34,7 +34,7 @@
 - % mode: headline `-3.0%`, subline `limit -10.0%` (total-loss threshold as % of account size).
 - $ mode: headline `-$302.27`, subline `limit -$1,000.00`.
 - Zero drawdown: `0.0%` (or `$0.00`), neutral tone.
-- Tone (challenge accounts) reuses the hero's logic so card and badge never disagree: amber/negative when `totalDrawdown ≥ 70%` of the total-loss threshold (the WATCH condition), red when breached, otherwise neutral-negative.
+- Tone (challenge accounts) reuses the hero's *total-loss* thresholds: amber when `totalDrawdown ≥ 70%` of the total-loss threshold, red when breached, otherwise neutral. The card tones on total drawdown only — when the hero badge shows WATCH because of *daily* loss alone, the drawdown card stays neutral (drawdown is fine; today's loss is the problem), so badge and card may intentionally differ in that case.
 - Tone (funded accounts): plain negative when drawdown > 0, neutral at 0 — no rule-threshold semantics, mirroring the Prop Firms page which doesn't breach-evaluate funded rows.
 
 **Deliberate redundancy:** the hero's "Total Loss" bar already encodes this in $. The card adds the at-a-glance % treatment consistent with the other KPI cards; in % mode it is the only place the percentage appears on this page.
