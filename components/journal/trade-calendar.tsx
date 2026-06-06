@@ -153,7 +153,7 @@ export function TradeCalendar({ deals, currency, baseline, onDayClick }: Props) 
         <Legend className="bg-muted/30" label="No trades" />
         <Legend className="bg-emerald-50 dark:bg-emerald-950/40" label="Win" />
         <Legend className="bg-emerald-200 dark:bg-emerald-900/60" label="Strong win" />
-        {onDayClick && <span className="ml-auto">Click a day to filter Trades →</span>}
+        {onDayClick && <span className="ml-auto">Click a day to view its trades →</span>}
       </div>
     </div>
   );
