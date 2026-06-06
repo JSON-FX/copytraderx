@@ -24,7 +24,7 @@ export function JournalToolbar({ pushedAt }: { pushedAt: string | null }) {
           <SegmentButton on={mode === "percent"} onClick={() => setMode("percent")}>%</SegmentButton>
           <SegmentButton on={mode === "dollar"} onClick={() => setMode("dollar")}>$</SegmentButton>
         </Segment>
-<Divider />
+        <Divider />
         <span className="font-medium">Range:</span>
         <Segment>
           {RANGES.map((r) => (

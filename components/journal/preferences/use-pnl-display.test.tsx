@@ -16,6 +16,7 @@ function Probe() {
       <span data-testid="mode">{mode}</span>
       <span data-testid="range">{range}</span>
       <button onClick={() => setMode("dollar")}>D</button>
+      <button onClick={() => setMode("percent")}>P</button>
       <button onClick={() => setRange(7)}>7d</button>
     </div>
   );
@@ -62,6 +63,25 @@ describe("JournalChromeProvider (global-only $/% mode)", () => {
     act(() => { screen.getByText("D").click(); });
     expect(screen.getByTestId("mode").textContent).toBe("dollar");
     await waitFor(() => expect(screen.getByTestId("mode").textContent).toBe("percent"));
+  });
+
+  it("a superseded toggle cannot clobber the latest state (double-toggle, both fail)", async () => {
+    let resolveA!: (v: { ok: true } | { error: string }) => void;
+    let resolveB!: (v: { ok: true } | { error: string }) => void;
+    mockUpdate
+      .mockImplementationOnce(() => new Promise((r) => { resolveA = r; }))
+      .mockImplementationOnce(() => new Promise((r) => { resolveB = r; }));
+
+    renderProvider();
+    act(() => { screen.getByText("D").click(); });   // percent -> dollar (A in flight)
+    act(() => { screen.getByText("P").click(); });   // dollar -> percent (B in flight)
+    expect(screen.getByTestId("mode").textContent).toBe("percent");
+
+    await act(async () => { resolveA({ error: "write_failed" }); });  // stale failure — must be ignored
+    expect(screen.getByTestId("mode").textContent).toBe("percent");
+
+    await act(async () => { resolveB({ error: "write_failed" }); });  // latest failure — revert to confirmed
+    expect(screen.getByTestId("mode").textContent).toBe("percent");   // confirmed value is still "percent"
   });
 
   it("setRange updates the range scope", () => {

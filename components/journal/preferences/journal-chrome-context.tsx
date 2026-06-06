@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useCallback, useContext, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import type { PnlDisplay } from "@/lib/preferences/server";
 import { updatePnlDisplay } from "@/app/dashboard/settings/actions";
 
@@ -26,6 +26,11 @@ export function JournalChromeProvider({
 }) {
   const [mode, setModeState] = useState<PnlDisplay>(initialPnlDisplay);
   const [range, setRange] = useState<RangeDays>(initialRangeDays);
+  // Last value the server confirmed; reverts go here, not to the previous
+  // optimistic value, so rapid toggles can't strand the UI off the DB state.
+  const confirmedRef = useRef<PnlDisplay>(initialPnlDisplay);
+  // Generation counter: only the latest in-flight request may revert.
+  const pendingRef = useRef(0);
 
   // The user_preferences row is the single source of truth, site-wide:
   // update optimistically, persist via the settings server action, revert on
@@ -33,11 +38,17 @@ export function JournalChromeProvider({
   // journal:pnl-display:* keys are simply ignored.)
   const setMode = useCallback((v: PnlDisplay) => {
     if (v === mode) return;
-    const prev = mode;
+    const id = ++pendingRef.current;
     setModeState(v);
     void updatePnlDisplay(v)
-      .then((res) => { if ("error" in res) setModeState(prev); })
-      .catch(() => setModeState(prev));
+      .then((res) => {
+        if ("error" in res) {
+          if (id === pendingRef.current) setModeState(confirmedRef.current);
+        } else {
+          confirmedRef.current = v;
+        }
+      })
+      .catch(() => { if (id === pendingRef.current) setModeState(confirmedRef.current); });
   }, [mode]);
 
   const value = useMemo<ChromeState>(() => ({
