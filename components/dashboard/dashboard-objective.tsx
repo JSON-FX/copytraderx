@@ -19,6 +19,9 @@ export function DashboardObjective() {
   const trade = useMemo(() => computeTradeEquity(deals), [deals]);
 
   // Same evaluation the hero runs — cheap pure function, no extra queries.
+  // todayUtc is re-read on each recompute (snapshot/daily polls), not at
+  // mount, so it can drift up to ~5 min past UTC midnight — same known
+  // limitation as ChallengeProgressHero.
   const dd = useMemo(() => {
     if (!rule || !snapshot) return null;
     const todayUtc = new Date().toISOString().slice(0, 10);
@@ -39,6 +42,8 @@ export function DashboardObjective() {
     : mode === "percent"
       ? fmtPct(dd.drawdownPct > 0 ? -dd.drawdownPct : 0)
       : fmtCash(dd.drawdownCash > 0 ? -dd.drawdownCash : 0, currency);
+  // `||` is deliberate: both limits are null ⇔ funded account, and it keeps
+  // TypeScript's non-null narrowing for the limit branches below.
   const ddSub = !dd ? "no data"
     : dd.limitCash === null || dd.limitPct === null
       ? "MT5 reported"
