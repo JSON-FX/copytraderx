@@ -14,6 +14,7 @@ export interface PropFirmRow {
   productDisplay: string;
   status: PropFirmStatus;
   pnl: number;
+  accountSize: number | null;
   drawdownPct: number;
   profitProgressPct: number;
   tradingDays: number;
@@ -25,6 +26,7 @@ export interface PropFirmRow {
 export interface PropFirmOverview {
   rows: PropFirmRow[];
   totalPnl: number;
+  totalAccountSize: number;
   avgWinRate: number;
   activeCount: number;
   fundedCount: number;
@@ -40,7 +42,7 @@ export async function getPropFirmOverview(userId: string): Promise<PropFirmOverv
     .in("product", ["ctx-prop-passer", "ctx-prop-funded"]);
 
   if (!subs || subs.length === 0) {
-    return { rows: [], totalPnl: 0, avgWinRate: 0, activeCount: 0, fundedCount: 0 };
+    return { rows: [], totalPnl: 0, totalAccountSize: 0, avgWinRate: 0, activeCount: 0, fundedCount: 0 };
   }
 
   const subIds = subs.map((s: { id: number }) => s.id);
@@ -52,6 +54,7 @@ export async function getPropFirmOverview(userId: string): Promise<PropFirmOverv
 
   const rows: PropFirmRow[] = [];
   let totalPnl = 0;
+  let totalAccountSize = 0;
   let activeCount = 0;
   let fundedCount = 0;
 
@@ -106,7 +109,10 @@ export async function getPropFirmOverview(userId: string): Promise<PropFirmOverv
       if (status === "on_track") activeCount++;
     }
 
-    if (status !== "breached") totalPnl += pnl;
+    if (status !== "breached") {
+      totalPnl += pnl;
+      totalAccountSize += rule?.account_size ?? 0;
+    }
 
     rows.push({
       licenseId: lic.id,
@@ -116,6 +122,7 @@ export async function getPropFirmOverview(userId: string): Promise<PropFirmOverv
       productDisplay: productDisplayName(lic.product),
       status,
       pnl,
+      accountSize: rule?.account_size ?? null,
       drawdownPct,
       profitProgressPct,
       tradingDays,
@@ -128,5 +135,5 @@ export async function getPropFirmOverview(userId: string): Promise<PropFirmOverv
   const ORDER: Record<PropFirmStatus, number> = { watch: 0, on_track: 1, funded: 2, breached: 3 };
   rows.sort((a, b) => ORDER[a.status] - ORDER[b.status]);
 
-  return { rows, totalPnl, avgWinRate: 0, activeCount, fundedCount };
+  return { rows, totalPnl, totalAccountSize, avgWinRate: 0, activeCount, fundedCount };
 }
