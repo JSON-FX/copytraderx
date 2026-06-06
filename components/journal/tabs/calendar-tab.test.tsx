@@ -8,7 +8,7 @@ jest.mock("@/app/dashboard/settings/actions", () => ({
 }));
 
 // Local noon today: the UTC date slice matches the locally-rendered calendar
-// cell for any timezone offset < 12h, keeping the test deterministic.
+// cell for any timezone offset ≤ 12h, keeping the test deterministic.
 const NOON_TODAY = new Date(new Date().setHours(12, 0, 0, 0)).toISOString();
 
 function deal(partial: Partial<Deal> = {}): Deal {
@@ -55,6 +55,16 @@ describe("CalendarTab", () => {
     renderTab([deal()]);
     fireEvent.click(screen.getByText("1 trade"));
     fireEvent.keyDown(screen.getByRole("dialog"), { key: "Escape" });
+    expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+  });
+
+  it("does nothing when clicking a day without trades", () => {
+    renderTab([deal()]);
+    // Day cells without trades are disabled buttons; pick one by its day number
+    // from a week with no trades (the trade is on today's date only).
+    const disabledCells = document.querySelectorAll("button[disabled]");
+    expect(disabledCells.length).toBeGreaterThan(0);
+    fireEvent.click(disabledCells[0]);
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 });

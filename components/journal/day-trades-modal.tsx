@@ -37,9 +37,11 @@ export function DayTradesModal({ date, deals, currency, baseline, journalHref, o
 
   const result = useMemo(() => applyTradeFilters(deals, state), [deals, state]);
 
-  const dayNet = useMemo(() => deals.reduce((a, d) => a + d.profit, 0), [deals]);
-  const wins = deals.filter((d) => d.profit > 0).length;
-  const losses = deals.filter((d) => d.profit < 0).length;
+  const { dayNet, wins, losses } = useMemo(() => ({
+    dayNet: deals.reduce((a, d) => a + d.profit, 0),
+    wins: deals.filter((d) => d.profit > 0).length,
+    losses: deals.filter((d) => d.profit < 0).length,
+  }), [deals]);
 
   // Visual accent: a subtle left-border on the header signals the day's polarity.
   const accentClass =
