@@ -102,4 +102,11 @@ describe("computeDrawdownCard — funded accounts", () => {
     expect(card.drawdownPct).toBe(0);
     expect(card.tone).toBe("neutral");
   });
+
+  it("clamps negative drawdown_pct to zero", () => {
+    const card = fundedCard(snapshot({ drawdown_pct: -0.5 }));
+    expect(card.drawdownPct).toBe(0);
+    expect(card.drawdownCash).toBe(0);
+    expect(card.tone).toBe("neutral");
+  });
 });

@@ -78,7 +78,7 @@ export async function getPropFirmOverview(userId: string): Promise<PropFirmOverv
       fundedCount++;
       if (snapshot && rule) {
         pnl = snapshot.balance - rule.account_size;
-        drawdownPct = snapshot.drawdown_pct;
+        drawdownPct = Math.max(0, snapshot.drawdown_pct);
       }
     } else if (rule && snapshot) {
       const todayUtc = new Date().toISOString().slice(0, 10);

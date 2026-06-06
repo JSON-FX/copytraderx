@@ -24,6 +24,8 @@ export interface DrawdownCard {
  * - challenge: rule-based totalDrawdown vs account_size, toned by the hero's
  *   WATCH (>= 70% of limit) / breach thresholds
  * - funded: MT5-native snapshot.drawdown_pct, plain negative when > 0
+ * Callers are expected to pass prop products only ("ctx-prop-passer" /
+ * "ctx-prop-funded"); any other product falls through to challenge logic.
  */
 export function computeDrawdownCard(input: {
   product: Product;
@@ -34,6 +36,8 @@ export function computeDrawdownCard(input: {
   const { product, rule, snapshot, evaluation } = input;
   const size = rule.account_size;
 
+  // snapshot is only read in the funded branch; the challenge branch uses
+  // evaluation.totalDrawdown, which already incorporates min(balance, equity).
   if (product === "ctx-prop-funded") {
     const pct = Math.max(0, snapshot.drawdown_pct);
     return {
