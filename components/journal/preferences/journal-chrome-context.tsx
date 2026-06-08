@@ -1,14 +1,13 @@
 "use client";
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { createContext, useCallback, useContext, useMemo, useRef, useState } from "react";
 import type { PnlDisplay } from "@/lib/preferences/server";
+import { updatePnlDisplay } from "@/app/dashboard/settings/actions";
 
-export type PnlDisplaySource = "global" | "override";
 export type RangeDays = 7 | 30 | 90 | 0;
 
 interface ChromeState {
   mode: PnlDisplay;
-  source: PnlDisplaySource;
   setMode: (v: PnlDisplay) => void;
   range: RangeDays;
   setRange: (v: RangeDays) => void;
@@ -16,10 +15,6 @@ interface ChromeState {
 }
 
 const Ctx = createContext<ChromeState | null>(null);
-
-function storageKey(licenseId: number) {
-  return `journal:pnl-display:${licenseId}`;
-}
 
 export function JournalChromeProvider({
   licenseId, initialPnlDisplay, initialRangeDays, children,
@@ -30,27 +25,35 @@ export function JournalChromeProvider({
   children: React.ReactNode;
 }) {
   const [mode, setModeState] = useState<PnlDisplay>(initialPnlDisplay);
-  const [source, setSource] = useState<PnlDisplaySource>("global");
   const [range, setRange] = useState<RangeDays>(initialRangeDays);
+  // Last value the server confirmed; reverts go here, not to the previous
+  // optimistic value, so rapid toggles can't strand the UI off the DB state.
+  const confirmedRef = useRef<PnlDisplay>(initialPnlDisplay);
+  // Generation counter: only the latest in-flight request may revert.
+  const pendingRef = useRef(0);
 
-  // Hydrate from localStorage on mount.
-  useEffect(() => {
-    const raw = window.localStorage.getItem(storageKey(licenseId));
-    if (raw === "percent" || raw === "dollar") {
-      setModeState(raw);
-      setSource("override");
-    }
-  }, [licenseId]);
-
+  // The user_preferences row is the single source of truth, site-wide:
+  // update optimistically, persist via the settings server action, revert on
+  // failure. (The old per-license localStorage override is gone — stale
+  // journal:pnl-display:* keys are simply ignored.)
   const setMode = useCallback((v: PnlDisplay) => {
+    if (v === mode) return;
+    const id = ++pendingRef.current;
     setModeState(v);
-    setSource("override");
-    window.localStorage.setItem(storageKey(licenseId), v);
-  }, [licenseId]);
+    void updatePnlDisplay(v)
+      .then((res) => {
+        if ("error" in res) {
+          if (id === pendingRef.current) setModeState(confirmedRef.current);
+        } else {
+          confirmedRef.current = v;
+        }
+      })
+      .catch(() => { if (id === pendingRef.current) setModeState(confirmedRef.current); });
+  }, [mode]);
 
   const value = useMemo<ChromeState>(() => ({
-    mode, source, setMode, range, setRange, licenseId,
-  }), [mode, source, setMode, range, licenseId]);
+    mode, setMode, range, setRange, licenseId,
+  }), [mode, setMode, range, licenseId]);
 
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }
@@ -58,7 +61,7 @@ export function JournalChromeProvider({
 export function usePnlDisplay() {
   const ctx = useContext(Ctx);
   if (!ctx) throw new Error("usePnlDisplay must be used inside <JournalChromeProvider>");
-  return { mode: ctx.mode, setMode: ctx.setMode, source: ctx.source };
+  return { mode: ctx.mode, setMode: ctx.setMode };
 }
 
 export function useRangeScope() {

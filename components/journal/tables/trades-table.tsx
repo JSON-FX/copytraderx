@@ -132,13 +132,13 @@ export function TradesTable({ deals, currency, baseline, mt5Account }: {
   );
 }
 
-function computePips(d: Deal): number {
+export function computePips(d: Deal): number {
   const factor = d.symbol.endsWith("JPY") ? 100 : 10_000;
   const diff = (d.close_price - d.open_price) * factor;
   return d.side === "buy" ? diff : -diff;
 }
 
-function Th({ sortKey, state, num, onClick, children }: {
+export function Th({ sortKey, state, num, onClick, children }: {
   sortKey: string; state: string; num?: boolean; onClick: () => void; children: React.ReactNode;
 }) {
   const [key, dir] = state.split(/_(?=asc$|desc$)/) as [string, "asc" | "desc"];

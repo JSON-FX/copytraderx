@@ -8,7 +8,7 @@ export interface CalendarDay {
   losses: number;
 }
 
-function utcDateKey(iso: string): string {
+export function utcDateKey(iso: string): string {
   return iso.slice(0, 10);  // ISO 8601 with Z timezone — first 10 chars are YYYY-MM-DD UTC.
 }
 

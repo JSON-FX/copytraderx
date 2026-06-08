@@ -18,5 +18,6 @@ export async function updatePnlDisplay(value: PnlDisplay): Promise<{ ok: true } 
   }
   revalidatePath("/dashboard/settings");
   revalidatePath("/dashboard/licenses", "layout");
+  revalidatePath("/dashboard/prop-firms");
   return { ok: true };
 }

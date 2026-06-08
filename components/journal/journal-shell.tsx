@@ -116,7 +116,7 @@ function Inner(props: Props) {
           <OverviewTab license={license} rule={props.rule} snapshot={snapshot.data} daily={daily.data} positions={positions.data} deals={deals.data} currency={currency} baseline={baseline} />
         </TabsContent>
         <TabsContent value="trades"><TradesTab deals={deals.data} currency={currency} baseline={baseline} mt5Account={acct} /></TabsContent>
-        <TabsContent value="calendar"><CalendarTab deals={deals.data} currency={currency} baseline={baseline} /></TabsContent>
+        <TabsContent value="calendar"><CalendarTab deals={deals.data} currency={currency} baseline={baseline} licenseId={license.id} /></TabsContent>
         <TabsContent value="performance"><PerformanceTab deals={deals.data} daily={daily.data} currency={currency} baseline={baseline} /></TabsContent>
         <TabsContent value="orders"><OrdersTab orders={orders.data} mt5Account={acct} /></TabsContent>
         <TabsContent value="objectives">

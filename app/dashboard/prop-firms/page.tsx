@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { getPropFirmOverview } from "@/lib/prop-firm-data";
+import { getPnlDisplay } from "@/lib/preferences/server";
 import { PropFirmSummaryStrip } from "@/components/prop-firms/prop-firm-summary-strip";
 import { PropFirmTable } from "@/components/prop-firms/prop-firm-table";
 
@@ -11,7 +12,10 @@ export default async function PropFirmsPage() {
   const { data: { user } } = await sb.auth.getUser();
   if (!user) redirect("/login");
 
-  const data = await getPropFirmOverview(user.id);
+  const [data, mode] = await Promise.all([
+    getPropFirmOverview(user.id),
+    getPnlDisplay(user.id),
+  ]);
 
   return (
     <div className="space-y-6">
@@ -21,8 +25,8 @@ export default async function PropFirmsPage() {
           {data.activeCount} active · {data.fundedCount} funded
         </p>
       </div>
-      <PropFirmSummaryStrip data={data} />
-      <PropFirmTable rows={data.rows} />
+      <PropFirmSummaryStrip data={data} mode={mode} />
+      <PropFirmTable rows={data.rows} mode={mode} />
     </div>
   );
 }
