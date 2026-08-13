@@ -1,6 +1,8 @@
 "use client";
 
+import { useMemo } from "react";
 import { useJournalPoll } from "@/lib/hooks/use-journal-poll";
+import { filterByRangeDays } from "@/lib/journal/trade-filters";
 import { fetchJson } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { JournalHeader } from "./journal-header";
@@ -54,7 +56,6 @@ function Inner(props: Props) {
   const pushIntervalMs = props.pushIntervalSeconds * 1000;
   const acct = license.mt5_account;
   const { range } = useRangeScope();
-  const days = range === 0 ? 0 : range;
 
   const snapshot = useJournalPoll<AccountSnapshotCurrent | null>({
     fetcher: () => fetchJson<AccountSnapshotCurrent | null>(`/api/journal/${acct}/snapshot`),
@@ -64,15 +65,16 @@ function Inner(props: Props) {
     fetcher: () => fetchJson<Position[]>(`/api/journal/${acct}/positions`),
     initialData: props.initialPositions, pushIntervalMs,
   });
+  // Polled all-time to match the server-rendered payload — a narrower fetch
+  // would wipe out rows the page already showed on the first tick. The Range
+  // control narrows the tables client-side instead (see rangedDeals below).
   const deals = useJournalPoll<Deal[]>({
-    fetcher: () => fetchJson<Deal[]>(`/api/journal/${acct}/deals?days=${days}`),
+    fetcher: () => fetchJson<Deal[]>(`/api/journal/${acct}/deals?days=0`),
     initialData: props.initialDeals, pushIntervalMs, fixedIntervalMs: 30_000,
-    deps: [days],
   });
   const orders = useJournalPoll<OrderRow[]>({
-    fetcher: () => fetchJson<OrderRow[]>(`/api/journal/${acct}/orders?days=${days}`),
+    fetcher: () => fetchJson<OrderRow[]>(`/api/journal/${acct}/orders?days=0`),
     initialData: props.initialOrders, pushIntervalMs, fixedIntervalMs: 30_000,
-    deps: [days],
   });
   // Daily snapshots are always fetched all-time so the headline KPI cards
   // (Net Return, Max Drawdown, equity sparkline) stay stable across Range
@@ -86,12 +88,21 @@ function Inner(props: Props) {
   const currency = snapshot.data?.currency ?? "USD";
   const baseline = props.baseline.baseline;
 
+  const rangedDeals = useMemo(
+    () => filterByRangeDays(deals.data, range, (d) => d.close_time),
+    [deals.data, range],
+  );
+  const rangedOrders = useMemo(
+    () => filterByRangeDays(orders.data, range, (o) => o.time_setup),
+    [orders.data, range],
+  );
+
   return (
     <div className="mx-auto max-w-6xl space-y-4 px-6 py-6">
       <JournalHeader license={license} pushedAt={snapshot.data?.pushed_at ?? null} pushIntervalSeconds={props.pushIntervalSeconds} />
       <LiveAccountPanel
           snapshot={snapshot.data}
-          deals={deals.data}
+          deals={rangedDeals}
           daily={daily.data}
           baseline={baseline}
           baselineSource={props.baseline.source}
@@ -106,19 +117,19 @@ function Inner(props: Props) {
       <Tabs defaultValue="overview">
         <TabsList className="h-11 w-fit gap-1 rounded-lg p-1">
           <TabsTrigger value="overview" className={TAB_CLS}>Overview</TabsTrigger>
-          <TabsTrigger value="trades" className={TAB_CLS}>Trades {deals.data.length ? <CountPill n={deals.data.length} /> : null}</TabsTrigger>
+          <TabsTrigger value="trades" className={TAB_CLS}>Trades {rangedDeals.length ? <CountPill n={rangedDeals.length} /> : null}</TabsTrigger>
           <TabsTrigger value="calendar" className={TAB_CLS}>Calendar</TabsTrigger>
           <TabsTrigger value="performance" className={TAB_CLS}>Performance</TabsTrigger>
-          <TabsTrigger value="orders" className={TAB_CLS}>Orders {orders.data.length ? <CountPill n={orders.data.length} /> : null}</TabsTrigger>
+          <TabsTrigger value="orders" className={TAB_CLS}>Orders {rangedOrders.length ? <CountPill n={rangedOrders.length} /> : null}</TabsTrigger>
           <TabsTrigger value="objectives" className={TAB_CLS}>Objectives</TabsTrigger>
         </TabsList>
         <TabsContent value="overview">
-          <OverviewTab license={license} rule={props.rule} snapshot={snapshot.data} daily={daily.data} positions={positions.data} deals={deals.data} currency={currency} baseline={baseline} />
+          <OverviewTab license={license} rule={props.rule} snapshot={snapshot.data} daily={daily.data} positions={positions.data} deals={rangedDeals} currency={currency} baseline={baseline} />
         </TabsContent>
-        <TabsContent value="trades"><TradesTab deals={deals.data} currency={currency} baseline={baseline} mt5Account={acct} /></TabsContent>
-        <TabsContent value="calendar"><CalendarTab deals={deals.data} currency={currency} baseline={baseline} licenseId={license.id} /></TabsContent>
-        <TabsContent value="performance"><PerformanceTab deals={deals.data} daily={daily.data} currency={currency} baseline={baseline} /></TabsContent>
-        <TabsContent value="orders"><OrdersTab orders={orders.data} mt5Account={acct} /></TabsContent>
+        <TabsContent value="trades"><TradesTab deals={rangedDeals} currency={currency} baseline={baseline} mt5Account={acct} /></TabsContent>
+        <TabsContent value="calendar"><CalendarTab deals={rangedDeals} currency={currency} baseline={baseline} licenseId={license.id} /></TabsContent>
+        <TabsContent value="performance"><PerformanceTab deals={rangedDeals} daily={daily.data} currency={currency} baseline={baseline} /></TabsContent>
+        <TabsContent value="orders"><OrdersTab orders={rangedOrders} mt5Account={acct} /></TabsContent>
         <TabsContent value="objectives">
           <ObjectivesTab license={license} rule={props.rule} snapshot={snapshot.data} daily={daily.data} currency={currency} baseline={baseline} />
         </TabsContent>

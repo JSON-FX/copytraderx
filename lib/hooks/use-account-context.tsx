@@ -1,8 +1,9 @@
 // lib/hooks/use-account-context.tsx
 "use client";
 
-import { createContext, useContext, type ReactNode } from "react";
+import { createContext, useContext, useMemo, type ReactNode } from "react";
 import { useJournalPoll } from "@/lib/hooks/use-journal-poll";
+import { filterByRangeDays } from "@/lib/journal/trade-filters";
 import { fetchJson } from "@/lib/utils";
 import type {
   AccountSnapshotCurrent, AccountSnapshotDaily,
@@ -16,7 +17,10 @@ interface AccountContextValue {
   license: License;
   snapshot: AccountSnapshotCurrent | null;
   positions: Position[];
+  /** Full closed-trade history — what the journal, calendar and performance views read. */
   deals: Deal[];
+  /** `deals` narrowed to the dashboard's Range selector. Dashboard KPIs only. */
+  dealsInRange: Deal[];
   orders: OrderRow[];
   daily: AccountSnapshotDaily[];
   rule: PropfirmRule | null;
@@ -68,7 +72,6 @@ function InnerProvider({ children, ...props }: ProviderProps) {
   const pushIntervalMs = props.pushIntervalSeconds * 1000;
   const acct = props.license.mt5_account;
   const { range } = useRangeScope();
-  const days = range === 0 ? 0 : range;
 
   const snapshot = useJournalPoll<AccountSnapshotCurrent | null>({
     fetcher: () => fetchJson(`/api/journal/${acct}/snapshot`),
@@ -78,26 +81,33 @@ function InnerProvider({ children, ...props }: ProviderProps) {
     fetcher: () => fetchJson(`/api/journal/${acct}/positions`),
     initialData: props.initialPositions, pushIntervalMs,
   });
+  // Deals and orders are polled all-time to match what the account layout
+  // server-renders. Anything narrower and the first poll would delete rows the
+  // page had already painted — the Range selector scopes them client-side below.
   const deals = useJournalPoll<Deal[]>({
-    fetcher: () => fetchJson(`/api/journal/${acct}/deals?days=${days}`),
+    fetcher: () => fetchJson(`/api/journal/${acct}/deals?days=0`),
     initialData: props.initialDeals, pushIntervalMs, fixedIntervalMs: 30_000,
-    deps: [days],
   });
   const orders = useJournalPoll<OrderRow[]>({
-    fetcher: () => fetchJson(`/api/journal/${acct}/orders?days=${days}`),
+    fetcher: () => fetchJson(`/api/journal/${acct}/orders?days=0`),
     initialData: props.initialOrders, pushIntervalMs, fixedIntervalMs: 30_000,
-    deps: [days],
   });
   const daily = useJournalPoll<AccountSnapshotDaily[]>({
     fetcher: () => fetchJson(`/api/journal/${acct}/snapshots-daily?days=0`),
     initialData: props.initialDaily, pushIntervalMs, fixedIntervalMs: 5 * 60_000,
   });
 
+  const dealsInRange = useMemo(
+    () => filterByRangeDays(deals.data, range, (d) => d.close_time),
+    [deals.data, range],
+  );
+
   const value: AccountContextValue = {
     license: props.license,
     snapshot: snapshot.data,
     positions: positions.data,
     deals: deals.data,
+    dealsInRange,
     orders: orders.data,
     daily: daily.data,
     rule: props.rule,

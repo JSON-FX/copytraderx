@@ -1,4 +1,4 @@
-import { applyTradeFilters } from "./trade-filters";
+import { applyTradeFilters, filterByRangeDays } from "./trade-filters";
 import type { Deal } from "@/lib/types";
 
 const D = (over: Partial<Deal>): Deal => ({
@@ -40,5 +40,34 @@ describe("applyTradeFilters", () => {
     const r = applyTradeFilters(rows, { sort: "closed_asc", page: 1, size: 2, filters: {}, search: "" });
     expect(r.rows.map((d) => d.ticket)).toEqual([3, 2]);
     expect(r.total).toBe(3);
+  });
+});
+
+describe("filterByRangeDays", () => {
+  const NOW = Date.parse("2026-08-13T12:00:00Z");
+  const at = (iso: string) => ({ t: iso });
+  const rows = [
+    at("2026-08-10T22:45:00Z"), // 3d
+    at("2026-07-15T23:54:00Z"), // 29d — inside a 30d window
+    at("2026-07-13T22:16:00Z"), // 31d — outside it
+    at("2026-05-20T22:55:00Z"), // 85d
+  ];
+  const days = (n: number) => filterByRangeDays(rows, n, (r) => r.t, NOW).map((r) => r.t);
+
+  it("keeps every row when days is 0 (all history)", () => {
+    expect(days(0)).toHaveLength(4);
+  });
+  it("keeps every row for a negative or non-finite window", () => {
+    expect(days(-1)).toHaveLength(4);
+    expect(days(NaN)).toHaveLength(4);
+  });
+  it("keeps only rows at or after the cutoff", () => {
+    expect(days(30)).toEqual(["2026-08-10T22:45:00Z", "2026-07-15T23:54:00Z"]);
+    expect(days(7)).toEqual(["2026-08-10T22:45:00Z"]);
+    expect(days(90)).toHaveLength(4);
+  });
+  it("returns the same rows the server would for the equivalent query", () => {
+    const cutoff = new Date(NOW - 30 * 24 * 60 * 60 * 1000).toISOString();
+    expect(days(30)).toEqual(rows.filter((r) => r.t >= cutoff).map((r) => r.t));
   });
 });

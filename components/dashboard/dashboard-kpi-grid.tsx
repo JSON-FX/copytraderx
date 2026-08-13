@@ -12,7 +12,9 @@ import { fmtCash, fmtPct } from "@/lib/journal/format-pnl";
 import { usePnlDisplay } from "@/components/journal/preferences/journal-chrome-context";
 
 export function DashboardKpiGrid() {
-  const { deals, daily, snapshot, baseline, currency } = useAccountContext();
+  // KPIs and the equity curve follow the Range selector; the rest of the app
+  // reads the full history from `deals`.
+  const { dealsInRange: deals, daily, snapshot, baseline, currency } = useAccountContext();
   const { mode } = usePnlDisplay();
 
   const trade = useMemo(() => computeTradeEquity(deals), [deals]);
