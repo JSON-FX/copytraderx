@@ -7,6 +7,27 @@ export interface TradeFilterResult {
   summary: { count: number; netCash: number; wins: number; losses: number };
 }
 
+/**
+ * Client-side equivalent of the journal API's `?days=` window.
+ *
+ * The polls always request full history, so a range default can never delete
+ * rows the server-rendered page already showed. Narrowing happens here instead,
+ * scoped to the views that actually expose a Range control.
+ *
+ * Mirrors the server predicate (`gte(<timestamp>, now - days)`); `days <= 0`
+ * means "all history".
+ */
+export function filterByRangeDays<T>(
+  rows: T[],
+  days: number,
+  timestampOf: (row: T) => string,
+  now: number = Date.now(),
+): T[] {
+  if (!Number.isFinite(days) || days <= 0) return rows;
+  const cutoff = now - days * 24 * 60 * 60 * 1000;
+  return rows.filter((r) => new Date(timestampOf(r)).getTime() >= cutoff);
+}
+
 export function applyTradeFilters(input: Deal[], state: TableState): TradeFilterResult {
   let rows = input;
   const { outcome, symbol, side } = state.filters;
