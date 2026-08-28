@@ -7,6 +7,7 @@ import { calculateExpiresAt } from "@/lib/expiry";
 import { sendSubscriptionGrantedEmail } from "@/lib/email";
 import { productDisplayName } from "@/lib/products";
 import { tierLabel } from "@/lib/users";
+import { getAppOrigin } from "@/lib/environment";
 
 export async function POST(req: Request) {
   const ssr = await getSupabaseSSR();
@@ -64,9 +65,7 @@ export async function POST(req: Request) {
       product_label: productDisplayName(input.product),
       tier_label: tierLabel(input.tier),
       expires_at: expires.toISOString().slice(0, 10),
-      login_url: process.env.PUBLIC_APP_URL
-        ? `${process.env.PUBLIC_APP_URL}/login`
-        : "/login",
+      login_url: `${getAppOrigin()}/login`,
     });
   }
 

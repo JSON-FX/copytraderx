@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { getPublicSupabaseConfig } from "@/lib/environment";
 
 const PUBLIC_PATHS = new Set<string>(["/login"]);
 const PUBLIC_PREFIXES = ["/_next/", "/favicon", "/api/auth/"];
@@ -13,10 +14,11 @@ function isPublicPath(pathname: string): boolean {
 export async function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
   const res = NextResponse.next({ request: req });
+  const { url, anonKey } = getPublicSupabaseConfig();
 
   const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    url,
+    anonKey,
     {
       cookies: {
         getAll() {
