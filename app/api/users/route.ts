@@ -10,6 +10,7 @@ import {
 } from "@/lib/supabase/admin";
 import { generateTempPassword } from "@/lib/users";
 import { calculateExpiresAt } from "@/lib/expiry";
+import { getAppOrigin } from "@/lib/environment";
 
 export async function GET() {
   const sbSSR = await getSupabaseSSR();
@@ -75,10 +76,10 @@ export async function POST(req: Request) {
   }
 
   // Two provisioning paths:
-  //   "invite" → Supabase emails an invite link via its configured SMTP.
+  //   "invite" → Supabase creates an invite link; the app emails it via SMTP.
   //   "manual" → admin creates the account with a generated password; the
   //              server returns it once so the admin can hand-deliver it.
-  const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/change-password`;
+  const redirectTo = `${getAppOrigin()}/auth/change-password`;
   let createdId: string;
   let generatedPassword: string | null = null;
   try {

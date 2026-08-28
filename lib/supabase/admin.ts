@@ -1,4 +1,36 @@
+import { sendEmail } from "../email";
 import { getSupabaseAdmin } from "./server";
+
+async function deliverAuthLink(input: {
+  email: string;
+  actionLink: string;
+  kind: "invite" | "recovery";
+}) {
+  const isInvite = input.kind === "invite";
+  const result = await sendEmail({
+    to: input.email,
+    subject: isInvite
+      ? "Set up your CopyTraderX account"
+      : "Reset your CopyTraderX password",
+    text: [
+      isInvite
+        ? "An administrator created a CopyTraderX account for you."
+        : "An administrator requested a password reset for your CopyTraderX account.",
+      "",
+      isInvite ? "Set your password:" : "Choose a new password:",
+      input.actionLink,
+      "",
+      "If you did not expect this message, you can ignore it.",
+    ].join("\n"),
+  });
+
+  if (!result.ok) {
+    throw new Error(`Unable to send authentication email: ${result.error}`);
+  }
+  if (result.skipped) {
+    throw new Error("Unable to send authentication email: SMTP is not configured");
+  }
+}
 
 export type CreateAuthUserInput = {
   email: string;
@@ -36,31 +68,40 @@ export type InviteAuthUserInput = {
 };
 
 /**
- * Invites a user via Supabase Auth's built-in flow. Creates the auth.users
- * row and sends the invite email through Supabase's configured SMTP — no
- * temp password is generated locally. The user clicks the link in the email
- * to set their password on first sign-in.
+ * Creates a Supabase Auth invitation link and delivers it through the
+ * application's SMTP transport. No temporary password is generated locally.
  */
 export async function inviteAuthUser(input: InviteAuthUserInput) {
   const sb = getSupabaseAdmin();
-  const { data, error } = await sb.auth.admin.inviteUserByEmail(input.email, {
-    data: {
-      role: input.role,
-      full_name: input.full_name,
+  const { data, error } = await sb.auth.admin.generateLink({
+    type: "invite",
+    email: input.email,
+    options: {
+      data: {
+        role: input.role,
+        full_name: input.full_name,
+      },
+      redirectTo: input.redirectTo,
     },
-    redirectTo: input.redirectTo,
   });
   if (error) throw error;
-  if (!data.user) throw new Error("inviteUserByEmail returned no user");
+  if (!data.user) throw new Error("generateLink returned no user");
+  if (!data.properties?.action_link) {
+    throw new Error("generateLink returned no invitation URL");
+  }
+
+  await deliverAuthLink({
+    email: input.email,
+    actionLink: data.properties.action_link,
+    kind: "invite",
+  });
+
   return data.user;
 }
 
 /**
- * Re-issues a recovery email to an existing user via Supabase's admin
- * generateLink flow. With SMTP configured in the Supabase project,
- * generateLink sends the email through the project's transport. Returns
- * the action_link as a fallback the admin can copy/paste if email
- * delivery fails.
+ * Creates a Supabase Auth recovery link and delivers it through the
+ * application's SMTP transport.
  */
 export async function sendRecoveryEmail(email: string, redirectTo?: string) {
   const sb = getSupabaseAdmin();
@@ -70,7 +111,10 @@ export async function sendRecoveryEmail(email: string, redirectTo?: string) {
     options: redirectTo ? { redirectTo } : undefined,
   });
   if (error) throw error;
-  return data?.properties?.action_link ?? null;
+  const actionLink = data.properties?.action_link;
+  if (!actionLink) throw new Error("generateLink returned no recovery URL");
+
+  await deliverAuthLink({ email, actionLink, kind: "recovery" });
 }
 
 /**

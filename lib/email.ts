@@ -1,5 +1,6 @@
 import nodemailer from "nodemailer";
 import type { RejectionCode } from "./types";
+import { validateProductionEmailEnvironment } from "./environment";
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -38,6 +39,8 @@ export const smtpTransport: EmailTransport = {
     );
   },
   async send(msg) {
+    validateProductionEmailEnvironment();
+
     // Dispatcher (`sendEmail`) gates on `isAvailable()`, so we can assume env
     // vars are present here.
     const host = process.env.SMTP_HOST!;

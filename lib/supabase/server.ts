@@ -1,21 +1,15 @@
 import { createClient, SupabaseClient } from "@supabase/supabase-js";
+import { getAdminSupabaseConfig } from "@/lib/environment";
 
-let cached: SupabaseClient | null = null;
+let cachedAdmin: SupabaseClient | null = null;
 
 export function getSupabaseAdmin(): SupabaseClient {
-  if (cached) return cached;
+  if (cachedAdmin) return cachedAdmin;
 
-  const url = process.env.SUPABASE_URL;
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const { url, serviceRoleKey } = getAdminSupabaseConfig();
 
-  if (!url || !serviceKey) {
-    throw new Error(
-      "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY must be set in the environment",
-    );
-  }
-
-  cached = createClient(url, serviceKey, {
+  cachedAdmin = createClient(url, serviceRoleKey, {
     auth: { persistSession: false, autoRefreshToken: false },
   });
-  return cached;
+  return cachedAdmin;
 }

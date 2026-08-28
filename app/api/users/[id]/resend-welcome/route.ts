@@ -3,6 +3,7 @@ import { getSupabaseAdmin } from "@/lib/supabase/server";
 import { getSupabaseSSR } from "@/lib/supabase/ssr";
 import { extractRole } from "@/lib/role";
 import { sendRecoveryEmail } from "@/lib/supabase/admin";
+import { getAppOrigin } from "@/lib/environment";
 
 export async function POST(
   _req: Request,
@@ -37,10 +38,9 @@ export async function POST(
     return NextResponse.json({ error: "not_found" }, { status: 404 });
   }
 
-  const redirectTo = `${process.env.NEXT_PUBLIC_APP_URL ?? ""}/auth/change-password`;
-  let actionLink: string | null = null;
+  const redirectTo = `${getAppOrigin()}/auth/change-password`;
   try {
-    actionLink = await sendRecoveryEmail(user.email, redirectTo);
+    await sendRecoveryEmail(user.email, redirectTo);
   } catch (err) {
     const msg = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
@@ -49,9 +49,8 @@ export async function POST(
     );
   }
 
-  // Supabase generated the recovery link and (if SMTP is configured on the
-  // project) sent the email. Mirror must_change_password=true on public.users
-  // so the user lands on /auth/change-password after clicking through.
+  // Mirror must_change_password=true on public.users so the user lands on
+  // /auth/change-password after clicking through.
   const { error: flagErr } = await sbAdmin
     .from("users")
     .update({ must_change_password: true })
@@ -60,8 +59,5 @@ export async function POST(
     console.error("[resend-welcome] failed to set must_change_password:", flagErr.message);
   }
 
-  return NextResponse.json({
-    ok: true,
-    action_link: actionLink,
-  });
+  return NextResponse.json({ ok: true });
 }

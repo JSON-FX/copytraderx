@@ -5,6 +5,7 @@
   "packageManager": "pnpm@10.12.4",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/validate-deployment-env.ts",
     "build": "next build",
     "start": "next start",
     "lint": "eslint",

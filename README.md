@@ -1,14 +1,12 @@
 # CopyTraderX License Admin UI
 
-Single-admin Next.js tool to manage CopyTraderX-Impulse EA licenses. Reads/writes the same cloud Supabase project (`mkfabzqlxzeidfblxzhq.supabase.co`) that the EA validates against. Local-only deployment via Docker behind the existing `lgu-nginx` reverse proxy at `http://copytraderx.local`.
-
-> ⚠️ **DEV ONLY** — there is no authentication. Do not deploy this publicly without adding a login flow.
+Authenticated Next.js tool for managing CopyTraderX-Impulse EA licenses, subscriptions, users, trials, and journals. It uses the same cloud Supabase project (`mkfabzqlxzeidfblxzhq.supabase.co`) that the EA validates against.
 
 ## Prerequisites
 
 - Docker (with `lgu-nginx` and `development_lgu-network` already configured per `~/Documents/development/nginx/`)
 - `supabase` CLI (for migrations)
-- Node 23 + pnpm 10 (for local dev)
+- Node 24 + pnpm 10 (for local dev)
 
 ## Quick start
 
@@ -45,6 +43,22 @@ pnpm dev
 
 While in dev mode, requests go straight to the Next.js dev server on port 3000, bypassing nginx + Docker.
 
+## Vercel production
+
+Production is deployed at `https://copytraderx.vercel.app`. Configure these variables for both Production and Preview before deploying:
+
+- `NEXT_PUBLIC_SUPABASE_URL` — the hosted Supabase project URL.
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY` — the public anonymous key. Never put the service-role key here.
+- `SUPABASE_URL` — the same hosted Supabase project URL.
+- `SUPABASE_SERVICE_ROLE_KEY` — server-only and marked Sensitive in Vercel.
+- `NEXT_PUBLIC_APP_URL` — `https://copytraderx.vercel.app` in production.
+
+`pnpm build` validates the Supabase and application URL contract before Next.js builds. Missing or mismatched values stop the deployment instead of causing a routing middleware crash. SMTP values are marked Sensitive in Vercel, so the application validates them at runtime before each send.
+
+Application-triggered email also needs `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, and `EMAIL_FROM`. `EMAIL_REPLY_TO` is optional. CopyTraderX generates invitation and recovery links through Supabase Auth, then delivers them through this application SMTP configuration.
+
+Set the Supabase Auth Site URL to the production origin. Allow `https://copytraderx.vercel.app/auth/change-password` as a redirect URL.
+
 ## Schema migrations
 
 The `licenses` table schema lives in the **EA repo** (`~/Documents/development/EA/JSONFX-IMPULSE/supabase/migrations/`). To change the schema:
@@ -57,11 +71,7 @@ supabase db push
 
 Restart this container afterwards if the change affects what the UI displays.
 
-### Pending app migrations
-
-Some app features require schema changes that must be applied before deploying:
-
-- `docs/superpowers/plans/2026-05-15-user-preferences-migration.sql` — creates `user_preferences` table for the `%/$` display preference. **Required for the user journal redesign.**
+The journal preference migration is stored in the EA repository as `20260828200407_create_user_preferences.sql`. It creates `public.user_preferences` with Row Level Security and ownership policies.
 
 ## Architecture
 
